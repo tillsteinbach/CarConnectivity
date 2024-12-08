@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from datetime import datetime
 
 if TYPE_CHECKING:
-    from typing import Any, Optional, Union, List
+    from typing import Any, Optional, Union, List, Literal
     from carconnectivity.objects import GenericObject
 
 
@@ -140,7 +140,7 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
         unit_str = f" {self.__unit}" if self.__unit else ""
         return f"{self.__name}: {self.__value}{unit_str}"
 
-    def get_by_path(self, address_string: str) -> Union[GenericObject, GenericAttribute, bool]:  # pylint: disable=too-many-return-statements
+    def get_by_path(self, address_string: str) -> Union[GenericObject, GenericAttribute, Literal[False]]:  # pylint: disable=too-many-return-statements
         """
         Retrieve an object or attribute by its path.
 
