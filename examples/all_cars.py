@@ -20,6 +20,9 @@ Logging Levels:
 Example:
     python all_cars.py config.json --tokenstorefile /path/to/tokenstore -v
 """
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 import argparse
 import json
 import os
@@ -28,7 +31,10 @@ import logging
 
 from carconnectivity import carconnectivity
 
-LOG_LEVELS: list[str] = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
+if TYPE_CHECKING:
+    from typing import List
+
+LOG_LEVELS: List[str] = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 DEFAULT_LOG_LEVEL = "ERROR"
 LOG: logging.Logger = logging.getLogger("carconnectivity-example")
 
