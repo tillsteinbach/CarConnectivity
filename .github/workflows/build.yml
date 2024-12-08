@@ -32,9 +32,17 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         if [ -f setup_requirements.txt ]; then pip install -r setup_requirements.txt; fi
+        python -m pip install build
+    - name: Build
+      run: |
+        python -m build
     - name: Lint
       run: |
         make lint
 #    - name: Test
 #      run: |
 #        make test
+
+
+
+
