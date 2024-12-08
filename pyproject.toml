@@ -4,11 +4,11 @@ requires = [
     "setuptools_scm>=8"
 ]
 build-backend = "setuptools.build_meta"
-dynamic = ["version"]
 
 [project]
 name = "carconnectivity"
 description = "Library for retrieving information from car connectivity services"
+dynamic = ["version"]
 requires-python = ">=3.8"
 authors = [
     { name = "Till Steinbach" }
@@ -34,3 +34,13 @@ classifiers = [
 
 [project.scripts]
 allcars = "allCars:main"
+
+[tool.setuptools_scm]
+write_to = "src/carconnectivity/_version.py"
+
+[tool.pylint.format]
+max-line-length = 160
+ignore-patterns= "_version.py"
+
+[tool.bandit]
+targets = "carconnectivity"
