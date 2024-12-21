@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from carconnectivity.drive import GenericDrive
 
 
-class GenericVehicle(GenericObject):
+class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
     A class to represent a generic vehicle.
 
