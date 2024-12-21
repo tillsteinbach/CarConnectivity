@@ -29,5 +29,31 @@ CarConenctivity uses a plugin architecture to enable access to the services of v
 If you know of a connector not listed here let me know and I will add it to the list.
 If you are a python developer and willing to implement a connector for a brand not listed here, let me know and I try to support you as good as possible
 
+## Configuration
+In your carconnectivity.json configuration add a section for the connectors you like to use like this:
+```
+{
+    "carConnectivity": {
+        "connectors": [
+            {
+                "type": "volkswagen",
+                "config": {
+                    "username": "test@test.de"
+                    "password": "testpassword123"
+                }
+            },
+            {
+                "type": "skoda",
+                "config": {
+                    "username": "test@test.de"
+                    "password": "testpassword123"
+                }
+            }
+        ]
+    }
+}
+```
+The detailed configuration options of the connectors can be found in their README files.
+
 ## Getting started
 - To get started have a look in the [examples folder](https://github.com/tillsteinbach/CarConnectivity/tree/main/examples)
