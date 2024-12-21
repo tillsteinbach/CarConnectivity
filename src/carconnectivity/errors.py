@@ -24,21 +24,21 @@ class SetterError(Exception):
 
 class ControlError(SetterError):
     """
-    Exception raised for errors when controling something.
+    Exception raised for errors when controlling something.
     """
 
 
-class AuthentificationError(Exception):
+class AuthenticationError(Exception):
     """
     Exception raised for errors in the authentication process.
     """
 
 
-class TemporaryAuthentificationError(AuthentificationError):
+class TemporaryAuthenticationError(AuthenticationError):
     """
     Exception raised for temporary authentication errors.
 
-    This exception is a subclass of `AuthentificationError` and is used to indicate
+    This exception is a subclass of `AuthenticationError` and is used to indicate
     that an authentication error occurred, but it is temporary and may be resolved
     by retrying the operation.
     """

@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 from datetime import datetime
 
+from carconnectivity.units import GenericUnit, Length, Level
+
 if TYPE_CHECKING:
     from typing import Any, Optional, Union, List, Literal
     from carconnectivity.objects import GenericObject
@@ -25,7 +27,7 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
         last_updated_local (Optional[datetime]): The last time the attribute value was updated in carconnectivity.
     """
 
-    def __init__(self, name: str, parent: GenericObject, value: Optional[Any] = None, unit: Optional[str] = None) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[Any] = None, unit: Optional[GenericUnit] = None) -> None:
         """
         Initialize an attribute for a car connectivity object.
 
@@ -39,7 +41,7 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
         self.__parent: GenericObject = parent
         self.__parent.children.append(self)
         self.__value: Optional[Any] = None
-        self.__unit: Optional[str] = unit
+        self.__unit: Optional[GenericUnit] = unit
 
         self.__enabled = False
 
@@ -49,7 +51,7 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
         self.last_updated_local: Optional[datetime] = None
 
         if value is not None:
-            self.__set_value(value)
+            self._set_value(value)
 
     @property
     def name(self) -> str:
@@ -91,7 +93,7 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
         """
         return self.__unit
 
-    def __set_value(self, value: Optional[Any], measured: Optional[datetime] = None) -> None:
+    def _set_value(self, value: Optional[Any], measured: Optional[datetime] = None, unit: Optional[GenericUnit] = None) -> None:
         now: datetime = datetime.now()
         self.last_updated_local = now
         self.last_updated = measured or now
@@ -101,6 +103,8 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
             self.last_changed = measured or now
 
             self.enabled = True
+        if self.__unit != unit:
+            self.__unit = unit
 
     @value.setter
     def value(self, new_value) -> None:
@@ -137,7 +141,7 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
         return self.__parent
 
     def __str__(self) -> str:
-        unit_str = f" {self.__unit}" if self.__unit else ""
+        unit_str = self.__unit.value if self.__unit else ""
         return f"{self.__name}: {self.__value}{unit_str}"
 
     def get_by_path(self, address_string: str) -> Union[GenericObject, GenericAttribute, Literal[False]]:  # pylint: disable=too-many-return-statements
@@ -240,3 +244,19 @@ class StringAttribute(GenericAttribute):
     """
     def __init__(self, name: str, parent: GenericObject, value: str | None = None) -> None:
         super().__init__(name, parent, value, None)
+
+
+class RangeAttribute(GenericAttribute):
+    """
+    A class used to represent a Range Attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Length = Length.KM) -> None:
+        super().__init__(name, parent, value, unit)
+
+
+class LevelAttribute(GenericAttribute):
+    """
+    A class used to represent a Level Attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: float | None = None) -> None:
+        super().__init__(name, parent, value, unit=Level.PERCENTAGE)

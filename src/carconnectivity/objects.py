@@ -9,13 +9,13 @@ Classes:
     GenericObject: A class to represent a generic object in a hierarchical structure.
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List, TypeVar
 
 from carconnectivity.attributes import GenericAttribute
 
 
 if TYPE_CHECKING:
-    from typing import Optional, Union, List, Literal
+    from typing import Optional, Union, Literal
 
 
 class GenericObject:
@@ -160,10 +160,11 @@ class GenericObject:
         # '..' means we are looking for the parent object
         if address_string == '..' and self.parent is not None:
             return self.parent
-        # Normalize the address_string by removing leading slashes
-        address_string = address_string.lstrip('/')
+
         # If the address starts with a /, we have an absolute path and start from the root
         if address_string.startswith('/'):
+            # Normalize the address_string by removing leading slashes
+            address_string = '/' + address_string.lstrip('/')
             return self.get_root().get_by_path(address_string[1:])
         # If the address is a relative path, we start from the current object
         child_id, _, rest_of_path = address_string.partition('/')
@@ -174,3 +175,29 @@ class GenericObject:
                 return child.get_by_path(rest_of_path)
         # If we reach this point, we did not find the object
         return False
+
+
+L = TypeVar('L', bound=GenericObject)
+
+
+class GenericList(GenericObject, List[L]):
+    """
+    A class that represents a generic list which extends both GenericObject and List.
+
+    Methods
+    -------
+    __add__(item):
+        Adds an item to the list and enables the list if it was previously disabled.
+
+    __str__() -> str:
+        Returns a string representation of the list, including only the enabled items.
+    """
+    def __add__(self, item) -> List[L]:
+        ret_val: list[L] = super().__add__(item)
+        # Enable the list if it was previously disabled after an object was added
+        if not self.enabled:
+            self.enabled = True
+        return ret_val
+
+    def __str__(self) -> str:
+        return '[' + ', '.join([str(item) for item in self if item.enabled]) + ']'

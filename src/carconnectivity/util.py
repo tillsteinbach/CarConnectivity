@@ -7,11 +7,36 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import logging
+import re
 from datetime import datetime
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, Any
     from logging import LogRecord
+
+
+def robust_time_parse(time_string: str) -> datetime:
+    """
+    This function replaces the 'Z' character with '+00:00' to handle UTC time and ensures that fractional
+    seconds are padded to six digits if necessary.
+
+    Args:
+        def robust_time_parse(time_string: str) -> datetime:
+ (str): The time string to be parsed. Expected format is 'YYYY-MM-DDTHH:MM:SS.ssssss+HH:MM'
+                          or 'YYYY-MM-DDTHH:MM:SS.ssssssZ'.
+
+    Returns:
+        datetime: A datetime object representing the parsed time string.
+
+    Raises:
+        ValueError: If the time string is not in a valid ISO 8601 format.
+    """
+    time_string = time_string.replace('Z', '+00:00')
+    match: re.Match[str] | None = re.search(
+        r'^(?P<start>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.)(?P<fractions>\d+)(?P<end>\+\d{2}:\d{2})$', time_string)
+    if match:
+        time_string = match.group('start') + match.group('fractions').ljust(6, "0") + match.group('end')
+    return datetime.fromisoformat(time_string)
 
 
 # pylint: disable=too-few-public-methods
