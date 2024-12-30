@@ -2,6 +2,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from enum import Enum
+
 from datetime import datetime
 
 from carconnectivity.units import GenericUnit, Length, Level
@@ -127,7 +129,7 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
     def enabled(self, set_enabled: bool) -> None:
         self.__enabled: bool = set_enabled
         # if there is a parent and it is not yet enabled, enable it
-        if self.__parent is not None and self.__parent.enabled != set_enabled:
+        if set_enabled and self.__parent is not None:
             self.__parent.enabled = set_enabled
 
     @property
@@ -238,11 +240,38 @@ class ChangeableAttribute(GenericAttribute):
     """
 
 
+class BooleanAttribute(GenericAttribute):
+    """
+    A class used to represent a Boolean Attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: bool | None = None) -> None:
+        super().__init__(name, parent, value, None)
+
+
+class EnumAttribute(GenericAttribute):
+    """
+    A class used to represent a Enum Attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: Enum | None = None) -> None:
+        super().__init__(name, parent, value, None)
+
+    def __str__(self) -> str:
+        return f"{self.name}: {self.value.value}"
+
+
 class StringAttribute(GenericAttribute):
     """
     A class used to represent a String Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: str | None = None) -> None:
+        super().__init__(name, parent, value, None)
+
+
+class DateAttribute(GenericAttribute):
+    """
+    A class used to represent a Date Attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: datetime | None = None) -> None:
         super().__init__(name, parent, value, None)
 
 

@@ -39,6 +39,26 @@ def robust_time_parse(time_string: str) -> datetime:
     return datetime.fromisoformat(time_string)
 
 
+def log_extra_keys(log: logging.log, where: str, dictionary: Dict[str, Any], allowed_keys: set[str] = None) -> None:
+    """
+    Logs a warning if there are any keys in the dictionary that are not in the allowed_keys set.
+
+    Args:
+        log (logging.log): The logger instance to use for logging warnings.
+        where (str): The location where the dictionary is coming from.
+        dictionary (Dict[str, Any]): The dictionary to check for extra keys.
+        allowed_keys (set[str]): The set of keys that are allowed in the dictionary.
+
+    Returns:
+        None
+    """
+    if allowed_keys is None:
+        allowed_keys = set()
+    extra_keys = set(dictionary.keys()) - allowed_keys
+    if extra_keys:
+        log.info(f"Unexpected keys found in {where}: {extra_keys}")
+
+
 # pylint: disable=too-few-public-methods
 class DuplicateFilter(logging.Filter):
     """

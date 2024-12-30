@@ -65,5 +65,14 @@ class Garage(GenericObject):
         """
         return list(self._vehicles.values())
 
+    def list_vehicle_vins(self) -> List[str]:
+        """
+        Returns a list of all vehicle vins of vehciles in the garage.
+
+        Returns:
+            list[GenericVehicle]: A list containing all the vehicle vins.
+        """
+        return list(self._vehicles.keys())
+
     def __str__(self) -> str:
         return 'Garage:\n' + '\n'.join(f'  {vehicle}' for vehicle in self._vehicles.values())

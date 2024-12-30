@@ -33,15 +33,23 @@ class GenericObject:
     enabled : bool
         A flag indicating whether the object is enabled or not.
     """
-    def __init__(self, object_id: str, parent: Optional[GenericObject] = None) -> None:
-        if '/' in object_id:
-            raise ValueError('ID cannot contain /')
-        self.__id: str = object_id
-        self.__parent: Optional[GenericObject] = parent
-        self.__enabled: bool = False
-        if parent is not None:
-            parent.children.append(self)
-        self.__children: List[Union[GenericObject, GenericAttribute]] = []
+    def __init__(self, object_id: str = None, parent: Optional[GenericObject] = None, origin: GenericObject = None) -> None:
+        if origin is not None:
+            self.__id: str = origin.id
+            self.__parent: Optional[GenericObject] = origin.parent
+            self.__enabled: bool = origin.enabled
+            self.__children: List[Union[GenericObject, GenericAttribute]] = origin.children
+        else:
+            if object_id is None:
+                raise ValueError('ID cannot be None')
+            if '/' in object_id:
+                raise ValueError('ID cannot contain /')
+            self.__id: str = object_id
+            self.__parent: Optional[GenericObject] = parent
+            self.__enabled: bool = False
+            if parent is not None:
+                parent.children.append(self)
+            self.__children: List[Union[GenericObject, GenericAttribute]] = []
 
     @property
     def id(self) -> str:
@@ -138,7 +146,7 @@ class GenericObject:
     @enabled.setter
     def enabled(self, set_enabled: bool) -> None:
         self.__enabled: bool = set_enabled
-        if self.__parent is not None and self.__parent.enabled != set_enabled:
+        if set_enabled and self.__parent is not None:
             self.__parent.enabled = set_enabled
 
     def get_by_path(self, address_string: str) -> Union[GenericObject, GenericAttribute, Literal[False]]:
