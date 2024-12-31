@@ -9,6 +9,7 @@ import json
 import logging
 
 import carconnectivity_connectors
+import carconnectivity_plugins
 
 from carconnectivity.objects import GenericObject
 from carconnectivity.garage import Garage
@@ -19,6 +20,7 @@ if TYPE_CHECKING:
     from types import ModuleType
 
     from carconnectivity_connectors.base.connector import BaseConnector
+    from carconnectivity_plugins.base.plugin import BasePlugin
 
 LOG: logging.Logger = logging.getLogger("carconnectivity")
 
@@ -31,6 +33,12 @@ discovered_connectors: Dict[str, ModuleType] = {
     name: importlib.import_module('.connector', name)
     for finder, name, ispkg
     in __iter_namespace(carconnectivity_connectors)
+}
+
+discovered_plugins: Dict[str, ModuleType] = {
+    name: importlib.import_module('.plugin', name)
+    for finder, name, ispkg
+    in __iter_namespace(carconnectivity_plugins)
 }
 
 
@@ -55,12 +63,14 @@ class CarConnectivity(GenericObject):
             ValueError: If the configuration is invalid.
         """
         super().__init__('')
+        self.delay_notifications = True
         self.__cache: Dict[str, Any] = {}
         self.__tokenstore: Dict[str, Any] = {}
         self.__tokenstore_file: Optional[str] = tokenstore_file
 
         self.config: Dict[Any, Any] = config
         self.connectors: List[BaseConnector] = []
+        self.plugins: List[BasePlugin] = []
         self.garage: Garage = Garage(self)
 
         if self.__tokenstore_file is not None:
@@ -87,6 +97,18 @@ class CarConnectivity(GenericObject):
                 connector_class = getattr(discovered_connectors['carconnectivity_connectors.' + connector_config['type']], 'Connector')
                 connector: BaseConnector = connector_class(car_connectivity=self, config=connector_config['config'])
                 self.connectors.append(connector)
+                connector.startup()
+        if 'plugins' in config['carConnectivity']:
+            for plugin_config in config['carConnectivity']['plugins']:
+                if 'type' not in plugin_config:
+                    raise ValueError("Invalid configuration: 'type' is missing in plugin")
+                if f"carconnectivity_plugins.{plugin_config['type']}" not in discovered_plugins:
+                    raise ValueError(f"Invalid configuration: plugin type '{plugin_config['type']}' is not known")
+                plugin_class = getattr(discovered_plugins['carconnectivity_plugins.' + plugin_config['type']], 'Plugin')
+                plugin: BasePlugin = plugin_class(car_connectivity=self, config=plugin_config['config'])
+                self.plugins.append(plugin)
+                plugin.startup()
+        self.delay_notifications = False
 
     def fetch_all(self) -> None:
         """
@@ -124,6 +146,8 @@ class CarConnectivity(GenericObject):
         """
         for connector in self.connectors:
             connector.shutdown()
+        for plugin in self.plugins:
+            plugin.shutdown()
         self.persist()
 
     def get_tokenstore(self) -> Dict[str, Any]:

@@ -9,16 +9,16 @@ Classes:
     GenericObject: A class to represent a generic object in a hierarchical structure.
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, TypeVar
+from typing import TYPE_CHECKING, List, Dict, TypeVar
 
 from carconnectivity.attributes import GenericAttribute
-
+from carconnectivity.observable import Observable
 
 if TYPE_CHECKING:
-    from typing import Optional, Union, Literal
+    from typing import Optional, Union, Literal, Callable, Tuple, Set
 
 
-class GenericObject:
+class GenericObject(Observable):
     """
     A class to represent a generic object in a hierarchical structure.
 
@@ -33,13 +33,15 @@ class GenericObject:
     enabled : bool
         A flag indicating whether the object is enabled or not.
     """
-    def __init__(self, object_id: str = None, parent: Optional[GenericObject] = None, origin: GenericObject = None) -> None:
+    def __init__(self, object_id: Optional[str] = None, parent: Optional[GenericObject] = None, origin: Optional[GenericObject] = None) -> None:
         if origin is not None:
+            super().__init__(origin=origin)
             self.__id: str = origin.id
             self.__parent: Optional[GenericObject] = origin.parent
             self.__enabled: bool = origin.enabled
             self.__children: List[Union[GenericObject, GenericAttribute]] = origin.children
         else:
+            super().__init__()
             if object_id is None:
                 raise ValueError('ID cannot be None')
             if '/' in object_id:
@@ -50,6 +52,44 @@ class GenericObject:
             if parent is not None:
                 parent.children.append(self)
             self.__children: List[Union[GenericObject, GenericAttribute]] = []
+
+    def __del__(self) -> None:
+        if self.enabled:
+            self.enabled = False
+
+    def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, storted=True) \
+            -> List[Tuple[Callable, Observable.ObserverEvent, Observable.ObserverPriority, bool]]:
+        """
+        Retrieve a sorted list of observer entries based on the specified flags and transaction end condition.
+
+        Args:
+            flags (Observable.ObserverEvent): The event flags to filter observers.
+            on_transaction_end (bool, optional): If True, only include observers that should be notified on transaction end. Defaults to False.
+            sorted (bool, optional): If True, the list of observer entries will be sorted by priority. Defaults to True.
+
+        Returns:
+            List[Any]: A sorted list of observer entries that match the specified criteria.
+        """
+        observers: Set[Tuple[Callable, Observable.ObserverEvent, Observable.ObserverPriority, bool]] \
+            = set(super().get_observer_entries(flags, on_transaction_end, False))
+        if self.__parent is not None:
+            observers.update(self.__parent.get_observer_entries(flags, on_transaction_end, False))
+        if storted:
+            return sorted(observers, key=lambda entry: int(entry[2]))
+        return list(observers)
+
+    def transaction_end(self) -> None:
+        """
+        Ends the current transaction and notifies the relevant observers.
+
+        This method override ensures that the transaction end notification is propagated down the hierarchy.
+
+        Returns:
+            None
+        """
+        for child in self.__children:
+            child.transaction_end()
+        super().transaction_end()
 
     @property
     def id(self) -> str:
@@ -70,6 +110,19 @@ class GenericObject:
             Optional[GenericObject]: The parent object if it exists, otherwise None.
         """
         return self.__parent
+
+    @parent.setter
+    def parent(self, parent: Optional[GenericObject]) -> None:
+        """
+        Sets the parent object of the current object.
+
+        Args:
+            parent (Optional[GenericObject]): The parent object to set.
+
+        Returns:
+            None
+        """
+        self.__parent = parent
 
     @property
     def children(self) -> List[Union[GenericObject, GenericAttribute]]:
@@ -145,12 +198,20 @@ class GenericObject:
 
     @enabled.setter
     def enabled(self, set_enabled: bool) -> None:
-        self.__enabled: bool = set_enabled
-        if set_enabled and self.__parent is not None:
-            self.__parent.enabled = set_enabled
+        # Propagate the disabled state down to the children first to have right order of notifications
         if not set_enabled:
             for child in self.__children:
-                child.enabled = set_enabled
+                if child.enabled:
+                    child.enabled = set_enabled
+        if set_enabled and not self.__enabled:
+            self.__enabled = set_enabled
+            self.notify(Observable.ObserverEvent.ENABLED)
+        elif not set_enabled and self.__enabled:
+            self.__enabled = set_enabled
+            self.notify(Observable.ObserverEvent.DISABLED)
+        # Propagate the enabled state to the parent if it exists last to have right order of notifications
+        if set_enabled and self.__parent is not None:
+            self.__parent.enabled = set_enabled
 
     def get_by_path(self, address_string: str) -> Union[GenericObject, GenericAttribute, Literal[False]]:
         """
@@ -186,29 +247,3 @@ class GenericObject:
                 return child.get_by_path(rest_of_path)
         # If we reach this point, we did not find the object
         return False
-
-
-L = TypeVar('L', bound=GenericObject)
-
-
-class GenericList(GenericObject, List[L]):
-    """
-    A class that represents a generic list which extends both GenericObject and List.
-
-    Methods
-    -------
-    __add__(item):
-        Adds an item to the list and enables the list if it was previously disabled.
-
-    __str__() -> str:
-        Returns a string representation of the list, including only the enabled items.
-    """
-    def __add__(self, item) -> List[L]:
-        ret_val: list[L] = super().__add__(item)
-        # Enable the list if it was previously disabled after an object was added
-        if not self.enabled:
-            self.enabled = True
-        return ret_val
-
-    def __str__(self) -> str:
-        return '[' + ', '.join([str(item) for item in self if item.enabled]) + ']'

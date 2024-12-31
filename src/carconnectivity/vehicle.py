@@ -32,6 +32,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
                  origin: Optional[GenericVehicle] = None) -> None:
         if origin is not None:
             super().__init__(origin=origin)
+            self.delay_notifications = True
             self.vin: StringAttribute = origin.vin
             self.name: StringAttribute = origin.name
             self.model: StringAttribute = origin.model
@@ -49,6 +50,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             if garage is None:
                 raise ValueError('Cannot create vehicle without garage')
             super().__init__(object_id=vin, parent=garage)
+            self.delay_notifications = True
             if vin is None:
                 raise ValueError('VIN cannot be None')
             self.vin = StringAttribute("vin", self, vin)
@@ -68,6 +70,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
                 self.managing_connectors.append(managing_connector)
 
             self.enabled = True
+        self.delay_notifications = False
 
     def is_managed_by_connector(self, connector: Optional[BaseConnector]) -> bool:
         """
@@ -151,6 +154,8 @@ class HybridVehicle(ElectricVehicle, CombustionVehicle):
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
                  origin: Optional[GenericVehicle] = None) -> None:
         if origin is not None:
-            super().__init__(origin=origin)
+            ElectricVehicle.__init__(self, origin=origin)
+            CombustionVehicle.__init__(self, origin=origin)
         else:
-            super().__init__(vin=vin, garage=garage, managing_connector=managing_connector)
+            ElectricVehicle.__init__(self, vin=vin, garage=garage, managing_connector=managing_connector)
+            CombustionVehicle.__init__(self, vin=vin, garage=garage, managing_connector=managing_connector)

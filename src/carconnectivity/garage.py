@@ -15,8 +15,10 @@ class Garage(GenericObject):
     """
     def __init__(self, parent) -> None:
         super().__init__(object_id='garage', parent=parent)
+        self.delay_notifications = True
         self._vehicles: Dict[str, GenericVehicle] = {}
         self.enabled = True
+        self.delay_notifications = False
 
     def add_vehicle(self, vehicle_id: str, vehicle: GenericVehicle) -> None:
         """

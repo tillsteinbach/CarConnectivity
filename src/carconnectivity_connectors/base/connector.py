@@ -37,10 +37,27 @@ class BaseConnector:  # pylint: disable=too-few-public-methods
         data fetching logic for the connector.
         """
 
+    def startup(self) -> None:
+        """
+        Starts the connector.
+
+        This method should be overridden by subclasses to implement any necessary
+        startup procedures for the connector. If threads are used, they should be started here.
+        """
+
     def shutdown(self) -> None:
         """
         Shuts down the connector.
 
         This method should be overridden by subclasses to implement any necessary
-        cleanup or shutdown procedures for the connector.
+        cleanup or shutdown procedures for the connector. If threads are used, they should be stopped here.
         """
+
+    def get_version(self) -> str:
+        """
+        Returns the version of the connector.
+
+        Returns:
+            str: The version of the connector.
+        """
+        raise NotImplementedError("Method get_version() must be implemented by connector")

@@ -7,13 +7,14 @@ from enum import Enum
 from datetime import datetime
 
 from carconnectivity.units import GenericUnit, Length, Level
+from carconnectivity.observable import Observable
 
 if TYPE_CHECKING:
-    from typing import Any, Optional, Union, List, Literal
+    from typing import Any, Optional, Union, List, Literal, Callable, Tuple, Set
     from carconnectivity.objects import GenericObject
 
 
-class GenericAttribute:  # pylint: disable=too-many-instance-attributes
+class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attributes
     """
     GenericAttribute represents a generic attribute with a name, value, unit, and parent object.
 
@@ -39,6 +40,7 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
             value (Optional[Any], optional): The initial value of the attribute. Defaults to None.
             unit (Optional[str], optional): The unit of the attribute value. Defaults to None.
         """
+        super().__init__()
         self.__name: str = name
         self.__parent: GenericObject = parent
         self.__parent.children.append(self)
@@ -54,6 +56,31 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
 
         if value is not None:
             self._set_value(value)
+
+    def __del__(self) -> None:
+        if self.enabled:
+            self.enabled = False
+
+    def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, storted=True) \
+            -> List[Tuple[Callable, Observable.ObserverEvent, Observable.ObserverPriority, bool]]:
+        """
+        Retrieve a sorted list of observer entries based on the specified flags and transaction end condition.
+
+        Args:
+            flags (Observable.ObserverEvent): The event flags to filter observers.
+            on_transaction_end (bool, optional): If True, only include observers that should be notified on transaction end. Defaults to False.
+            storted (bool, optional): If True, the list of observers will be sorted by priority. Defaults to True.
+
+        Returns:
+            List[Any]: A sorted list of observer entries that match the specified criteria.
+        """
+        observers: Set[Tuple[Callable, Observable.ObserverEvent, Observable.ObserverPriority, bool]] \
+            = set(super().get_observer_entries(flags, on_transaction_end, False))
+        if self.__parent is not None:
+            observers.update(self.__parent.get_observer_entries(flags, on_transaction_end, False))
+        if storted:
+            return sorted(observers, key=lambda entry: int(entry[2]))
+        return list(observers)
 
     @property
     def name(self) -> str:
@@ -86,7 +113,7 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
         return self.__value
 
     @property
-    def unit(self) -> Optional[str]:
+    def unit(self) -> Optional[GenericUnit]:
         """
         Get the si-unit of the attribute.
 
@@ -96,10 +123,18 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
         return self.__unit
 
     def _set_value(self, value: Optional[Any], measured: Optional[datetime] = None, unit: Optional[GenericUnit] = None) -> None:
+        flags: Observable.ObserverEvent = Observable.ObserverEvent.NONE
         now: datetime = datetime.now()
-        self.last_updated_local = now
-        self.last_updated = measured or now
+        if self.last_updated_local != now:
+            flags |= Observable.ObserverEvent.UPDATED
+            self.last_updated_local = now
+        if measured and self.last_updated != measured:
+            flags |= Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT
+            self.last_updated = measured or now
+        else:
+            self.last_updated = now
         if self.__value != value:
+            flags |= Observable.ObserverEvent.VALUE_CHANGED
             self.__value = value
             self.last_changed_local = now
             self.last_changed = measured or now
@@ -110,6 +145,7 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
                 self.enabled = False
         if self.__unit != unit:
             self.__unit = unit
+        self.notify(flags)
 
     @value.setter
     def value(self, new_value) -> None:
@@ -130,8 +166,13 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
 
     @enabled.setter
     def enabled(self, set_enabled: bool) -> None:
-        self.__enabled: bool = set_enabled
-        # if there is a parent and it is not yet enabled, enable it
+        if set_enabled and not self.__enabled:
+            self.__enabled = set_enabled
+            self.notify(Observable.ObserverEvent.ENABLED)
+        elif not set_enabled and self.__enabled:
+            self.__enabled = set_enabled
+            self.notify(Observable.ObserverEvent.DISABLED)
+        # Propagate the enabled state to the parent if it exists
         if set_enabled and self.__parent is not None:
             self.__parent.enabled = set_enabled
 
@@ -241,6 +282,12 @@ class ChangeableAttribute(GenericAttribute):
     This class inherits from `GenericAttribute` and serves as a marker for attributes
     that can be changed.
     """
+    @GenericAttribute.value.setter
+    def value(self, new_value) -> None:
+        """
+        Setting the value directly.
+        """
+        self._set_value(new_value)
 
 
 class BooleanAttribute(GenericAttribute):
@@ -259,7 +306,7 @@ class EnumAttribute(GenericAttribute):
         super().__init__(name, parent, value, None)
 
     def __str__(self) -> str:
-        return f"{self.name}: {self.value.value}"
+        return f"{self.name}: {self.value.value if self.value else None}"
 
 
 class StringAttribute(GenericAttribute):
