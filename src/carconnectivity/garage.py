@@ -31,6 +31,21 @@ class Garage(GenericObject):
         Returns:
             None
         """
+        if vehicle_id in self._vehicles:
+            raise ValueError(f'Vehicle with ID {vehicle_id} already exists in the garage.')
+        self._vehicles[vehicle_id] = vehicle
+
+    def replace_vehicle(self, vehicle_id: str, vehicle: GenericVehicle) -> None:
+        """
+        Replaces a vehicle in the garage.
+
+        Args:
+            vehicle_id (str): The unique identifier of the vehicle.
+            vehicle (GenericVehicle): The vehicle object to be added.
+
+        Returns:
+            None
+        """
         self._vehicles[vehicle_id] = vehicle
 
     def remove_vehicle(self, vehicle_id: str) -> None:
