@@ -7,12 +7,14 @@ import pkgutil
 
 import json
 import logging
+import os
 
 import carconnectivity_connectors
 import carconnectivity_plugins
 
 from carconnectivity.objects import GenericObject
 from carconnectivity.garage import Garage
+from carconnectivity.util import ExtendedEncoder
 
 if TYPE_CHECKING:
     from typing import Dict, List, Any, Optional, Iterator
@@ -51,7 +53,7 @@ class CarConnectivity(GenericObject):
         connectors (List[BaseConnector]): List of connector instances.
         garage (Garage): Instance of the Garage class.
     """
-    def __init__(self, config: Dict, tokenstore_file: Optional[str] = None) -> None:
+    def __init__(self, config: Dict, tokenstore_file: Optional[str] = None, cache_file: Optional[str] = None) -> None:
         """
         Initialize the CarConnectivity object.
 
@@ -67,6 +69,7 @@ class CarConnectivity(GenericObject):
         self.__cache: Dict[str, Any] = {}
         self.__tokenstore: Dict[str, Any] = {}
         self.__tokenstore_file: Optional[str] = tokenstore_file
+        self.__cache_file: Optional[str] = cache_file
 
         self.config: Dict[Any, Any] = config
         self.connectors: List[BaseConnector] = []
@@ -85,6 +88,20 @@ class CarConnectivity(GenericObject):
                 self.__tokenstore = {}
         else:
             self.__tokenstore = {}
+
+        # Fill Cache
+        if self.__cache_file is not None:
+            LOG.info('Reading cachefile %s', cache_file)
+            try:
+                with open(self.__cache_file, 'r', encoding='utf8') as file:
+                    self.__cache = json.load(file)
+            except json.decoder.JSONDecodeError:
+                LOG.error('Cachefile %s seems corrupted will delete it and try to create a new one. '
+                          'If this problem persists please check if a problem with your disk exists.', self.__cache_file)
+                os.remove(self.__cache_file)
+                self.__cache = {}
+            except FileNotFoundError:
+                self.__cache = {}
 
         if 'carConnectivity' not in config:
             raise ValueError("Invalid configuration: 'carConnectivity' is missing")
@@ -135,6 +152,12 @@ class CarConnectivity(GenericObject):
                 LOG.info('Writing tokenstore to file %s', self.__tokenstore_file)
             except ValueError as err:  # pragma: no cover
                 LOG.info('Could not write tokenstore to file %s (%s)', self.__tokenstore_file, err)
+
+        # Persist cache
+        if self.__cache and self.__cache_file:
+            LOG.info('Writing cachefile %s', self.__cache_file)
+            with open(self.__cache_file, 'w', encoding='utf8') as file:
+                json.dump(self.__cache, file, cls=ExtendedEncoder)
 
     def shutdown(self) -> None:
         """

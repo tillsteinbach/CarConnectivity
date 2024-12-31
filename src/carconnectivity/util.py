@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 
 import logging
 import re
+import json
+from enum import Enum
 from datetime import datetime
 
 if TYPE_CHECKING:
@@ -115,3 +117,24 @@ class DuplicateFilter(logging.Filter):
             # store the message and the time it was logged
             self._last_log[record.module] = {record.levelno: ((record.msg, record.args), now)}
         return True
+
+
+class ExtendedEncoder(json.JSONEncoder):
+    """Datetime object encode used for json serialization"""
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
+    def default(self, o: Any) -> str:
+        """Serialize datetime object to isodate string
+
+        Args:
+            o (datetime): datetime object
+
+        Returns:
+            str: object represented as isoformat string
+        """
+        if isinstance(o, datetime):
+            return o.isoformat()
+        if isinstance(o, Enum):
+            return o.value
+        return super().default(o)

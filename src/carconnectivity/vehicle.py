@@ -9,6 +9,7 @@ from carconnectivity.attributes import StringAttribute, EnumAttribute, RangeAttr
 from carconnectivity.doors import Doors
 from carconnectivity.windows import Windows
 from carconnectivity.lights import Lights
+from carconnectivity.software import Software
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -34,16 +35,29 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             super().__init__(origin=origin)
             self.delay_notifications = True
             self.vin: StringAttribute = origin.vin
+            self.vin.parent = self
             self.name: StringAttribute = origin.name
+            self.name.parent = self
             self.model: StringAttribute = origin.model
+            self.model.parent = self
             self.type: EnumAttribute = origin.type
+            self.type.parent = self
             self.license_plate: StringAttribute = origin.license_plate
+            self.license_plate.parent = self
             self.odometer: RangeAttribute = origin.odometer
+            self.odometer.parent = self
             self.total_range: RangeAttribute = origin.total_range
-            self.drives: dict[str, GenericDrive] = origin.drives
+            self.total_range.parent = self
+            #self.drives: dict[str, GenericDrive] = origin.drives
+            #self.drives.parent = self
             self.doors: Doors = origin.doors
+            self.doors.parent = self
             self.windows: Windows = origin.windows
+            self.windows.parent = self
             self.lights: Lights = origin.lights
+            self.lights.parent = self
+            self.software: Software = origin.software
+            self.software.parent = self
             self.enabled = origin.enabled
             self.managing_connectors = origin.managing_connectors
         else:
@@ -60,10 +74,11 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.license_plate = StringAttribute("license_plate", self)
             self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=None)
             self.total_range: RangeAttribute = RangeAttribute(name="total_range", parent=self, value=None, unit=None)
-            self.drives: dict[str, GenericDrive] = {}
+            #self.drives: dict[str, GenericDrive] = {}
             self.doors: Doors = Doors(vehicle=self)
             self.windows: Windows = Windows(vehicle=self)
             self.lights: Lights = Lights(vehicle=self)
+            self.software: Software = Software(vehicle=self)
 
             self.managing_connectors: list[Optional[BaseConnector]] = []
             if managing_connector is not None:
