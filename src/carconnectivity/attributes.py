@@ -186,6 +186,19 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         """
         return self.__parent
 
+    @parent.setter
+    def parent(self, parent: Optional[GenericObject]) -> None:
+        """
+        Sets the parent object of the current attribute.
+
+        Args:
+            parent (Optional[GenericObject]): The parent object to set.
+
+        Returns:
+            None
+        """
+        self.__parent = parent
+
     def __str__(self) -> str:
         unit_str = self.__unit.value if self.__unit else ""
         return f"{self.__name}: {self.__value}{unit_str}"
