@@ -148,6 +148,9 @@ class GenericObject:
         self.__enabled: bool = set_enabled
         if set_enabled and self.__parent is not None:
             self.__parent.enabled = set_enabled
+        if not set_enabled:
+            for child in self.__children:
+                child.enabled = set_enabled
 
     def get_by_path(self, address_string: str) -> Union[GenericObject, GenericAttribute, Literal[False]]:
         """

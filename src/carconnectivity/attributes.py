@@ -104,7 +104,10 @@ class GenericAttribute:  # pylint: disable=too-many-instance-attributes
             self.last_changed_local = now
             self.last_changed = measured or now
 
-            self.enabled = True
+            if value is not None:
+                self.enabled = True
+            else:
+                self.enabled = False
         if self.__unit != unit:
             self.__unit = unit
 

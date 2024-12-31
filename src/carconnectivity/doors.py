@@ -1,4 +1,4 @@
-"""Module for vehicle classes."""
+"""Module for door classes."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -15,13 +15,6 @@ if TYPE_CHECKING:
 class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
     A class to represent all doors in the vehcile.
-
-    Attributes:
-    -----------
-    vin : StringAttribute
-        The vehicle identification number (VIN) of the vehicle.
-    license_plate : StringAttribute
-        The license plate of the vehicle.
     """
     def __init__(self, vehicle: Optional[GenericVehicle] = None) -> None:
         if vehicle is None:
@@ -33,13 +26,14 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
 
     def __str__(self) -> str:
         return_string: str = 'Doors:'
-        if self.open_state.enabled:
+        if self.open_state.enabled and self.open_state.value is not None:
             return_string += f' {self.open_state.value.value}'
-        if self.lock_state.enabled:
+        if self.lock_state.enabled and self.lock_state.value is not None:
             return_string += f' {self.lock_state.value.value}'
         return_string += '\n'
-        for door in self.doors.values():
-            return_string += f'\t{door}'
+        for door in self.doors.values() if self.doors is not None else []:
+            if door is not None and door.enabled:
+                return_string += f'\t{door}'
         return return_string
 
     class OpenState(Enum,):
@@ -73,9 +67,9 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
 
         def __str__(self) -> str:
             return_string: str = f'Door {self.door_id}:'
-            if self.open_state.enabled:
+            if self.open_state.enabled and self.open_state.value is not None:
                 return_string += f' {self.open_state.value.value}'
-            if self.lock_state.enabled:
+            if self.lock_state.enabled and self.lock_state.value is not None:
                 return_string += f' {self.lock_state.value.value}'
             return_string += '\n'
             return return_string

@@ -7,6 +7,8 @@ from enum import Enum
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import StringAttribute, EnumAttribute, RangeAttribute
 from carconnectivity.doors import Doors
+from carconnectivity.windows import Windows
+from carconnectivity.lights import Lights
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -39,6 +41,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.total_range: RangeAttribute = origin.total_range
             self.drives: dict[str, GenericDrive] = origin.drives
             self.doors: Doors = origin.doors
+            self.windows: Windows = origin.windows
+            self.lights: Lights = origin.lights
             self.enabled = origin.enabled
             self.managing_connectors = origin.managing_connectors
         else:
@@ -56,6 +60,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.total_range: RangeAttribute = RangeAttribute(name="total_range", parent=self, value=None, unit=None)
             self.drives: dict[str, GenericDrive] = {}
             self.doors: Doors = Doors(vehicle=self)
+            self.windows: Windows = Windows(vehicle=self)
+            self.lights: Lights = Lights(vehicle=self)
 
             self.managing_connectors: list[Optional[BaseConnector]] = []
             if managing_connector is not None:
@@ -92,6 +98,10 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             return_string += f'{self.total_range}\n'
         if self.doors.enabled:
             return_string += f'{self.doors}\n'
+        if self.windows.enabled:
+            return_string += f'{self.windows}\n'
+        if self.lights.enabled:
+            return_string += f'{self.lights}\n'
         return return_string
 
     class Type(Enum,):
