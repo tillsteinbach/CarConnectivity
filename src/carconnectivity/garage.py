@@ -1,4 +1,9 @@
-""" Module containing the Garage class. """
+"""
+Module containing the Garage class.
+
+This module defines the Garage class, which represents a garage that can hold multiple vehicles.
+The Garage class provides methods to add, replace, remove, and retrieve vehicles, as well as list all vehicles and their VINs.
+"""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -84,10 +89,10 @@ class Garage(GenericObject):
 
     def list_vehicle_vins(self) -> List[str]:
         """
-        Returns a list of all vehicle vins of vehciles in the garage.
+        Returns a list of all vehicle vins of vehicles in the garage.
 
         Returns:
-            list[GenericVehicle]: A list containing all the vehicle vins.
+            list[str]: A list containing all the vehicle vins.
         """
         return list(self._vehicles.keys())
 

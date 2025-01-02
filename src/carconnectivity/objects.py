@@ -9,13 +9,13 @@ Classes:
     GenericObject: A class to represent a generic object in a hierarchical structure.
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Dict, TypeVar
+from typing import TYPE_CHECKING
 
 from carconnectivity.attributes import GenericAttribute
 from carconnectivity.observable import Observable
 
 if TYPE_CHECKING:
-    from typing import Optional, Union, Literal, Callable, Tuple, Set
+    from typing import Optional, Union, Literal, Callable, Tuple, Set, List
 
 
 class GenericObject(Observable):
@@ -53,11 +53,7 @@ class GenericObject(Observable):
                 parent.children.append(self)
             self.__children: List[Union[GenericObject, GenericAttribute]] = []
 
-    def __del__(self) -> None:
-        if self.enabled:
-            self.enabled = False
-
-    def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, storted=True) \
+    def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, entries_sorted=True) \
             -> List[Tuple[Callable, Observable.ObserverEvent, Observable.ObserverPriority, bool]]:
         """
         Retrieve a sorted list of observer entries based on the specified flags and transaction end condition.
@@ -65,7 +61,7 @@ class GenericObject(Observable):
         Args:
             flags (Observable.ObserverEvent): The event flags to filter observers.
             on_transaction_end (bool, optional): If True, only include observers that should be notified on transaction end. Defaults to False.
-            sorted (bool, optional): If True, the list of observer entries will be sorted by priority. Defaults to True.
+            entries_sorted (bool, optional): If True, the list of observer entries will be sorted by priority. Defaults to True.
 
         Returns:
             List[Any]: A sorted list of observer entries that match the specified criteria.
@@ -74,8 +70,10 @@ class GenericObject(Observable):
             = set(super().get_observer_entries(flags, on_transaction_end, False))
         if self.__parent is not None:
             observers.update(self.__parent.get_observer_entries(flags, on_transaction_end, False))
-        if storted:
-            return sorted(observers, key=lambda entry: int(entry[2]))
+        if entries_sorted:
+            def get_priority(entry) -> int:
+                return int(entry[2])
+            return sorted(observers, key=get_priority)
         return list(observers)
 
     def transaction_end(self) -> None:
@@ -122,7 +120,9 @@ class GenericObject(Observable):
         Returns:
             None
         """
+        self.__parent.children.remove(self)
         self.__parent = parent
+        parent.children.append(self)
 
     @property
     def children(self) -> List[Union[GenericObject, GenericAttribute]]:
@@ -159,9 +159,9 @@ class GenericObject(Observable):
         Returns:
             str: The absolute path of the current object.
         """
-        address = ''
+        address: str = ''
         if self.__parent is not None:
-            address: str = f'{self.__parent.get_absolute_path()}/'
+            address = f'{self.__parent.get_absolute_path()}/'
         address += f'{self.__id}'
         return address
 
@@ -198,20 +198,30 @@ class GenericObject(Observable):
 
     @enabled.setter
     def enabled(self, set_enabled: bool) -> None:
-        # Propagate the disabled state down to the children first to have right order of notifications
-        if not set_enabled:
+
+        if set_enabled:
+            # if the object is being enabled, we need to enable the parent first
+            if self.__parent is not None:
+                self.__parent.enabled = True
+            # only notify if the object was not enabled before
+            if not self.__enabled:
+                self.__enabled = True
+                self.notify(Observable.ObserverEvent.ENABLED)
+        else:
+            # Propagate the disabled state down to the children first to have right order of notifications
             for child in self.__children:
                 if child.enabled:
-                    child.enabled = set_enabled
-        if set_enabled and not self.__enabled:
-            self.__enabled = set_enabled
-            self.notify(Observable.ObserverEvent.ENABLED)
-        elif not set_enabled and self.__enabled:
-            self.__enabled = set_enabled
-            self.notify(Observable.ObserverEvent.DISABLED)
-        # Propagate the enabled state to the parent if it exists last to have right order of notifications
-        if set_enabled and self.__parent is not None:
-            self.__parent.enabled = set_enabled
+                    child.enabled = False
+
+            # only notify if the object was enabled before
+            if self.__enabled:
+                self.__enabled = False
+                self.notify(Observable.ObserverEvent.DISABLED)
+
+            # Disable parent only if all children are disabled
+            if self.__parent is not None and \
+                    all(not child.enabled for child in self.__parent.children):
+                self.__parent.enabled = False
 
     def get_by_path(self, address_string: str) -> Union[GenericObject, GenericAttribute, Literal[False]]:
         """

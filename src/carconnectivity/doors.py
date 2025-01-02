@@ -8,13 +8,13 @@ from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import EnumAttribute
 
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Dict
     from carconnectivity.vehicle import GenericVehicle
 
 
 class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
-    A class to represent all doors in the vehcile.
+    A class to represent all doors in the vehicle.
     """
     def __init__(self, vehicle: Optional[GenericVehicle] = None) -> None:
         if vehicle is None:
@@ -22,7 +22,7 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
         super().__init__(object_id='doors', parent=vehicle)
         self.open_state = EnumAttribute("open_state", self)
         self.lock_state = EnumAttribute("lock_state", self)
-        self.doors: dict[str, Doors.Door] = {}
+        self.doors: Dict[str, Doors.Door] = {}
 
     def __str__(self) -> str:
         return_string: str = 'Doors:'
@@ -31,12 +31,12 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
         if self.lock_state.enabled and self.lock_state.value is not None:
             return_string += f' {self.lock_state.value.value}'
         return_string += '\n'
-        for door in self.doors.values() if self.doors is not None else []:
+        for door in self.doors.values():
             if door is not None and door.enabled:
                 return_string += f'\t{door}'
         return return_string
 
-    class OpenState(Enum,):
+    class OpenState(Enum):
         """
         Enum for door open state.
         """

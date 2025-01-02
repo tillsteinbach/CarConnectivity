@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class Lights(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
-    A class to represent all lights in the vehcile.
+    A class to represent all lights in the vehicle.
     """
     def __init__(self, vehicle: Optional[GenericVehicle] = None) -> None:
         if vehicle is None:
@@ -28,12 +28,12 @@ class Lights(GenericObject):  # pylint: disable=too-many-instance-attributes
         if self.light_state.enabled and self.light_state.value is not None:
             return_string += f' {self.light_state.value.value}'
         return_string += '\n'
-        for light in self.lights.values() if self.lights is not None else []:
+        for light in self.lights.values():
             if light is not None and light.enabled:
                 return_string += f'\t{light}'
         return return_string
 
-    class LightState(Enum,):
+    class LightState(Enum):
         """
         Enum for light state.
         """

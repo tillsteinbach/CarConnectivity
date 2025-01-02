@@ -15,6 +15,7 @@ import carconnectivity_plugins
 from carconnectivity.objects import GenericObject
 from carconnectivity.garage import Garage
 from carconnectivity.util import ExtendedEncoder
+from carconnectivity.errors import ConfigurationError
 
 if TYPE_CHECKING:
     from typing import Dict, List, Any, Optional, Iterator
@@ -51,6 +52,7 @@ class CarConnectivity(GenericObject):
     Attributes:
         config (Dict): Configuration dictionary for car connectivity.
         connectors (List[BaseConnector]): List of connector instances.
+        plugins (List[BasePlugin]): List of plugin instances.
         garage (Garage): Instance of the Garage class.
     """
     def __init__(self, config: Dict, tokenstore_file: Optional[str] = None, cache_file: Optional[str] = None) -> None:
@@ -64,7 +66,7 @@ class CarConnectivity(GenericObject):
         Raises:
             ValueError: If the configuration is invalid.
         """
-        super().__init__('')
+        super().__init__(object_id='', parent=None)
         self.delay_notifications = True
         self.__cache: Dict[str, Any] = {}
         self.__tokenstore: Dict[str, Any] = {}
@@ -75,6 +77,27 @@ class CarConnectivity(GenericObject):
         self.connectors: List[BaseConnector] = []
         self.plugins: List[BasePlugin] = []
         self.garage: Garage = Garage(self)
+
+        if 'carConnectivity' not in config:
+            raise ConfigurationError("Invalid configuration: 'carConnectivity' is missing")
+        # Configure logging
+        if 'log_level' in config['carConnectivity'] and config['carConnectivity']['log_level'] is not None:
+            config['carConnectivity']['log_level'] = config['carConnectivity']['log_level'].upper()
+            if config['carConnectivity']['log_level'] in logging.getLevelNamesMapping():
+                LOG.setLevel(config['carConnectivity']['log_level'])
+            else:
+                raise ConfigurationError(f'Invalid log level: "{config["carConnectivity"]["log_level"]}" not in {list(logging.getLevelNamesMapping().keys())}')
+        if 'log_format' in config['carConnectivity'] and config['carConnectivity']['log_format'] is not None:
+            log_format: str = config['carConnectivity']['log_format']
+        else:
+            log_format: str = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(message)s'
+        formatter = logging.Formatter(log_format)
+        if 'log_date_format' in config['carConnectivity'] and config['carConnectivity']['log_date_format'] is not None:
+            formatter.datefmt = config['carConnectivity']['log_date_format']
+        else:
+            formatter.datefmt = '%Y-%m-%dT%H:%M:%S%z'
+        for handler in logging.getLogger().handlers:
+            handler.setFormatter(formatter)
 
         if self.__tokenstore_file is not None:
             try:
@@ -103,14 +126,15 @@ class CarConnectivity(GenericObject):
             except FileNotFoundError:
                 self.__cache = {}
 
-        if 'carConnectivity' not in config:
-            raise ValueError("Invalid configuration: 'carConnectivity' is missing")
         if 'connectors' in config['carConnectivity']:
             for connector_config in config['carConnectivity']['connectors']:
                 if 'type' not in connector_config:
-                    raise ValueError("Invalid configuration: 'type' is missing in connector")
+                    raise ConfigurationError("Invalid configuration: 'type' is missing in connector")
                 if f"carconnectivity_connectors.{connector_config['type']}" not in discovered_connectors:
-                    raise ValueError(f"Invalid configuration: connector type '{connector_config['type']}' is not known")
+                    raise ConfigurationError(f"Invalid configuration: connector type '{connector_config['type']}' is not known")
+                if 'disabled' in connector_config and connector_config['disabled']:
+                    LOG.info('Skipping disabled connector %s', connector_config['type'])
+                    continue
                 connector_class = getattr(discovered_connectors['carconnectivity_connectors.' + connector_config['type']], 'Connector')
                 connector: BaseConnector = connector_class(car_connectivity=self, config=connector_config['config'])
                 self.connectors.append(connector)
@@ -118,9 +142,12 @@ class CarConnectivity(GenericObject):
         if 'plugins' in config['carConnectivity']:
             for plugin_config in config['carConnectivity']['plugins']:
                 if 'type' not in plugin_config:
-                    raise ValueError("Invalid configuration: 'type' is missing in plugin")
+                    raise ConfigurationError("Invalid configuration: 'type' is missing in plugin")
                 if f"carconnectivity_plugins.{plugin_config['type']}" not in discovered_plugins:
-                    raise ValueError(f"Invalid configuration: plugin type '{plugin_config['type']}' is not known")
+                    raise ConfigurationError(f"Invalid configuration: plugin type '{plugin_config['type']}' is not known")
+                if 'disabled' in plugin_config and plugin_config['disabled']:
+                    LOG.info('Skipping disabled plugin %s', plugin_config['type'])
+                    continue
                 plugin_class = getattr(discovered_plugins['carconnectivity_plugins.' + plugin_config['type']], 'Plugin')
                 plugin: BasePlugin = plugin_class(car_connectivity=self, config=plugin_config['config'])
                 self.plugins.append(plugin)
@@ -147,7 +174,7 @@ class CarConnectivity(GenericObject):
         """
         if self.__tokenstore and self.__tokenstore_file:
             try:
-                with open(self.__tokenstore_file, 'w', encoding='utf8') as file:
+                with open(file=self.__tokenstore_file, mode='w', encoding='utf8') as file:
                     json.dump(self.__tokenstore, file)
                 LOG.info('Writing tokenstore to file %s', self.__tokenstore_file)
             except ValueError as err:  # pragma: no cover
@@ -156,7 +183,7 @@ class CarConnectivity(GenericObject):
         # Persist cache
         if self.__cache and self.__cache_file:
             LOG.info('Writing cachefile %s', self.__cache_file)
-            with open(self.__cache_file, 'w', encoding='utf8') as file:
+            with open(file=self.__cache_file, mode='w', encoding='utf8') as file:
                 json.dump(self.__cache, file, cls=ExtendedEncoder)
 
     def shutdown(self) -> None:
@@ -191,7 +218,7 @@ class CarConnectivity(GenericObject):
         """
         return self.__cache
 
-    def get_garage(self) -> Garage | None:
+    def get_garage(self) -> Optional[Garage]:
         """
         Retrieve the garage associated with the car connectivity.
 

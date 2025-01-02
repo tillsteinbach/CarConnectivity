@@ -1,4 +1,6 @@
-"""Module for information about the vehicle software"""
+"""
+Module for information about the vehicle software
+"""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 

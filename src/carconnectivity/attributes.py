@@ -24,9 +24,9 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         value (Optional[Any]): The value of the attribute.
         unit (Optional[str]): The unit of the attribute value.
         enabled (bool): A flag indicating whether the attribute is enabled.
-        last_changed (Optional[datetime]): The last time the attribute value was changed in the vechile.
+        last_changed (Optional[datetime]): The last time the attribute value was changed in the vehicle.
         last_changed_local (Optional[datetime]): The last time the attribute value was changed in carconnectivity.
-        last_updated (Optional[datetime]): The last time the attribute value was updated in the vehcile.
+        last_updated (Optional[datetime]): The last time the attribute value was updated in the vehicle.
         last_updated_local (Optional[datetime]): The last time the attribute value was updated in carconnectivity.
     """
 
@@ -61,7 +61,7 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         if self.enabled:
             self.enabled = False
 
-    def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, storted=True) \
+    def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, entries_sorted=True) \
             -> List[Tuple[Callable, Observable.ObserverEvent, Observable.ObserverPriority, bool]]:
         """
         Retrieve a sorted list of observer entries based on the specified flags and transaction end condition.
@@ -69,7 +69,7 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         Args:
             flags (Observable.ObserverEvent): The event flags to filter observers.
             on_transaction_end (bool, optional): If True, only include observers that should be notified on transaction end. Defaults to False.
-            storted (bool, optional): If True, the list of observers will be sorted by priority. Defaults to True.
+            entries_sorted (bool, optional): If True, the list of observers will be sorted by priority. Defaults to True.
 
         Returns:
             List[Any]: A sorted list of observer entries that match the specified criteria.
@@ -78,8 +78,10 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
             = set(super().get_observer_entries(flags, on_transaction_end, False))
         if self.__parent is not None:
             observers.update(self.__parent.get_observer_entries(flags, on_transaction_end, False))
-        if storted:
-            return sorted(observers, key=lambda entry: int(entry[2]))
+        if entries_sorted:
+            def get_priority(entry) -> int:
+                return int(entry[2])
+            return sorted(observers, key=get_priority)
         return list(observers)
 
     @property
@@ -118,21 +120,52 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         Get the si-unit of the attribute.
 
         Returns:
-            Optional[str]: The unit of the attribute if set, otherwise None.
+            Optional[GenericUnit]: The unit of the attribute if set, otherwise None.
         """
         return self.__unit
 
+    def _set_unit(self, unit: Optional[GenericUnit]) -> None:
+        """
+        Set the unit of the attribute.
+
+        Args:
+            unit (Optional[GenericUnit]): The unit to set.
+
+        Returns:
+            None
+        """
+        self.__unit = unit
+
     def _set_value(self, value: Optional[Any], measured: Optional[datetime] = None, unit: Optional[GenericUnit] = None) -> None:
+        """
+        Set the value of the attribute.
+
+        Will set last_updated_local to the current time and set the UPDATED flag for any notifications.
+        Will set last_updated to the measured time if it is given, otherwise will set to now.
+        Will set UPDATED_NEW_MEASUREMENT flag if the measured time is different than last_updated.
+        Will set VALUE_CHANGED flag if the value or unit is different than the current value or unit.
+
+        Args:
+            value (Optional[Any]): The value to set.
+            measured (Optional[datetime], optional): The time the value was measured. Defaults to None.
+            unit (Optional[GenericUnit], optional): The unit of the value. Defaults to None.
+
+        Returns:
+            None
+        """
         flags: Observable.ObserverEvent = Observable.ObserverEvent.NONE
         now: datetime = datetime.now()
+        # Value was updated
         if self.last_updated_local != now:
             flags |= Observable.ObserverEvent.UPDATED
             self.last_updated_local = now
+        # Value was measured
         if measured and self.last_updated != measured:
             flags |= Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT
             self.last_updated = measured or now
         else:
             self.last_updated = now
+        # Value was changed
         if self.__value != value:
             flags |= Observable.ObserverEvent.VALUE_CHANGED
             self.__value = value
@@ -143,7 +176,9 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
                 self.enabled = True
             else:
                 self.enabled = False
+        # Unit was changed
         if self.__unit != unit:
+            flags |= Observable.ObserverEvent.VALUE_CHANGED
             self.__unit = unit
         self.notify(flags)
 
@@ -166,28 +201,36 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
 
     @enabled.setter
     def enabled(self, set_enabled: bool) -> None:
-        if set_enabled and not self.__enabled:
-            self.__enabled = set_enabled
-            self.notify(Observable.ObserverEvent.ENABLED)
-        elif not set_enabled and self.__enabled:
-            self.__enabled = set_enabled
-            self.notify(Observable.ObserverEvent.DISABLED)
-        # Propagate the enabled state to the parent if it exists
-        if set_enabled and self.__parent is not None:
-            self.__parent.enabled = set_enabled
+        if set_enabled:
+            # if the object is being enabled, we need to enable the parent first
+            if self.__parent is not None:
+                self.__parent.enabled = True
+            # only notify if the object was not enabled before
+            if not self.__enabled:
+                self.__enabled = True
+                self.notify(Observable.ObserverEvent.ENABLED)
+        else:
+            # only notify if the object was enabled before
+            if self.__enabled:
+                self.__enabled = False
+                self.notify(Observable.ObserverEvent.DISABLED)
+
+            # Disable parent only if all children are disabled
+            if all(not child.enabled for child in self.__parent.children):
+                self.__parent.enabled = False
 
     @property
-    def parent(self) -> Optional[GenericObject]:
+    def parent(self) -> GenericObject:
         """
         Returns the parent object of the current attribute.
 
         Returns:
-            Optional[GenericObject]: The parent object if it exists, otherwise None.
+            GenericObject: The parent object.
         """
         return self.__parent
 
     @parent.setter
-    def parent(self, parent: Optional[GenericObject]) -> None:
+    def parent(self, parent: GenericObject) -> None:
         """
         Sets the parent object of the current attribute.
 
@@ -265,10 +308,10 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         Returns:
             str: The absolute path of the current object.
         """
-        address = ''
+        address: str = ''
         # if there is a parent, we get the parent's address
         if self.__parent is not None:
-            address: str = f'{self.__parent.get_absolute_path()}/'
+            address = f'{self.__parent.get_absolute_path()}/'
         # we append the current object's id
         address += f'{self.id}'
         return address

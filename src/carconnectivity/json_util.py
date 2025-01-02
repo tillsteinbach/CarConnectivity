@@ -1,4 +1,4 @@
-"""Module containing c"""
+"""Module containing custom json encoders for the carconnectivity package."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -12,12 +12,16 @@ if TYPE_CHECKING:
 
 
 class ExtendedEncoder(json.JSONEncoder):
-    """Datetime object encode used for json serialization"""
+    """Custom JSON encoder that serializes datetime objects to ISO 8601 format and Enum values to their corresponding values.
+
+    This encoder extends the default JSONEncoder to handle additional types such as datetime and Enum.
+    """
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
     def default(self, o: Any) -> str:
-        """Serialize datetime object to isodate string
+        """
+        Serialize datetime object to isodate string and Enum values to their corresponding values
 
         Args:
             o (datetime): datetime object

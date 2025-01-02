@@ -1,4 +1,9 @@
-"""Module for vehicle classes."""
+"""
+Module for vehicle classes.
+
+This module defines various classes representing different types of vehicles,
+including generic vehicles, electric vehicles, combustion vehicles, and hybrid vehicles.
+"""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -10,11 +15,13 @@ from carconnectivity.doors import Doors
 from carconnectivity.windows import Windows
 from carconnectivity.lights import Lights
 from carconnectivity.software import Software
+from carconnectivity.drive import Drives
+from carconnectivity.units import Length
 
 if TYPE_CHECKING:
     from typing import Optional
     from carconnectivity.garage import Garage
-    from carconnectivity.drive import GenericDrive
+
     from carconnectivity_connectors.base.connector import BaseConnector
 
 
@@ -46,10 +53,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.license_plate.parent = self
             self.odometer: RangeAttribute = origin.odometer
             self.odometer.parent = self
-            self.total_range: RangeAttribute = origin.total_range
-            self.total_range.parent = self
-            #self.drives: dict[str, GenericDrive] = origin.drives
-            #self.drives.parent = self
+            self.drives: Drives = origin.drives
+            self.drives.parent = self
             self.doors: Doors = origin.doors
             self.doors.parent = self
             self.windows: Windows = origin.windows
@@ -70,17 +75,16 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.vin = StringAttribute("vin", self, vin)
             self.name = StringAttribute("name", self)
             self.model = StringAttribute("model", self)
-            self.type = EnumAttribute("type", self, GenericVehicle.Type.UNKNOWN)
+            self.type = EnumAttribute("type", parent=self)
             self.license_plate = StringAttribute("license_plate", self)
-            self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=None)
-            self.total_range: RangeAttribute = RangeAttribute(name="total_range", parent=self, value=None, unit=None)
-            #self.drives: dict[str, GenericDrive] = {}
+            self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=Length.UNKNOWN)
+            self.drives: Drives = Drives(vehicle=self)
             self.doors: Doors = Doors(vehicle=self)
             self.windows: Windows = Windows(vehicle=self)
             self.lights: Lights = Lights(vehicle=self)
             self.software: Software = Software(vehicle=self)
 
-            self.managing_connectors: list[Optional[BaseConnector]] = []
+            self.managing_connectors: list[BaseConnector] = []
             if managing_connector is not None:
                 self.managing_connectors.append(managing_connector)
 
@@ -112,8 +116,6 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             return_string += f'{self.type}\n'
         if self.odometer.enabled:
             return_string += f'{self.odometer}\n'
-        if self.total_range.enabled:
-            return_string += f'{self.total_range}\n'
         if self.doors.enabled:
             return_string += f'{self.doors}\n'
         if self.windows.enabled:
@@ -122,7 +124,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             return_string += f'{self.lights}\n'
         return return_string
 
-    class Type(Enum,):
+    class Type(Enum):
         """
         Enum representing different types of cars.
         """
@@ -169,8 +171,6 @@ class HybridVehicle(ElectricVehicle, CombustionVehicle):
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
                  origin: Optional[GenericVehicle] = None) -> None:
         if origin is not None:
-            ElectricVehicle.__init__(self, origin=origin)
-            CombustionVehicle.__init__(self, origin=origin)
+            super().__init__(origin=origin)
         else:
-            ElectricVehicle.__init__(self, vin=vin, garage=garage, managing_connector=managing_connector)
-            CombustionVehicle.__init__(self, vin=vin, garage=garage, managing_connector=managing_connector)
+            super().__init__(vin=vin, garage=garage, managing_connector=managing_connector)

@@ -23,8 +23,7 @@ def robust_time_parse(time_string: str) -> datetime:
     seconds are padded to six digits if necessary.
 
     Args:
-        def robust_time_parse(time_string: str) -> datetime:
- (str): The time string to be parsed. Expected format is 'YYYY-MM-DDTHH:MM:SS.ssssss+HH:MM'
+        time_string (str): The time string to be parsed. Expected format is 'YYYY-MM-DDTHH:MM:SS.ssssss+HH:MM'
                           or 'YYYY-MM-DDTHH:MM:SS.ssssssZ'.
 
     Returns:
@@ -41,13 +40,13 @@ def robust_time_parse(time_string: str) -> datetime:
     return datetime.fromisoformat(time_string)
 
 
-def log_extra_keys(log: logging.log, where: str, dictionary: Dict[str, Any], allowed_keys: set[str] = None) -> None:
+def log_extra_keys(log: logging.Logger, where: str, dictionary: Dict[str, Any], allowed_keys: set[str] = None) -> None:
     """
     Logs a warning if there are any keys in the dictionary that are not in the allowed_keys set.
 
     Args:
         log (logging.log): The logger instance to use for logging warnings.
-        where (str): The location where the dictionary is coming from.
+        log (logging.Logger): The logger instance to use for logging warnings.
         dictionary (Dict[str, Any]): The dictionary to check for extra keys.
         allowed_keys (set[str]): The set of keys that are allowed in the dictionary.
 
@@ -61,26 +60,32 @@ def log_extra_keys(log: logging.log, where: str, dictionary: Dict[str, Any], all
         log.info(f"Unexpected keys found in {where}: {extra_keys}")
 
 
+def config_remove_credentials(config: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Removes any credentials from the configuration dictionary.
+
+    Args:
+        config (Dict[str, Any]): The configuration dictionary to remove credentials from.
+
+    Returns:
+        Dict[str, Any]: The configuration dictionary with credentials removed.
+    """
+    def __recursive_remove_credentials(config: Dict[str, Any]) -> Dict[str, Any]:
+        for key in config:
+            if isinstance(config[key], dict):
+                config[key] = __recursive_remove_credentials(config[key])
+            if 'password' in key.lower() or 'token' in key.lower():
+                config[key] = '***'
+        return config
+    config_copy: dict[str, Any] = config.copy()
+    __recursive_remove_credentials(config_copy)
+    return config_copy
+
+
 # pylint: disable=too-few-public-methods
 class DuplicateFilter(logging.Filter):
     """
     A logging filter that suppresses duplicate log messages from the same module within a specified time frame.
-
-    Attributes:
-        do_not_filter_above (int): Log level above which messages should not be filtered.
-        filter_reset_seconds (int): Time in seconds after which duplicate log messages are allowed again.
-
-        __init__(do_not_filter_above=logging.ERROR, filter_reset_seconds: int = 0, name: str = ''):
-            Initializes the DuplicateFilter with the specified parameters.
-
-            Parameters:
-                do_not_filter_above (int): Log level above which messages should not be filtered.
-                filter_reset_seconds (int): Time in seconds after which duplicate log messages are allowed again.
-                name (str): The name of the filter.
-            Initializes the DuplicateFilter with the specified parameters.
-
-        filter(record) -> bool:
-            Determines if the log record should be logged or suppressed based on the duplicate filter criteria.
     """
 
     def __init__(self, do_not_filter_above=logging.ERROR, filter_reset_seconds: int = 0, name: str = '') -> None:

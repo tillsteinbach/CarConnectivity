@@ -1,7 +1,19 @@
 """Module containing custom exceptions for the carconnectivity package."""
 
 
-class RetrievalError(Exception):
+class CarConnectivityError(Exception):
+    """
+    Base exception class for the carconnectivity package.
+    """
+
+
+class ConfigurationError(CarConnectivityError):
+    """
+    Exception raised for problems with the configuration.
+    """
+
+
+class RetrievalError(CarConnectivityError):
     """
     Exception raised for errors that occur during data retrieval.
     """
@@ -16,7 +28,7 @@ class TooManyRequestsError(RetrievalError):
     """
 
 
-class SetterError(Exception):
+class SetterError(CarConnectivityError):
     """
     Exception raised for errors in the setter methods.
     """
@@ -28,7 +40,7 @@ class ControlError(SetterError):
     """
 
 
-class AuthenticationError(Exception):
+class AuthenticationError(CarConnectivityError):
     """
     Exception raised for errors in the authentication process.
     """
@@ -44,7 +56,7 @@ class TemporaryAuthenticationError(AuthenticationError):
     """
 
 
-class APICompatibilityError(Exception):
+class APICompatibilityError(CarConnectivityError):
     """
     Exception raised for errors in the API compatibility.
 
@@ -54,7 +66,7 @@ class APICompatibilityError(Exception):
     """
 
 
-class APIError(Exception):
+class APIError(CarConnectivityError):
     """
     Exception raised for errors that occur during API calls.
 

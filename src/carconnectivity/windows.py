@@ -8,32 +8,32 @@ from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import EnumAttribute
 
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Dict
     from carconnectivity.vehicle import GenericVehicle
 
 
 class Windows(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
-    A class to represent all windows in the vehcile.
+    A class to represent all windows in the vehicle.
     """
     def __init__(self, vehicle: Optional[GenericVehicle] = None) -> None:
         if vehicle is None:
             raise ValueError('Cannot create windows without vehicle')
         super().__init__(object_id='windows', parent=vehicle)
         self.open_state = EnumAttribute("open_state", self)
-        self.windows: dict[str, Windows.Window] = {}
+        self.windows: Dict[str, Windows.Window] = {}
 
     def __str__(self) -> str:
         return_string: str = 'Windows:'
         if self.open_state.enabled and self.open_state.value is not None:
             return_string += f' {self.open_state.value.value}'
         return_string += '\n'
-        for window in self.windows.values() if self.windows is not None else []:
+        for window in self.windows.values():
             if window is not None and window.enabled:
                 return_string += f'\t{window}'
         return return_string
 
-    class OpenState(Enum,):
+    class OpenState(Enum):
         """
         Enum for window open state.
         """

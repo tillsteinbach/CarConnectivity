@@ -1,5 +1,8 @@
 """
 This module provides the Observable class, which is a base class for objects that can be observed by other objects.
+
+The Observable class allows objects to be observed by other objects, enabling a publish-subscribe pattern.
+Observers can register to be notified of specific events, and the Observable class manages the notification process.
 """
 from __future__ import annotations
 from typing import TYPE_CHECKING
@@ -64,7 +67,7 @@ class Observable:
             None
         """
         if priority is None:
-            priority = Observable.ObserverPriority.USER_MID  # pyright: ignore [reportAssignmentType]
+            priority = Observable.ObserverPriority.USER_MID  # pyright: ignore[reportAssignmentType]
         self.__observers.add((observer, flag, priority, on_transaction_end))
 
     def remove_observer(self, observer: Callable, flag: Optional[Observable.ObserverEvent] = None) -> None:
@@ -79,8 +82,8 @@ class Observable:
         Returns:
             None
         """
-        self.__observers = filter(lambda observerEntry: observerEntry[0] == observer
-                                  or (flag is not None and observerEntry[1] == flag), self.__observers)  # pyright: ignore [reportAttributeAccessIssue]
+        self.__observers = set(filter(lambda observerEntry: observerEntry[0] == observer
+                                      or (flag is not None and observerEntry[1] == flag), self.__observers))  # pyright: ignore [reportAttributeAccessIssue]
 
     def get_observers(self, flags, on_transaction_end: bool = False) -> List[Any]:
         """
@@ -95,14 +98,14 @@ class Observable:
         """
         return [observerEntry[0] for observerEntry in self.get_observer_entries(flags, on_transaction_end)]
 
-    def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, storted=True) -> List[Any]:
+    def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, entries_sorted=True) -> List[Any]:
         """
         Retrieve a sorted list of observer entries based on the specified flags and transaction end condition.
 
         Args:
             flags (Observable.ObserverEvent): The event flags to filter observers.
             on_transaction_end (bool, optional): If True, only include observers that should be notified on transaction end. Defaults to False.
-            sorted (bool, optional): If True, return the list of observers sorted by priority. Defaults to True.
+            entries_sorted (bool, optional): If True, return the list of observers sorted by priority. Defaults to True.
 
         Returns:
             List[Any]: A sorted list of observer entries that match the specified criteria.
@@ -114,8 +117,10 @@ class Observable:
             del priority
             if (flags & observerflags) and observer_on_transaction_complete == on_transaction_end:
                 observers.add(observer_entry)
-        if storted:
-            return sorted(observers, key=lambda entry: int(entry[2]))
+        if entries_sorted:
+            def get_priority(entry) -> int:
+                return int(entry[2])
+            return sorted(observers, key=get_priority)
         return list(observers)
 
     def notify(self, flags: Observable.ObserverEvent) -> None:
@@ -135,7 +140,7 @@ class Observable:
         """
         #  Notify observers if delay is not enabled
         if not self.delay_notifications:
-            observers: List[Callable] = self.get_observers(flags, on_transaction_end=False)
+            observers: List[Callable] = self.get_observers(flags=flags, on_transaction_end=False)
             for observer in observers:
                 observer(element=self, flags=flags)
         else:
@@ -162,7 +167,7 @@ class Observable:
             None
         """
         if self.flags_to_notify_on_transaction_end != Observable.ObserverEvent.NONE:
-            observers: List[Callable] = self.get_observers(self.flags_to_notify_on_transaction_end, on_transaction_end=True)
+            observers: List[Callable] = self.get_observers(flags=self.flags_to_notify_on_transaction_end, on_transaction_end=True)
             for observer in observers:
                 observer(element=self, flags=self.flags_to_notify_on_transaction_end)
             self.flags_to_notify_on_transaction_end = Observable.ObserverEvent.NONE
