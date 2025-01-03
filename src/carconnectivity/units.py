@@ -63,3 +63,16 @@ class Level(GenericUnit,):
     PERCENTAGE = '%'
     INVALID = 'invalid'
     UNKNOWN = 'unknown level unit'
+
+
+class LatitudeLongitude(GenericUnit,):
+    """
+    A class representing a unit of measurement for levels.
+
+    Attributes:
+        PERCENTAGE (str): A string representing the percentage unit ('%').
+        INVALID (str): A string representing an invalid unit.
+        UNKNOWN (str): A string representing an unknown level unit.
+    """
+    DEGREE = '°'
+    UNKNOWN = 'unknown level unit'

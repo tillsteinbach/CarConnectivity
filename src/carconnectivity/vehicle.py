@@ -53,6 +53,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.license_plate.parent = self
             self.odometer: RangeAttribute = origin.odometer
             self.odometer.parent = self
+            self.state: EnumAttribute = origin.state
+            self.state.parent = self
             self.drives: Drives = origin.drives
             self.drives.parent = self
             self.doors: Doors = origin.doors
@@ -78,6 +80,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.type = EnumAttribute("type", parent=self)
             self.license_plate = StringAttribute("license_plate", self)
             self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=Length.UNKNOWN)
+            self.state = EnumAttribute("state", parent=self)
             self.drives: Drives = Drives(vehicle=self)
             self.doors: Doors = Doors(vehicle=self)
             self.windows: Windows = Windows(vehicle=self)
@@ -116,6 +119,10 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             return_string += f'{self.type}\n'
         if self.odometer.enabled:
             return_string += f'{self.odometer}\n'
+        if self.state.enabled:
+            return_string += f'{self.state}\n'
+        if self.drives.enabled:
+            return_string += f'{self.drives}\n'
         if self.doors.enabled:
             return_string += f'{self.doors}\n'
         if self.windows.enabled:
@@ -138,6 +145,17 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
         LPG = 'lpg'
         INVALID = 'invalid'
         UNKNOWN = 'unknown car type'
+
+    class State(Enum):
+        """
+        Enum representing different states of a vehicle.
+        """
+        OFFLINE = 'offline'
+        PARKED = 'parked'
+        IGNITION_ON = 'ignition_on'
+        DRIVING = 'driving'
+        INVALID = 'invalid'
+        UNKNOWN = 'unknown vehicle state'
 
 
 class ElectricVehicle(GenericVehicle):

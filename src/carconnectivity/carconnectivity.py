@@ -150,7 +150,6 @@ class CarConnectivity(GenericObject):
                     raise ConfigurationError(f"Invalid configuration: connector '{connector_id}' is not unique, set a 'connector_id' in configuration")
                 connector: BaseConnector = connector_class(connector_id=connector_id, car_connectivity=self, config=connector_config['config'])
                 self.connectors.connectors[connector_id] = connector
-                connector.startup()
         if 'plugins' in config['carConnectivity']:
             for plugin_config in config['carConnectivity']['plugins']:
                 if 'type' not in plugin_config:
@@ -169,7 +168,6 @@ class CarConnectivity(GenericObject):
                     raise ConfigurationError(f"Invalid configuration: connector '{plugin_id}' is not unique, set a 'connector_id' in configuration")
                 plugin: BasePlugin = plugin_class(plugin_id=plugin_id, car_connectivity=self, config=plugin_config['config'])
                 self.plugins.plugins[plugin_id] = plugin
-                plugin.startup()
         self.delay_notifications = False
 
     def fetch_all(self) -> None:
@@ -203,6 +201,18 @@ class CarConnectivity(GenericObject):
             LOG.info('Writing cachefile %s', self.__cache_file)
             with open(file=self.__cache_file, mode='w', encoding='utf8') as file:
                 json.dump(self.__cache, file, cls=ExtendedEncoder)
+
+    def startup(self) -> None:
+        """
+        Start all connectors and plugins.
+
+        This method iterates over all connectors in the `self.connectors` list and
+        calls their `startup` method.
+        """
+        for connector in self.connectors.connectors.values():
+            connector.startup()
+        for plugin in self.plugins.plugins.values():
+            plugin.startup()
 
     def shutdown(self) -> None:
         """

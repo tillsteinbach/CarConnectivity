@@ -357,6 +357,14 @@ class BooleanAttribute(GenericAttribute):
         super().__init__(name, parent, value, None)
 
 
+class FloatAttribute(GenericAttribute):
+    """
+    A class used to represent a attribute attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: float | None = None) -> None:
+        super().__init__(name, parent, value, None)
+
+
 class EnumAttribute(GenericAttribute):
     """
     A class used to represent a Enum Attribute.
