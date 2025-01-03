@@ -68,11 +68,11 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
         else:
             if garage is None:
                 raise ValueError('Cannot create vehicle without garage')
-            super().__init__(object_id=vin, parent=garage)
+            super().__init__(object_id=vin.upper(), parent=garage)
             self.delay_notifications = True
             if vin is None:
                 raise ValueError('VIN cannot be None')
-            self.vin = StringAttribute("vin", self, vin)
+            self.vin = StringAttribute("vin", self, vin.upper())
             self.name = StringAttribute("name", self)
             self.model = StringAttribute("model", self)
             self.type = EnumAttribute("type", parent=self)

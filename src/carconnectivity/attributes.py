@@ -1,20 +1,23 @@
 """This module defines the classes that represent attributes in the CarConnectivity system."""
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar, Generic
 
 from enum import Enum
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from carconnectivity.units import GenericUnit, Length, Level
 from carconnectivity.observable import Observable
 
 if TYPE_CHECKING:
-    from typing import Any, Optional, Union, List, Literal, Callable, Tuple, Set
+    from typing import Optional, Union, List, Literal, Callable, Tuple, Set
     from carconnectivity.objects import GenericObject
 
 
-class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attributes
+T = TypeVar('T')
+
+
+class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-instance-attributes
     """
     GenericAttribute represents a generic attribute with a name, value, unit, and parent object.
 
@@ -30,7 +33,7 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         last_updated_local (Optional[datetime]): The last time the attribute value was updated in carconnectivity.
     """
 
-    def __init__(self, name: str, parent: GenericObject, value: Optional[Any] = None, unit: Optional[GenericUnit] = None) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[T] = None, unit: Optional[GenericUnit] = None) -> None:
         """
         Initialize an attribute for a car connectivity object.
 
@@ -44,7 +47,7 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         self.__name: str = name
         self.__parent: GenericObject = parent
         self.__parent.children.append(self)
-        self.__value: Optional[Any] = None
+        self.__value: Optional[T] = None
         self.__unit: Optional[GenericUnit] = unit
 
         self.__enabled = False
@@ -105,7 +108,7 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         return self.__name
 
     @property
-    def value(self) -> Optional[Any]:
+    def value(self) -> Optional[T]:
         """
         Retrieve the value of the attribute.
 
@@ -136,7 +139,7 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         """
         self.__unit = unit
 
-    def _set_value(self, value: Optional[Any], measured: Optional[datetime] = None, unit: Optional[GenericUnit] = None) -> None:
+    def _set_value(self, value: Optional[T], measured: Optional[datetime] = None, unit: Optional[GenericUnit] = None) -> None:
         """
         Set the value of the attribute.
 
@@ -183,7 +186,7 @@ class GenericAttribute(Observable):  # pylint: disable=too-many-instance-attribu
         self.notify(flags)
 
     @value.setter
-    def value(self, new_value) -> None:
+    def value(self, new_value: T) -> None:
         """
         Setting the value directly is not allowed. GenericAttributes are not mutable by the user.
         """
@@ -378,6 +381,14 @@ class DateAttribute(GenericAttribute):
     A class used to represent a Date Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: datetime | None = None) -> None:
+        super().__init__(name, parent, value, None)
+
+
+class DurationAttribute(GenericAttribute):
+    """
+    A class used to represent a Duration.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: timedelta | None = None) -> None:
         super().__init__(name, parent, value, None)
 
 

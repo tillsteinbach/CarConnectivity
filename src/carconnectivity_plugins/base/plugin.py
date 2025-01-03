@@ -2,13 +2,17 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from carconnectivity.objects import GenericObject
+
+from carconnectivity.attributes import StringAttribute
+
 if TYPE_CHECKING:
     from typing import Dict
 
     from carconnectivity.carconnectivity import CarConnectivity
 
 
-class BasePlugin:  # pylint: disable=too-few-public-methods
+class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
     """BaseConnector is a base class for plugins in the CarConnectivity system.
 
     Attributes:
@@ -18,7 +22,7 @@ class BasePlugin:  # pylint: disable=too-few-public-methods
         shutdown() -> None:
             Placeholder method for shutting down the plugin.
     """
-    def __init__(self, car_connectivity: CarConnectivity, config: Dict) -> None:
+    def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict) -> None:
         """
         Initializes the connector with the given CarConnectivity instance and configuration.
 
@@ -26,8 +30,11 @@ class BasePlugin:  # pylint: disable=too-few-public-methods
             car_connectivity (CarConnectivity): The instance in which the plugin is running.
             config (Dict): A dictionary containing the configuration parameters for this plugin only.
         """
+        super(BasePlugin, self).__init__(object_id=plugin_id, parent=car_connectivity.plugins)
         self.car_connectivity: CarConnectivity = car_connectivity
         self.config: Dict = config
+        self.log_level = StringAttribute(name="log_level", parent=self)
+        self.version = StringAttribute(name="version", parent=self, value=self.get_version())
 
     def startup(self) -> None:
         """

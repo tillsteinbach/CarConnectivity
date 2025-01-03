@@ -15,6 +15,7 @@ from carconnectivity.attributes import RangeAttribute, LevelAttribute, EnumAttri
 from carconnectivity.units import Length
 
 if TYPE_CHECKING:
+    from typing import Dict
     from carconnectivity.vehicle import GenericVehicle
 
 
@@ -25,7 +26,7 @@ class Drives(GenericObject):
     def __init__(self, vehicle: GenericVehicle) -> None:
         super().__init__(object_id='drives', parent=vehicle)
         self.total_range: RangeAttribute = RangeAttribute(name="total_range", parent=self, value=None, unit=Length.UNKNOWN)
-        self.drives = {}
+        self.drives: Dict[str, GenericDrive] = {}
 
     def add_drive(self, drive: GenericDrive) -> None:
         """

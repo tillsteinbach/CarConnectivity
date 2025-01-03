@@ -16,9 +16,13 @@ from carconnectivity.objects import GenericObject
 from carconnectivity.garage import Garage
 from carconnectivity.util import ExtendedEncoder
 from carconnectivity.errors import ConfigurationError
+from carconnectivity.connectors import Connectors
+from carconnectivity.plugins import Plugins
+from carconnectivity.attributes import StringAttribute
+from carconnectivity._version import __version__
 
 if TYPE_CHECKING:
-    from typing import Dict, List, Any, Optional, Iterator
+    from typing import Dict, Any, Optional, Iterator
 
     from types import ModuleType
 
@@ -74,9 +78,11 @@ class CarConnectivity(GenericObject):
         self.__cache_file: Optional[str] = cache_file
 
         self.config: Dict[Any, Any] = config
-        self.connectors: List[BaseConnector] = []
-        self.plugins: List[BasePlugin] = []
+        self.connectors: Connectors = Connectors(car_connectivity=self)
+        self.plugins: Plugins = Plugins(car_connectivity=self)
         self.garage: Garage = Garage(self)
+
+        self.version: StringAttribute = StringAttribute(name="version", parent=self, value=__version__)
 
         if 'carConnectivity' not in config:
             raise ConfigurationError("Invalid configuration: 'carConnectivity' is missing")
@@ -136,8 +142,14 @@ class CarConnectivity(GenericObject):
                     LOG.info('Skipping disabled connector %s', connector_config['type'])
                     continue
                 connector_class = getattr(discovered_connectors['carconnectivity_connectors.' + connector_config['type']], 'Connector')
-                connector: BaseConnector = connector_class(car_connectivity=self, config=connector_config['config'])
-                self.connectors.append(connector)
+                if 'connector_id' in connector_config and connector_config['connector_id'] is not None:
+                    connector_id = connector_config['connector_id']
+                else:
+                    connector_id = connector_config['type']
+                if connector_id in self.connectors.connectors:
+                    raise ConfigurationError(f"Invalid configuration: connector '{connector_id}' is not unique, set a 'connector_id' in configuration")
+                connector: BaseConnector = connector_class(connector_id=connector_id, car_connectivity=self, config=connector_config['config'])
+                self.connectors.connectors[connector_id] = connector
                 connector.startup()
         if 'plugins' in config['carConnectivity']:
             for plugin_config in config['carConnectivity']['plugins']:
@@ -149,8 +161,14 @@ class CarConnectivity(GenericObject):
                     LOG.info('Skipping disabled plugin %s', plugin_config['type'])
                     continue
                 plugin_class = getattr(discovered_plugins['carconnectivity_plugins.' + plugin_config['type']], 'Plugin')
-                plugin: BasePlugin = plugin_class(car_connectivity=self, config=plugin_config['config'])
-                self.plugins.append(plugin)
+                if 'plugin_id' in plugin_config and plugin_config['plugin_id'] is not None:
+                    plugin_id: str = plugin_config['plugin_id']
+                else:
+                    plugin_id: str = plugin_config['type']
+                if plugin_id in self.plugins.plugins:
+                    raise ConfigurationError(f"Invalid configuration: connector '{plugin_id}' is not unique, set a 'connector_id' in configuration")
+                plugin: BasePlugin = plugin_class(plugin_id=plugin_id, car_connectivity=self, config=plugin_config['config'])
+                self.plugins.plugins[plugin_id] = plugin
                 plugin.startup()
         self.delay_notifications = False
 
@@ -161,7 +179,7 @@ class CarConnectivity(GenericObject):
         This method iterates over all connectors in the `self.connectors` list
         and calls their `fetch_all` method to retrieve data.
         """
-        for connector in self.connectors:
+        for connector in self.connectors.connectors.values():
             connector.fetch_all()
 
     def persist(self) -> None:
@@ -194,9 +212,9 @@ class CarConnectivity(GenericObject):
         calls their `shutdown` method. After all connectors have been shut down,
         it calls the `persist` method to save the current state.
         """
-        for connector in self.connectors:
+        for connector in self.connectors.connectors.values():
             connector.shutdown()
-        for plugin in self.plugins:
+        for plugin in self.plugins.plugins.values():
             plugin.shutdown()
         self.persist()
 

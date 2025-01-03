@@ -36,9 +36,9 @@ class Garage(GenericObject):
         Returns:
             None
         """
-        if vehicle_id in self._vehicles:
-            raise ValueError(f'Vehicle with ID {vehicle_id} already exists in the garage.')
-        self._vehicles[vehicle_id] = vehicle
+        if vehicle_id.upper() in self._vehicles:
+            raise ValueError(f'Vehicle with ID {vehicle_id.upper()} already exists in the garage.')
+        self._vehicles[vehicle_id.upper()] = vehicle
 
     def replace_vehicle(self, vehicle_id: str, vehicle: GenericVehicle) -> None:
         """
@@ -51,7 +51,7 @@ class Garage(GenericObject):
         Returns:
             None
         """
-        self._vehicles[vehicle_id] = vehicle
+        self._vehicles[vehicle_id.upper()] = vehicle
 
     def remove_vehicle(self, vehicle_id: str) -> None:
         """
@@ -63,8 +63,8 @@ class Garage(GenericObject):
         Returns:
             None
         """
-        if vehicle_id in self._vehicles:
-            del self._vehicles[vehicle_id]
+        if vehicle_id.upper() in self._vehicles:
+            del self._vehicles[vehicle_id.upper()]
 
     def get_vehicle(self, vehicle_id: str) -> Optional[GenericVehicle]:
         """
@@ -76,7 +76,7 @@ class Garage(GenericObject):
         Returns:
             GenericVehicle | None: The vehicle object if found, otherwise None.
         """
-        return self._vehicles.get(vehicle_id)
+        return self._vehicles.get(vehicle_id.upper())
 
     def list_vehicles(self) -> List[GenericVehicle]:
         """
