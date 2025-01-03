@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from carconnectivity.objects import GenericObject
 
-from carconnectivity.attributes import StringAttribute
+from carconnectivity.attributes import StringAttribute, DateAttribute
 
 if TYPE_CHECKING:
     from typing import Dict
@@ -35,6 +35,7 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
         self.config: Dict = config
         self.log_level = StringAttribute(name="log_level", parent=self)
         self.version = StringAttribute(name="version", parent=self, value=self.get_version())
+        self.last_update: DateAttribute = DateAttribute(name="last_update", parent=self)
 
     def fetch_all(self) -> None:
         """
