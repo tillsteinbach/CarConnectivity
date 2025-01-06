@@ -361,8 +361,8 @@ class FloatAttribute(GenericAttribute):
     """
     A class used to represent a attribute attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: float | None = None) -> None:
-        super().__init__(name, parent, value, None)
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Optional[GenericUnit] = None) -> None:
+        super().__init__(name, parent, value, unit)
 
 
 class EnumAttribute(GenericAttribute):

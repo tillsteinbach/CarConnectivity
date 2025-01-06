@@ -16,6 +16,8 @@ from carconnectivity.windows import Windows
 from carconnectivity.lights import Lights
 from carconnectivity.software import Software
 from carconnectivity.drive import Drives
+from carconnectivity.charging import Charging
+from carconnectivity.drive import ElectricDrive
 from carconnectivity.units import Length
 
 if TYPE_CHECKING:
@@ -168,6 +170,20 @@ class ElectricVehicle(GenericVehicle):
             super().__init__(origin=origin)
         else:
             super().__init__(vin=vin, garage=garage, managing_connector=managing_connector)
+        self.charging: Charging = Charging(vehicle=self)
+
+    def get_electric_drive(self) -> Drives.ElectricDrive:
+        """
+        Returns the electric drive of the vehicle.
+
+        Returns:
+            Drives.ElectricDrive: The electric drive of the vehicle.
+        """
+        if self.drives is not None and self.drives.drives is not None and len(self.drives.drives) > 0:
+            for drive in self.drives.drives.values():
+                if isinstance(drive, ElectricDrive) and drive.enabled:
+                    return drive
+        return None
 
 
 class CombustionVehicle(GenericVehicle):

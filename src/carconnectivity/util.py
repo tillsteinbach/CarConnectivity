@@ -143,3 +143,13 @@ class ExtendedEncoder(json.JSONEncoder):
         if isinstance(o, Enum):
             return o.value
         return super().default(o)
+
+
+class ExtendedWithNullEncoder(ExtendedEncoder):
+    """Encoder allowing null used for json serialization"""
+
+    def default(self, o: Any) -> str:
+        try:
+            return super().default(o)
+        except TypeError:
+            return None

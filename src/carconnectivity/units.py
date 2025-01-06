@@ -65,6 +65,24 @@ class Level(GenericUnit,):
     UNKNOWN = 'unknown level unit'
 
 
+class Power(GenericUnit,):
+    """
+    A class representing a unit of measurement for power.
+    """
+    KW = 'KW'
+    INVALID = 'invalid'
+    UNKNOWN = 'unknown power unit'
+
+
+class Speed(GenericUnit,):
+    """
+    A class representing a unit of measurement for speed.
+    """
+    KMH = 'Km/h'
+    INVALID = 'invalid'
+    UNKNOWN = 'unknown speed unit'
+
+
 class LatitudeLongitude(GenericUnit,):
     """
     A class representing a unit of measurement for levels.
