@@ -2,9 +2,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar, Generic
 
+import logging
+
 from enum import Enum
 
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 
 from carconnectivity.units import GenericUnit, Length, Level
 from carconnectivity.observable import Observable
@@ -15,6 +17,9 @@ if TYPE_CHECKING:
 
 
 T = TypeVar('T')
+
+
+LOG: logging.Logger = logging.getLogger("carconnectivity")
 
 
 class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-instance-attributes
@@ -157,7 +162,12 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
             None
         """
         flags: Observable.ObserverEvent = Observable.ObserverEvent.NONE
-        now: datetime = datetime.now()
+        now: datetime = datetime.now(tz=timezone.utc)
+        # Value from the past
+        if self.last_updated is not None and measured is not None and self.last_updated > measured:
+            LOG.debug('Value from the past: %s: %s > %s', self.name, self.last_updated, measured)
+            return
+
         # Value was updated
         if self.last_updated_local != now:
             flags |= Observable.ObserverEvent.UPDATED

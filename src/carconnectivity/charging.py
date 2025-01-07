@@ -41,6 +41,19 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
         return return_string
 
     class ChargingState(Enum,):
+        """
+        Enum representing the various states of charging.
+
+        Attributes:
+            OFF (str): The charging state is off.
+            READY_FOR_CHARGING (str): The vehicle is ready for charging.
+            CHARGING (str): The vehicle is currently charging.
+            CONSERVATION (str): The vehicle is in conservation mode.
+            ERROR (str): There is an error in the charging system.
+            UNSUPPORTED (str): The charging state is unsupported.
+            DISCHARGING (str): The vehicle is discharging.
+            UNKNOWN (str): The charging state is unknown.
+        """
         OFF = 'off'
         READY_FOR_CHARGING = 'ready_for_charging'
         CHARGING = 'charging'
@@ -51,6 +64,17 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
         UNKNOWN = 'unknown charging state'
 
     class ChargingType(Enum,):
+        """
+        Enum representing different types of car charging.
+
+        Attributes:
+            INVALID (str): Represents an invalid charging type.
+            OFF (str): Represents the state when charging is off.
+            AC (str): Represents AC (Alternating Current) charging.
+            DC (str): Represents DC (Direct Current) charging.
+            UNSUPPORTED (str): Represents an unsupported charging type.
+            UNKNOWN (str): Represents an unknown charging type.
+        """
         INVALID = 'invalid'
         OFF = 'off'
         AC = 'ac'

@@ -10,7 +10,7 @@ import logging
 import re
 import json
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timezone
 
 if TYPE_CHECKING:
     from typing import Dict, Tuple, Any
@@ -57,7 +57,7 @@ def log_extra_keys(log: logging.Logger, where: str, dictionary: Dict[str, Any], 
         allowed_keys = set()
     extra_keys = set(dictionary.keys()) - allowed_keys
     if extra_keys:
-        log.info(f"Unexpected keys found in {where}: {extra_keys}")
+        log.info(f"Unexpected keys found in {where}: {extra_keys} Dictionary is {dictionary}")
 
 
 def config_remove_credentials(config: Dict[str, Any]) -> Dict[str, Any]:
@@ -100,7 +100,7 @@ class DuplicateFilter(logging.Filter):
         if record.levelno >= self.do_not_filter_above:
             return True
 
-        now: datetime = datetime.now()
+        now: datetime = datetime.now(tz=timezone.utc)
 
         # were messages from this module already logged?
         if record.module in self._last_log:

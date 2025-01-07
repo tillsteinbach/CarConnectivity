@@ -19,6 +19,7 @@ from carconnectivity.drive import Drives
 from carconnectivity.charging import Charging
 from carconnectivity.drive import ElectricDrive
 from carconnectivity.units import Length
+from carconnectivity.position import Position
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -67,6 +68,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.lights.parent = self
             self.software: Software = origin.software
             self.software.parent = self
+            self.position: Position = origin.position
+            self.position.parent = self
             self.enabled = origin.enabled
             self.managing_connectors = origin.managing_connectors
         else:
@@ -88,6 +91,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.windows: Windows = Windows(vehicle=self)
             self.lights: Lights = Lights(vehicle=self)
             self.software: Software = Software(vehicle=self)
+            self.position: Position = Position(parent=self)
 
             self.managing_connectors: list[BaseConnector] = []
             if managing_connector is not None:
@@ -131,6 +135,10 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             return_string += f'{self.windows}\n'
         if self.lights.enabled:
             return_string += f'{self.lights}\n'
+        if self.software.enabled:
+            return_string += f'{self.software}\n'
+        if self.position.enabled:
+            return_string += f'{self.position}\n'
         return return_string
 
     class Type(Enum):
