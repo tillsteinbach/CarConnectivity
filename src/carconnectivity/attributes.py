@@ -432,3 +432,35 @@ class TemperatureAttribute(GenericAttribute):
     """
     def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Temperature = Temperature.C) -> None:
         super().__init__(name, parent, value, unit=unit)
+
+    def temperature_in(self, unit: Temperature) -> float:
+        """
+        Convert the temperature to a different unit.
+
+        Args:
+            unit (Temperature): The unit to convert the temperature to.
+
+        Returns:
+            float: The temperature in the specified unit.
+        """
+        if unit is None or self.unit is None:
+            raise ValueError('No unit specified or value has no unit')
+        elif unit == self.unit:
+            return self.value
+        elif unit == Temperature.C:
+            if self.unit == Temperature.F:
+                return ((self.value - 32.0) * (5.0 / 9.0))
+            elif self.unit == Temperature.K:
+                return self.value - 273.15
+        elif unit == Temperature.F:
+            if self.unit == Temperature.C:
+                return ((self.value * (9.0 / 5.0)) + 32.0)
+            elif self.unit == Temperature.K:
+                return ((self.value - 273.15) * (9.0 / 5.0)) + 32.0
+        elif unit == Temperature.K:
+            if self.unit == Temperature.C:
+                return self.value + 273.15
+            elif self.unit == Temperature.F:
+                return 273.5 + ((self.value - 32.0) * (5.0 / 9.0))
+            return self.unit.convert_to_kelvin(self.value)
+        return self.value
