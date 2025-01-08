@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from enum import Enum
 
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import StringAttribute, EnumAttribute, RangeAttribute
+from carconnectivity.attributes import StringAttribute, EnumAttribute, RangeAttribute, TemperatureAttribute
 from carconnectivity.doors import Doors
 from carconnectivity.windows import Windows
 from carconnectivity.lights import Lights
@@ -20,6 +20,7 @@ from carconnectivity.charging import Charging
 from carconnectivity.drive import ElectricDrive
 from carconnectivity.units import Length
 from carconnectivity.position import Position
+from carconnectivity.climatization import Climatization
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -71,8 +72,14 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.position: Position = origin.position
             self.position.parent = self
             self.enabled = origin.enabled
+            self.climatization = origin.climatization
+            self.climatization.parent = self
+            self.outside_temperature: TemperatureAttribute = origin.outside_temperature
+            self.outside_temperature.parent = self
             self.managing_connectors = origin.managing_connectors
         else:
+            if vin is None:
+                raise ValueError('Cannot create vehicle without VIN')
             if garage is None:
                 raise ValueError('Cannot create vehicle without garage')
             super().__init__(object_id=vin.upper(), parent=garage)
@@ -92,6 +99,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.lights: Lights = Lights(vehicle=self)
             self.software: Software = Software(vehicle=self)
             self.position: Position = Position(parent=self)
+            self.climatization: Climatization = Climatization(parent=self)
+            self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", self)
 
             self.managing_connectors: list[BaseConnector] = []
             if managing_connector is not None:
@@ -139,6 +148,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             return_string += f'{self.software}\n'
         if self.position.enabled:
             return_string += f'{self.position}\n'
+        if self.outside_temperature.enabled:
+            return_string += f'{self.outside_temperature}\n'
         return return_string
 
     class Type(Enum):

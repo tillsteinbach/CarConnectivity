@@ -8,7 +8,7 @@ from enum import Enum
 
 from datetime import datetime, timezone, timedelta
 
-from carconnectivity.units import GenericUnit, Length, Level
+from carconnectivity.units import GenericUnit, Length, Level, Temperature
 from carconnectivity.observable import Observable
 
 if TYPE_CHECKING:
@@ -424,3 +424,11 @@ class LevelAttribute(GenericAttribute):
     """
     def __init__(self, name: str, parent: GenericObject, value: float | None = None) -> None:
         super().__init__(name, parent, value, unit=Level.PERCENTAGE)
+
+
+class TemperatureAttribute(GenericAttribute):
+    """
+    A class used to represent a Temperature Attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Temperature = Temperature.C) -> None:
+        super().__init__(name, parent, value, unit=unit)

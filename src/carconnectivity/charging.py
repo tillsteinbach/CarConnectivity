@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from enum import Enum
 
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import DurationAttribute, EnumAttribute, FloatAttribute
+from carconnectivity.attributes import DateAttribute, EnumAttribute, FloatAttribute
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -27,7 +27,7 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
         self.type: EnumAttribute = EnumAttribute("type", parent=self)
         self.rate: FloatAttribute = FloatAttribute("rate", parent=self)
         self.power: FloatAttribute = FloatAttribute("power", parent=self)
-        self.remaining_duration: DurationAttribute = DurationAttribute("remaining_duration", parent=self)
+        self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self)
         self.delay_notifications = False
 
     def __str__(self) -> str:
@@ -36,8 +36,8 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
             return_string += f'State: {self.state.value.value}\n'
         if self.type.enabled and self.type.value is not None:
             return_string += f'Type: {self.type.value.value}\n'
-        if self.remaining_duration.enabled:
-            return_string += f'Remaining duration: {self.remaining_duration.value}\n'
+        if self.estimated_date_reached.enabled:
+            return_string += f'Estimated time reached: {self.estimated_date_reached.value}\n'
         return return_string
 
     class ChargingState(Enum,):
