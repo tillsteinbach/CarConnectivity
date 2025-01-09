@@ -8,7 +8,7 @@ from enum import Enum
 
 from datetime import datetime, timezone, timedelta
 
-from carconnectivity.units import GenericUnit, Length, Level, Temperature
+from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power
 from carconnectivity.observable import Observable
 
 if TYPE_CHECKING:
@@ -416,6 +416,88 @@ class RangeAttribute(GenericAttribute):
     """
     def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Length = Length.KM) -> None:
         super().__init__(name, parent, value, unit)
+
+    def range_in(self, unit: Length) -> float:
+        """
+        Convert the range to a different unit.
+
+        Args:
+            unit (Length): The unit to convert the range to.
+
+        Returns:
+            float: The range in the specified unit.
+        """
+        if unit is None or self.unit is None:
+            raise ValueError('No unit specified or value has no unit')
+        elif unit == self.unit:
+            return self.value
+        elif unit == Length.KM:
+            if self.unit == Length.MI:
+                return self.value * 0.621371192
+        elif unit == Length.MI:
+            if self.unit == Length.KM:
+                return self.value / 0.621371192
+        return self.value
+
+
+class SpeedAttribute(GenericAttribute):
+    """
+    A class used to represent a Speed Attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Speed = Speed.KMH) -> None:
+        super().__init__(name, parent, value, unit)
+
+    def speed_in(self, unit: Speed) -> float:
+        """
+        Convert the speed to a different unit.
+
+        Args:
+            unit (Speed): The unit to convert the speed to.
+
+        Returns:
+            float: The speed in the specified unit.
+        """
+        if unit is None or self.unit is None:
+            raise ValueError('No unit specified or value has no unit')
+        elif unit == self.unit:
+            return self.value
+        elif unit == Speed.KMH:
+            if self.unit == Speed.MPH:
+                return self.value * 0.621371192
+        elif unit == Speed.MPH:
+            if self.unit == Speed.KMH:
+                return self.value / 0.621371192
+        return self.value
+
+
+class PowerAttribute(GenericAttribute):
+    """
+    A class used to represent a power Attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Speed = Speed.KMH) -> None:
+        super().__init__(name, parent, value, unit)
+
+    def power_in(self, unit: Power) -> float:
+        """
+        Convert the power to a different unit.
+
+        Args:
+            unit (Power): The unit to convert the power to.
+
+        Returns:
+            float: The power in the specified unit.
+        """
+        if unit is None or self.unit is None:
+            raise ValueError('No unit specified or value has no unit')
+        elif unit == self.unit:
+            return self.value
+        elif unit == Power.KW:
+            if self.unit == Power.W:
+                return self.value / 1000
+        elif unit == Power.W:
+            if self.unit == Power.KW:
+                return self.value * 1000
+        return self.value
 
 
 class LevelAttribute(GenericAttribute):

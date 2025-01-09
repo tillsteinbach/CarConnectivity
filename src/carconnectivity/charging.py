@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from enum import Enum
 
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import DateAttribute, EnumAttribute, FloatAttribute
+from carconnectivity.attributes import DateAttribute, EnumAttribute, SpeedAttribute, PowerAttribute
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -25,8 +25,8 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
         self.delay_notifications = True
         self.state: EnumAttribute = EnumAttribute("state", parent=self)
         self.type: EnumAttribute = EnumAttribute("type", parent=self)
-        self.rate: FloatAttribute = FloatAttribute("rate", parent=self)
-        self.power: FloatAttribute = FloatAttribute("power", parent=self)
+        self.rate: SpeedAttribute = SpeedAttribute("rate", parent=self)
+        self.power: PowerAttribute = PowerAttribute("power", parent=self)
         self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self)
         self.delay_notifications = False
 

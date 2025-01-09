@@ -70,6 +70,7 @@ class Power(GenericUnit,):
     A class representing a unit of measurement for power.
     """
     KW = 'KW'
+    W = 'W'
     INVALID = 'invalid'
     UNKNOWN = 'unknown power unit'
 
@@ -79,6 +80,7 @@ class Speed(GenericUnit,):
     A class representing a unit of measurement for speed.
     """
     KMH = 'Km/h'
+    MPH = 'Mph'
     INVALID = 'invalid'
     UNKNOWN = 'unknown speed unit'
 
