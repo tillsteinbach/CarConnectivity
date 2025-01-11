@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from enum import Enum
 
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import EnumAttribute, FloatAttribute, TemperatureAttribute, DateAttribute
+from carconnectivity.attributes import EnumAttribute, TemperatureAttribute, DateAttribute
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -18,7 +18,7 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
     def __init__(self, parent: Optional[GenericObject] = None) -> None:
         super().__init__(object_id='climatization', parent=parent)
         self.state: EnumAttribute = EnumAttribute("state", self)
-        self.target_temperature: TemperatureAttribute = FloatAttribute("target_temperature", self)
+        self.target_temperature: TemperatureAttribute = TemperatureAttribute("target_temperature", self)
         self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", self)
 
     def __str__(self) -> str:
