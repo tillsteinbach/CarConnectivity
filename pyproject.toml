@@ -30,6 +30,16 @@ classifiers = [
     "Topic :: Software Development :: Libraries"
 ]
 
+[project.optional-dependencies]
+connectors = [
+    'carconnectivity-connector-volkswagen',
+    'carconnectivity-connector-skoda',
+]
+plugins = [
+    'carconnectivity-plugin-mqtt',
+    'carconnectivity-plugin-abrp',
+]
+
 [project.urls]
 
 [project.scripts]
