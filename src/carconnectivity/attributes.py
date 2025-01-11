@@ -12,7 +12,7 @@ from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed
 from carconnectivity.observable import Observable
 
 if TYPE_CHECKING:
-    from typing import Optional, Union, List, Literal, Callable, Tuple, Set
+    from typing import Any, Optional, Union, List, Literal, Callable, Tuple, Set
     from carconnectivity.objects import GenericObject
 
 
@@ -194,6 +194,20 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
             flags |= Observable.ObserverEvent.VALUE_CHANGED
             self.__unit = unit
         self.notify(flags)
+
+    def in_locale(self, locale: str) -> Tuple[Optional[Any], Optional[GenericUnit]]:
+        """
+        Returns the value and unit of the attribute, using the provided locale.
+        This is used to change e.g. Temperature in Celsius to Farenheit for users in the US.
+
+        Args:
+            locale (str): The locale to be used.
+
+        Returns:
+            Tuple[Optional[float], GenericUnit]: A tuple containing the converted value and unit of the attribute.
+        """
+        del locale
+        return self.value, self.unit
 
     @value.setter
     def value(self, new_value: T) -> None:
@@ -417,7 +431,7 @@ class RangeAttribute(GenericAttribute):
     def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Length = Length.KM) -> None:
         super().__init__(name, parent, value, unit)
 
-    def range_in(self, unit: Length) -> float:
+    def range_in(self, unit: Length) -> Optional[float]:
         """
         Convert the range to a different unit.
 
@@ -429,7 +443,7 @@ class RangeAttribute(GenericAttribute):
         """
         if unit is None or self.unit is None:
             raise ValueError('No unit specified or value has no unit')
-        elif unit == self.unit:
+        elif unit == self.unit or self.value is None:
             return self.value
         elif unit == Length.KM:
             if self.unit == Length.MI:
@@ -439,6 +453,25 @@ class RangeAttribute(GenericAttribute):
                 return self.value / 0.621371192
         return self.value
 
+    def in_locale(self, locale: str) -> Tuple[Optional[float], Optional[GenericUnit]]:
+        """
+        Get the range in the unit the user is used to
+
+        Args:
+            locale (str): The locale to get the range in.
+
+        Returns:
+            str: The range in the locale.
+
+        Converts the range to miles if the locale is 'en_US', 'en_GB', 'en_LR', 'en_MM', otherwise converts to kilometers.
+        """
+        if locale is None:
+            return self.value, self.unit
+        miles_locales: list[str] = ['en_US', 'en_GB', 'en_LR', 'en_MM']
+        if any(locale.startswith(loc) for loc in miles_locales):
+            return self.range_in(Length.MI), Length.MI
+        return self.range_in(Length.KM), Length.KM
+
 
 class SpeedAttribute(GenericAttribute):
     """
@@ -447,7 +480,7 @@ class SpeedAttribute(GenericAttribute):
     def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Speed = Speed.KMH) -> None:
         super().__init__(name, parent, value, unit)
 
-    def speed_in(self, unit: Speed) -> float:
+    def speed_in(self, unit: Speed) -> Optional[float]:
         """
         Convert the speed to a different unit.
 
@@ -459,7 +492,7 @@ class SpeedAttribute(GenericAttribute):
         """
         if unit is None or self.unit is None:
             raise ValueError('No unit specified or value has no unit')
-        elif unit == self.unit:
+        elif unit == self.unit or self.value is None:
             return self.value
         elif unit == Speed.KMH:
             if self.unit == Speed.MPH:
@@ -469,6 +502,25 @@ class SpeedAttribute(GenericAttribute):
                 return self.value / 0.621371192
         return self.value
 
+    def in_locale(self, locale: str) -> Tuple[Optional[float], Optional[GenericUnit]]:
+        """
+        Get the speed in the unit the user is used to
+
+        Args:
+            locale (str): The locale to get the range in.
+
+        Returns:
+            str: The speed in the locale.
+
+        Converts the speed to miles per hour if the locale is 'en_US', 'en_GB', 'en_LR', 'en_MM', otherwise converts to kilometers per hour.
+        """
+        if locale is None:
+            return self.value, self.unit
+        miles_locales: list[str] = ['en_US', 'en_GB', 'en_LR', 'en_MM']
+        if any(locale.startswith(loc) for loc in miles_locales):
+            return self.speed_in(Speed.MPH), Speed.MPH
+        return self.speed_in(Speed.KMH), Speed.KMH
+
 
 class PowerAttribute(GenericAttribute):
     """
@@ -477,7 +529,7 @@ class PowerAttribute(GenericAttribute):
     def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Speed = Speed.KMH) -> None:
         super().__init__(name, parent, value, unit)
 
-    def power_in(self, unit: Power) -> float:
+    def power_in(self, unit: Power) -> Optional[float]:
         """
         Convert the power to a different unit.
 
@@ -489,7 +541,7 @@ class PowerAttribute(GenericAttribute):
         """
         if unit is None or self.unit is None:
             raise ValueError('No unit specified or value has no unit')
-        elif unit == self.unit:
+        elif unit == self.unit or self.value is None:
             return self.value
         elif unit == Power.KW:
             if self.unit == Power.W:
@@ -515,7 +567,7 @@ class TemperatureAttribute(GenericAttribute):
     def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Temperature = Temperature.C) -> None:
         super().__init__(name, parent, value, unit=unit)
 
-    def temperature_in(self, unit: Temperature) -> float:
+    def temperature_in(self, unit: Temperature) -> Optional[float]:
         """
         Convert the temperature to a different unit.
 
@@ -527,11 +579,11 @@ class TemperatureAttribute(GenericAttribute):
         """
         if unit is None or self.unit is None:
             raise ValueError('No unit specified or value has no unit')
-        elif unit == self.unit:
+        elif unit == self.unit or self.value is None:
             return self.value
         elif unit == Temperature.C:
             if self.unit == Temperature.F:
-                return ((self.value - 32.0) * (5.0 / 9.0))
+                return (self.value - 32.0) * (5.0 / 9.0)
             elif self.unit == Temperature.K:
                 return self.value - 273.15
         elif unit == Temperature.F:
@@ -544,5 +596,23 @@ class TemperatureAttribute(GenericAttribute):
                 return self.value + 273.15
             elif self.unit == Temperature.F:
                 return 273.5 + ((self.value - 32.0) * (5.0 / 9.0))
-            return self.unit.convert_to_kelvin(self.value)
         return self.value
+
+    def in_locale(self, locale: str) -> Tuple[Optional[float], Optional[GenericUnit]]:
+        """
+        Get the temperature in the unit the user is used to
+
+        Args:
+            locale (str): The locale to get the temperature in.
+
+        Returns:
+            str: The temperature in the locale.
+
+        Converts the temperature to Fahrenheit if the locale is 'en_US', 'en_BS', 'en_KY', 'en_LR', 'en_PW', 'en_FM', 'en_MH', otherwise converts to Celsius.
+        """
+        if locale is None:
+            return self.value, self.unit
+        fahrenheit_locales: list[str] = ['en_US', 'en_BS', 'en_KY', 'en_LR', 'en_PW', 'en_FM', 'en_MH']
+        if any(locale.startswith(loc) for loc in fahrenheit_locales):
+            return self.temperature_in(Temperature.F), Temperature.F
+        return self.temperature_in(Temperature.C), Temperature.C
