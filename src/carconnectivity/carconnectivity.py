@@ -259,3 +259,18 @@ class CarConnectivity(GenericObject):
         return_string: str = ''
         return_string += str(self.get_garage())
         return return_string
+
+    def is_healthy(self) -> bool:
+        """
+        Returns whether the carconnectivity instance and its connectors and plugins is healthy.
+
+        Returns:
+            bool: True if carconnectivity is healthy, False otherwise.
+        """
+        for connector in self.connectors.connectors.values():
+            if not connector.is_healthy():
+                return False
+        for plugin in self.plugins.plugins.values():
+            if not plugin.is_healthy():
+                return False
+        return True

@@ -61,3 +61,12 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
             str: The version of the plugin.
         """
         raise NotImplementedError("Method get_version() must be implemented by plugin")
+
+    def is_healthy(self) -> bool:
+        """
+        Returns whether the plugin is healthy.
+
+        Returns:
+            bool: True if the connector is healthy, False otherwise.
+        """
+        return True
