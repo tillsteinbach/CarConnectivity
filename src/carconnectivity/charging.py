@@ -8,6 +8,7 @@ from enum import Enum
 
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import DateAttribute, EnumAttribute, SpeedAttribute, PowerAttribute
+from carconnectivity.charging_connector import ChargingConnector
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -23,6 +24,7 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
             raise ValueError('Cannot create charging without vehicle')
         super().__init__(object_id='charging', parent=vehicle)
         self.delay_notifications = True
+        self.connector: ChargingConnector = ChargingConnector(charging=self)
         self.state: EnumAttribute = EnumAttribute("state", parent=self)
         self.type: EnumAttribute = EnumAttribute("type", parent=self)
         self.rate: SpeedAttribute = SpeedAttribute("rate", parent=self)
