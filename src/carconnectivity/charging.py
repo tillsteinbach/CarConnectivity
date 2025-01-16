@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from enum import Enum
 
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import DateAttribute, EnumAttribute, SpeedAttribute, PowerAttribute
+from carconnectivity.attributes import DateAttribute, EnumAttribute, SpeedAttribute, PowerAttribute, LevelAttribute, CurrentAttribute, BooleanAttribute
 from carconnectivity.charging_connector import ChargingConnector
 
 if TYPE_CHECKING:
@@ -19,17 +19,36 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
     A class to represent the charging of a vehicle.
     """
-    def __init__(self, vehicle: Optional[ElectricVehicle] = None) -> None:
-        if vehicle is None:
-            raise ValueError('Cannot create charging without vehicle')
-        super().__init__(object_id='charging', parent=vehicle)
-        self.delay_notifications = True
-        self.connector: ChargingConnector = ChargingConnector(charging=self)
-        self.state: EnumAttribute = EnumAttribute("state", parent=self)
-        self.type: EnumAttribute = EnumAttribute("type", parent=self)
-        self.rate: SpeedAttribute = SpeedAttribute("rate", parent=self)
-        self.power: PowerAttribute = PowerAttribute("power", parent=self)
-        self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self)
+    def __init__(self, vehicle: Optional[ElectricVehicle] = None,  origin: Optional[Charging] = None) -> None:
+        if origin is not None:
+            super().__init__(origin=origin)
+            self.delay_notifications = True
+            self.connector: ChargingConnector = origin.connector
+            self.connector.parent = self
+            self.state: EnumAttribute = origin.state
+            self.state.parent = self
+            self.type: EnumAttribute = origin.type
+            self.type.parent = self
+            self.rate: SpeedAttribute = origin.rate
+            self.rate.parent = self
+            self.power: PowerAttribute = origin.power
+            self.power.parent = self
+            self.estimated_date_reached: DateAttribute = origin.estimated_date_reached
+            self.settings: Charging.Settings = origin.settings
+            self.settings.parent = self
+            self.estimated_date_reached.parent = self
+        else:
+            if vehicle is None:
+                raise ValueError('Cannot create charging without vehicle')
+            super().__init__(object_id='charging', parent=vehicle)
+            self.delay_notifications = True
+            self.connector: ChargingConnector = ChargingConnector(charging=self)
+            self.state: EnumAttribute = EnumAttribute("state", parent=self)
+            self.type: EnumAttribute = EnumAttribute("type", parent=self)
+            self.rate: SpeedAttribute = SpeedAttribute("rate", parent=self)
+            self.power: PowerAttribute = PowerAttribute("power", parent=self)
+            self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self)
+            self.settings: Charging.Settings = Charging.Settings(parent=self)
         self.delay_notifications = False
 
     def __str__(self) -> str:
@@ -83,3 +102,22 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
         DC = 'dc'
         UNSUPPORTED = 'unsupported'
         UNKNOWN = 'unknown charge type'
+
+    class Settings(GenericObject):
+        """
+        This class represents the settings for car  charging.
+        """
+        def __init__(self, parent: Optional[GenericObject] = None, origin: Optional[Charging.Settings] = None) -> None:
+            if origin is not None:
+                super().__init__(origin=origin)
+                self.target_level: LevelAttribute = origin.target_level
+                self.target_level.parent = self
+                self.maximum_current: CurrentAttribute = origin.maximum_current
+                self.maximum_current.parent = self
+                self.auto_unlock: BooleanAttribute = origin.auto_unlock
+                self.auto_unlock.parent = self
+            else:
+                super().__init__(object_id="settings", parent=parent)
+                self.target_level: LevelAttribute = LevelAttribute("target_level", parent=self)
+                self.maximum_current: CurrentAttribute = CurrentAttribute("maximum_current", parent=self)
+                self.auto_unlock: BooleanAttribute = BooleanAttribute("auto_unlock", parent=self)

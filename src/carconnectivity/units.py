@@ -75,6 +75,15 @@ class Power(GenericUnit,):
     UNKNOWN = 'unknown power unit'
 
 
+class Current(GenericUnit,):
+    """
+    A class representing a unit of measurement for current.
+    """
+    A = 'A'
+    INVALID = 'invalid'
+    UNKNOWN = 'unknown current unit'
+
+
 class Speed(GenericUnit,):
     """
     A class representing a unit of measurement for speed.

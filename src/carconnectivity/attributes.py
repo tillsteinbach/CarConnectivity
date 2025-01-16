@@ -8,7 +8,7 @@ from enum import Enum
 
 from datetime import datetime, timezone, timedelta
 
-from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power
+from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power, Current
 from carconnectivity.observable import Observable
 
 if TYPE_CHECKING:
@@ -526,7 +526,7 @@ class PowerAttribute(GenericAttribute):
     """
     A class used to represent a power Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Speed = Speed.KMH) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Power = Power.KW) -> None:
         super().__init__(name, parent, value, unit)
 
     def power_in(self, unit: Power) -> Optional[float]:
@@ -550,6 +550,14 @@ class PowerAttribute(GenericAttribute):
             if self.unit == Power.KW:
                 return self.value * 1000
         return self.value
+
+
+class CurrentAttribute(GenericAttribute):
+    """
+    A class used to represent a current Attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Current = Current.A) -> None:
+        super().__init__(name, parent, value, unit)
 
 
 class LevelAttribute(GenericAttribute):
