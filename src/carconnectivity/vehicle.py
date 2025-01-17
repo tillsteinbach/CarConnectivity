@@ -72,10 +72,12 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.position: Position = origin.position
             self.position.parent = self
             self.enabled = origin.enabled
-            self.climatization = origin.climatization
+            self.climatization: Climatization = origin.climatization
             self.climatization.parent = self
             self.outside_temperature: TemperatureAttribute = origin.outside_temperature
             self.outside_temperature.parent = self
+            self.specification: GenericVehicle.VehicleSpecification = origin.specification
+            self.specification.parent = self
             self.managing_connectors = origin.managing_connectors
         else:
             if vin is None:
@@ -99,8 +101,9 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.lights: Lights = Lights(vehicle=self)
             self.software: Software = Software(vehicle=self)
             self.position: Position = Position(parent=self)
-            self.climatization: Climatization = Climatization(parent=self)
+            self.climatization: Climatization = Climatization(vehicle=self)
             self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", self)
+            self.specification: GenericVehicle.VehicleSpecification = GenericVehicle.VehicleSpecification(vehicle=self)
 
             self.managing_connectors: list[BaseConnector] = []
             if managing_connector is not None:
@@ -151,6 +154,32 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
         if self.outside_temperature.enabled:
             return_string += f'{self.outside_temperature}\n'
         return return_string
+
+    class VehicleSpecification(GenericObject):
+        """
+        A class to represent the specification of a vehicle.
+        """
+        def __init__(self, vehicle: Optional[GenericVehicle] = None, origin: Optional[GenericObject] = None) -> None:
+            if origin is not None:
+                super().__init__(origin=origin)
+                self.steering_wheel_position: EnumAttribute = origin.steering_wheel_position
+                self.steering_wheel_position.parent = self
+            else:
+                if vehicle is None:
+                    raise ValueError('Cannot create specification without vehicle')
+                super().__init__(object_id='specification', parent=vehicle)
+                self.delay_notifications = True
+                self.steering_wheel_position: EnumAttribute = EnumAttribute("steering_wheel_position", parent=self)
+                self.delay_notifications = False
+
+        class SteeringPosition(Enum):
+            """
+            Enum representing the position of the steering wheel.
+            """
+            LEFT = 'left'
+            RIGHT = 'right'
+            INVALID = 'invalid'
+            UNKNOWN = 'unknown steering position'
 
     class Type(Enum):
         """
