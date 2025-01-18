@@ -16,6 +16,9 @@ class GenericUnit(Enum,):
     with specific units as needed.
     """
 
+    def __str__(self) -> str:
+        return self.value
+
 
 class Temperature(GenericUnit,):
     """

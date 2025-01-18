@@ -1,6 +1,6 @@
 """This module defines the classes that represent attributes in the CarConnectivity system."""
 from __future__ import annotations
-from typing import TYPE_CHECKING, TypeVar, Generic
+from typing import TYPE_CHECKING, TypeVar, Generic, Optional
 
 import logging
 
@@ -12,17 +12,18 @@ from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed
 from carconnectivity.observable import Observable
 
 if TYPE_CHECKING:
-    from typing import Any, Optional, Union, List, Literal, Callable, Tuple, Set
+    from typing import Any, Union, List, Literal, Callable, Tuple, Set, Self, Type
     from carconnectivity.objects import GenericObject
 
 
 T = TypeVar('T')
+U = TypeVar('U', bound=Optional[GenericUnit])
 
 
 LOG: logging.Logger = logging.getLogger("carconnectivity")
 
 
-class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-instance-attributes
+class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-instance-attributes
     """
     GenericAttribute represents a generic attribute with a name, value, unit, and parent object.
 
@@ -38,7 +39,7 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
         last_updated_local (Optional[datetime]): The last time the attribute value was updated in carconnectivity.
     """
 
-    def __init__(self, name: str, parent: GenericObject, value: Optional[T] = None, unit: Optional[GenericUnit] = None) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[T] = None, unit: Optional[U] = None) -> None:
         """
         Initialize an attribute for a car connectivity object.
 
@@ -53,7 +54,10 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
         self.__parent: GenericObject = parent
         self.__parent.children.append(self)
         self.__value: Optional[T] = None
-        self.__unit: Optional[GenericUnit] = unit
+        self.__unit: Optional[U] = unit
+        self.__unit_type: Type[U] = type(unit) if unit is not None else None
+        self._is_changeable: bool = False
+        self._on_set_hooks: List[Callable[[Self, Optional[T]], T]] = []
 
         self.__enabled = False
 
@@ -64,6 +68,32 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
 
         if value is not None:
             self._set_value(value)
+
+    def _add_on_set_hook(self, hook: Callable[[Self, T], T]) -> None:
+        """
+        Add a hook to be called when the value is set.
+
+        Args:
+            hook (Callable): The hook to be called when the value is set.
+
+        Returns:
+            None
+        """
+        if hook not in self._on_set_hooks:
+            self._on_set_hooks.append(hook)
+
+    def _remove_on_set_hook(self, hook: Callable[[Self, T], T]) -> None:
+        """
+        Remove a hook from the list of hooks to be called when the value is set.
+
+        Args:
+            hook (Callable): The hook to be removed.
+
+        Returns:
+            None
+        """
+        if hook in self._on_set_hooks:
+            self._on_set_hooks.remove(hook)
 
     def __del__(self) -> None:
         if self.enabled:
@@ -113,6 +143,16 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
         return self.__name
 
     @property
+    def is_changeable(self) -> bool:
+        """
+        Check if the attribute is changeable.
+
+        Returns:
+            bool: True if the attribute is changeable, False otherwise.
+        """
+        return self._is_changeable
+
+    @property
     def value(self) -> Optional[T]:
         """
         Retrieve the value of the attribute.
@@ -123,28 +163,38 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
         return self.__value
 
     @property
-    def unit(self) -> Optional[GenericUnit]:
+    def unit(self) -> Optional[U]:
         """
         Get the si-unit of the attribute.
 
         Returns:
-            Optional[GenericUnit]: The unit of the attribute if set, otherwise None.
+            Optional[U]: The unit of the attribute if set, otherwise None.
         """
         return self.__unit
 
-    def _set_unit(self, unit: Optional[GenericUnit]) -> None:
+    @property
+    def unit_type(self) -> Type[U]:
+        """
+        Get the si-unit of the attribute.
+
+        Returns:
+            TypeVar: The unit type of the attribute.
+        """
+        return self.__unit_type
+
+    def _set_unit(self, unit: Optional[U]) -> None:
         """
         Set the unit of the attribute.
 
         Args:
-            unit (Optional[GenericUnit]): The unit to set.
+            unit (Optional[U]): The unit to set.
 
         Returns:
             None
         """
         self.__unit = unit
 
-    def _set_value(self, value: Optional[T], measured: Optional[datetime] = None, unit: Optional[GenericUnit] = None) -> None:
+    def _set_value(self, value: Optional[T], measured: Optional[datetime] = None, unit: Optional[U] = None) -> None:
         """
         Set the value of the attribute.
 
@@ -156,7 +206,7 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
         Args:
             value (Optional[Any]): The value to set.
             measured (Optional[datetime], optional): The time the value was measured. Defaults to None.
-            unit (Optional[GenericUnit], optional): The unit of the value. Defaults to None.
+            unit (Optional[U], optional): The unit of the value. Defaults to None.
 
         Returns:
             None
@@ -195,7 +245,36 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
             self.__unit = unit
         self.notify(flags)
 
-    def in_locale(self, locale: str) -> Tuple[Optional[Any], Optional[GenericUnit]]:
+    @staticmethod
+    def convert(value, from_unit: U, to_unit: U) -> T:
+        """
+        Converts a value from one unit to another.
+
+        Args:
+            value: The value to be converted.
+            from_unit (U): The unit of the input value.
+            to_unit (U): The unit to convert the value to.
+
+        Returns:
+            T: The converted value.
+        """
+        del from_unit, to_unit
+        return value
+
+    def set_value(self, value: Optional[T], unit: Optional[U] = None) -> None:
+        """
+        Set the value of the attribute. Will convert the unit if needed.
+
+        Args:
+            value (Optional[Any]): The value to set.
+            unit (Optional[U], optional): The unit of the value. Defaults to None.
+
+        Returns:
+            None
+        """
+        self.value = self.convert(value, unit, self.__unit)
+
+    def in_locale(self, locale: str) -> Tuple[Optional[Any], Optional[U]]:
         """
         Returns the value and unit of the attribute, using the provided locale.
         This is used to change e.g. Temperature in Celsius to Farenheit for users in the US.
@@ -204,7 +283,7 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
             locale (str): The locale to be used.
 
         Returns:
-            Tuple[Optional[float], GenericUnit]: A tuple containing the converted value and unit of the attribute.
+            Tuple[Optional[float], U]: A tuple containing the converted value and unit of the attribute.
         """
         del locale
         return self.value, self.unit
@@ -214,7 +293,12 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
         """
         Setting the value directly is not allowed. GenericAttributes are not mutable by the user.
         """
-        raise NotImplementedError('You cannot set this attribute. Set is not implemented')
+        if self._is_changeable:
+            for hook in self._on_set_hooks:
+                new_value = hook(self, new_value)
+            self._set_value(new_value)
+        else:
+            raise TypeError('You cannot set this attribute. Attribute is not mutable.')
 
     @property
     def enabled(self) -> bool:
@@ -358,78 +442,93 @@ class GenericAttribute(Observable, Generic[T]):  # pylint: disable=too-many-inst
         return [self]
 
 
-class ChangeableAttribute(GenericAttribute):
-    """
-    A class representing a changeable attribute in the car connectivity system.
-
-    This class inherits from `GenericAttribute` and serves as a marker for attributes
-    that can be changed.
-    """
-    @GenericAttribute.value.setter
-    def value(self, new_value) -> None:
-        """
-        Setting the value directly.
-        """
-        self._set_value(new_value)
-
-
-class BooleanAttribute(GenericAttribute):
+class BooleanAttribute(GenericAttribute[bool, None]):
     """
     A class used to represent a Boolean Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: bool | None = None) -> None:
-        super().__init__(name, parent, value, None)
+    def __init__(self, name: str, parent: GenericObject, value: Optional[bool] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=None)
 
 
-class FloatAttribute(GenericAttribute):
+class FloatAttribute(GenericAttribute[float, GenericUnit]):
     """
-    A class used to represent a attribute attribute.
+    A class used to represent a float Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Optional[GenericUnit] = None) -> None:
-        super().__init__(name, parent, value, unit)
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Optional[U] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit)
 
 
-class EnumAttribute(GenericAttribute):
+class EnumAttribute(GenericAttribute[Enum, None]):
     """
     A class used to represent a Enum Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: Enum | None = None) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[Enum] = None) -> None:
         super().__init__(name, parent, value, None)
 
     def __str__(self) -> str:
         return f"{self.name}: {self.value.value if self.value else None}"
 
 
-class StringAttribute(GenericAttribute):
+class StringAttribute(GenericAttribute[str, None]):
     """
     A class used to represent a String Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: str | None = None) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[str] = None) -> None:
         super().__init__(name, parent, value, None)
 
 
-class DateAttribute(GenericAttribute):
+class DateAttribute(GenericAttribute[datetime, None]):
     """
     A class used to represent a Date Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: datetime | None = None) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[datetime] = None) -> None:
         super().__init__(name, parent, value, None)
 
 
-class DurationAttribute(GenericAttribute):
+class DurationAttribute(GenericAttribute[timedelta, None]):
     """
     A class used to represent a Duration.
     """
-    def __init__(self, name: str, parent: GenericObject, value: timedelta | None = None) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[timedelta] = None) -> None:
         super().__init__(name, parent, value, None)
 
 
-class RangeAttribute(GenericAttribute):
+class RangeAttribute(GenericAttribute[float, Length]):
     """
     A class used to represent a Range Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Length = Length.KM) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Length = Length.KM) -> None:
         super().__init__(name, parent, value, unit)
+
+    @staticmethod
+    def convert(value, from_unit: U, to_unit: U) -> T:
+        """
+        Convert a range value from one unit to another.
+
+        Parameters:
+        value (float): The range value to be converted.
+        from_unit (Length): The unit of the input range value. Must be an instance of the Length enum.
+        to_unit (Length): The unit to convert the range value to. Must be an instance of the Length enum.
+
+        Returns:
+        float: The converted range value in the desired unit. If any of the parameters are None or if the units are the same,
+        the original value is returned.
+
+        Supported conversions:
+        - Kilometers to miles
+        - Miles to kilometers
+        """
+        if from_unit is None or to_unit is None or value is None:
+            return value
+        elif to_unit == from_unit:
+            return value
+        elif to_unit == Length.KM:
+            if from_unit == Length.MI:
+                return value * 1.609344
+        elif to_unit == Length.MI:
+            if from_unit == Length.KM:
+                return value / 1.609344
+        return value
 
     def range_in(self, unit: Length) -> Optional[float]:
         """
@@ -443,17 +542,9 @@ class RangeAttribute(GenericAttribute):
         """
         if unit is None or self.unit is None:
             raise ValueError('No unit specified or value has no unit')
-        elif unit == self.unit or self.value is None:
-            return self.value
-        elif unit == Length.KM:
-            if self.unit == Length.MI:
-                return self.value * 0.621371192
-        elif unit == Length.MI:
-            if self.unit == Length.KM:
-                return self.value / 0.621371192
-        return self.value
+        return self.convert(self.value, self.unit, unit)
 
-    def in_locale(self, locale: str) -> Tuple[Optional[float], Optional[GenericUnit]]:
+    def in_locale(self, locale: str) -> Tuple[Optional[float], Optional[U]]:
         """
         Get the range in the unit the user is used to
 
@@ -473,12 +564,42 @@ class RangeAttribute(GenericAttribute):
         return self.range_in(Length.KM), Length.KM
 
 
-class SpeedAttribute(GenericAttribute):
+class SpeedAttribute(GenericAttribute[float, Speed]):
     """
     A class used to represent a Speed Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Speed = Speed.KMH) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Speed = Speed.KMH) -> None:
         super().__init__(name, parent, value, unit)
+
+    @staticmethod
+    def convert(value, from_unit: U, to_unit: U) -> T:
+        """
+        Convert a speed value from one unit to another.
+
+        Parameters:
+        value (float): The speed value to be converted.
+        from_unit (Speed): The unit of the input speed value. Must be an instance of the Speed enum.
+        to_unit (Speed): The unit to convert the speed value to. Must be an instance of the Speed enum.
+
+        Returns:
+        float: The converted speed value in the desired unit. If any of the parameters are None or if the units are the same,
+        the original value is returned.
+
+        Supported conversions:
+        - Kilometers per hour to miles per hour
+        - Miles per hour to kilometers per hour
+        """
+        if from_unit is None or to_unit is None or value is None:
+            return value
+        elif to_unit == from_unit:
+            return value
+        elif to_unit == Speed.KMH:
+            if from_unit == Speed.MPH:
+                return value * 1.609344
+        elif to_unit == Speed.MPH:
+            if from_unit == Speed.KMH:
+                return value / 1.609344
+        return value
 
     def speed_in(self, unit: Speed) -> Optional[float]:
         """
@@ -492,17 +613,9 @@ class SpeedAttribute(GenericAttribute):
         """
         if unit is None or self.unit is None:
             raise ValueError('No unit specified or value has no unit')
-        elif unit == self.unit or self.value is None:
-            return self.value
-        elif unit == Speed.KMH:
-            if self.unit == Speed.MPH:
-                return self.value * 0.621371192
-        elif unit == Speed.MPH:
-            if self.unit == Speed.KMH:
-                return self.value / 0.621371192
-        return self.value
+        return self.convert(self.value, self.unit, unit)
 
-    def in_locale(self, locale: str) -> Tuple[Optional[float], Optional[GenericUnit]]:
+    def in_locale(self, locale: str) -> Tuple[Optional[float], Optional[U]]:
         """
         Get the speed in the unit the user is used to
 
@@ -526,8 +639,38 @@ class PowerAttribute(GenericAttribute):
     """
     A class used to represent a power Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Power = Power.KW) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Power = Power.KW) -> None:
         super().__init__(name, parent, value, unit)
+
+    @staticmethod
+    def convert(value, from_unit: U, to_unit: U) -> T:
+        """
+        Convert a power value from one unit to another.
+
+        Parameters:
+        value (float): The power value to be converted.
+        from_unit (Power): The unit of the input power value. Must be an instance of the Power enum.
+        to_unit (Power): The unit to convert the power value to. Must be an instance of the Power enum.
+
+        Returns:
+        float: The converted power value in the desired unit. If any of the parameters are None or if the units are the same,
+        the original value is returned.
+
+        Supported conversions:
+        - Watts to Kilowatts
+        - Kilowatts to Watts
+        """
+        if from_unit is None or to_unit is None or value is None:
+            return value
+        elif to_unit == from_unit:
+            return value
+        elif to_unit == Power.KW:
+            if from_unit == Power.W:
+                return value / 1000
+        elif to_unit == Power.W:
+            if from_unit == Power.KW:
+                return value * 1000
+        return value
 
     def power_in(self, unit: Power) -> Optional[float]:
         """
@@ -541,41 +684,76 @@ class PowerAttribute(GenericAttribute):
         """
         if unit is None or self.unit is None:
             raise ValueError('No unit specified or value has no unit')
-        elif unit == self.unit or self.value is None:
-            return self.value
-        elif unit == Power.KW:
-            if self.unit == Power.W:
-                return self.value / 1000
-        elif unit == Power.W:
-            if self.unit == Power.KW:
-                return self.value * 1000
-        return self.value
+        return self.convert(self.value, self.unit, unit)
 
 
-class CurrentAttribute(GenericAttribute):
+class CurrentAttribute(GenericAttribute[float, Current]):
     """
     A class used to represent a current Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Current = Current.A) -> None:
-        super().__init__(name, parent, value, unit)
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Current = Current.A) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit)
 
 
-class LevelAttribute(GenericAttribute):
+class LevelAttribute(GenericAttribute[float, Level]):
     """
     A class used to represent a Level Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: float | None = None) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None) -> None:
         super().__init__(name, parent, value, unit=Level.PERCENTAGE)
 
 
-class TemperatureAttribute(GenericAttribute):
+class TemperatureAttribute(GenericAttribute[float, Temperature]):
     """
     A class used to represent a Temperature Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: float | None = None, unit: Temperature = Temperature.C) -> None:
+    def __init__(self, name: str, parent: GenericObject, value: Optional[T] = None, unit: Temperature = Temperature.C) -> None:
         super().__init__(name, parent, value, unit=unit)
 
-    def temperature_in(self, unit: Temperature) -> Optional[float]:
+    @staticmethod
+    def convert(value, from_unit: U, to_unit: U) -> T:
+        """
+        Convert a temperature value from one unit to another.
+
+        Parameters:
+        value (float): The temperature value to be converted.
+        from_unit (Temperature): The unit of the input temperature value. Must be an instance of the Temperature enum.
+        to_unit (Temperature): The unit to convert the temperature value to. Must be an instance of the Temperature enum.
+
+        Returns:
+        float: The converted temperature value in the desired unit. If any of the parameters are None or if the units are the same,
+        the original value is returned.
+
+        Supported conversions:
+        - Celsius to Fahrenheit
+        - Celsius to Kelvin
+        - Fahrenheit to Celsius
+        - Fahrenheit to Kelvin
+        - Kelvin to Celsius
+        - Kelvin to Fahrenheit
+        """
+        if from_unit is None or to_unit is None or value is None:
+            return value
+        elif to_unit == from_unit:
+            return value
+        elif to_unit == Temperature.C:
+            if from_unit == Temperature.F:
+                return (value - 32.0) * (5.0 / 9.0)
+            elif from_unit == Temperature.K:
+                return value - 273.15
+        elif to_unit == Temperature.F:
+            if from_unit == Temperature.C:
+                return ((value * (9.0 / 5.0)) + 32.0)
+            elif from_unit == Temperature.K:
+                return ((value - 273.15) * (9.0 / 5.0)) + 32.0
+        elif to_unit == Temperature.K:
+            if from_unit == Temperature.C:
+                return value + 273.15
+            elif from_unit == Temperature.F:
+                return 273.5 + ((value - 32.0) * (5.0 / 9.0))
+        return value
+
+    def temperature_in(self, unit: U) -> Optional[float]:
         """
         Convert the temperature to a different unit.
 
@@ -587,26 +765,9 @@ class TemperatureAttribute(GenericAttribute):
         """
         if unit is None or self.unit is None:
             raise ValueError('No unit specified or value has no unit')
-        elif unit == self.unit or self.value is None:
-            return self.value
-        elif unit == Temperature.C:
-            if self.unit == Temperature.F:
-                return (self.value - 32.0) * (5.0 / 9.0)
-            elif self.unit == Temperature.K:
-                return self.value - 273.15
-        elif unit == Temperature.F:
-            if self.unit == Temperature.C:
-                return ((self.value * (9.0 / 5.0)) + 32.0)
-            elif self.unit == Temperature.K:
-                return ((self.value - 273.15) * (9.0 / 5.0)) + 32.0
-        elif unit == Temperature.K:
-            if self.unit == Temperature.C:
-                return self.value + 273.15
-            elif self.unit == Temperature.F:
-                return 273.5 + ((self.value - 32.0) * (5.0 / 9.0))
-        return self.value
+        return self.convert(self.value, self.unit, unit)
 
-    def in_locale(self, locale: str) -> Tuple[Optional[float], Optional[GenericUnit]]:
+    def in_locale(self, locale: str) -> Tuple[Optional[T], Optional[U]]:
         """
         Get the temperature in the unit the user is used to
 

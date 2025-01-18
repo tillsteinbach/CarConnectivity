@@ -6,6 +6,7 @@ from enum import Enum
 
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import EnumAttribute, TemperatureAttribute, DateAttribute, BooleanAttribute
+from carconnectivity.commands import Commands
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -20,6 +21,8 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
     def __init__(self, vehicle: Optional[GenericVehicle] = None, origin: Optional[Climatization] = None) -> None:
         if origin is not None:
             super().__init__(origin=origin)
+            self.commands: Commands = origin.commands
+            self.commands.parent = self
             self.state: EnumAttribute = origin.state
             self.state.parent = self
             self.estimated_date_reached: DateAttribute = origin.estimated_date_reached
@@ -27,6 +30,7 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
             self.settings: Climatization.Settings = Climatization.Settings(origin=origin.settings)
         else:
             super().__init__(object_id='climatization', parent=vehicle)
+            self.commands: Commands = Commands(parent=self)
             self.state: EnumAttribute = EnumAttribute("state", self)
             self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", self)
             self.settings: Climatization.Settings = Climatization.Settings(parent=self)
@@ -49,6 +53,7 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
         def __init__(self, parent: Optional[GenericObject] = None, origin: Optional[Climatization.Settings] = None) -> None:
             if origin is not None:
                 super().__init__(origin=origin)
+                self.commands: Commands = Commands(parent=self)
                 self.target_temperature: TemperatureAttribute = origin.target_temperature
                 self.target_temperature.parent = self
                 self.window_heating: BooleanAttribute = origin.window_heating
