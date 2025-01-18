@@ -458,7 +458,7 @@ class FloatAttribute(GenericAttribute[float, GenericUnit]):
         super().__init__(name=name, parent=parent, value=value, unit=unit)
 
 
-class EnumAttribute(GenericAttribute[Enum, None]):
+class EnumAttribute(Generic[T], GenericAttribute[T, None]):
     """
     A class used to represent a Enum Attribute.
     """

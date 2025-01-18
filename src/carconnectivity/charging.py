@@ -9,6 +9,7 @@ from enum import Enum
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import DateAttribute, EnumAttribute, SpeedAttribute, PowerAttribute, LevelAttribute, CurrentAttribute, BooleanAttribute
 from carconnectivity.charging_connector import ChargingConnector
+from carconnectivity.commands import Commands
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -23,11 +24,13 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
         if origin is not None:
             super().__init__(origin=origin)
             self.delay_notifications = True
+            self.commands: Commands = origin.commands
+            self.commands.parent = self
             self.connector: ChargingConnector = origin.connector
             self.connector.parent = self
-            self.state: EnumAttribute = origin.state
+            self.state: EnumAttribute[Charging.ChargingState] = origin.state
             self.state.parent = self
-            self.type: EnumAttribute = origin.type
+            self.type: EnumAttribute[Charging.ChargingType] = origin.type
             self.type.parent = self
             self.rate: SpeedAttribute = origin.rate
             self.rate.parent = self
@@ -42,9 +45,10 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
                 raise ValueError('Cannot create charging without vehicle')
             super().__init__(object_id='charging', parent=vehicle)
             self.delay_notifications = True
+            self.commands: Commands = Commands(parent=self)
             self.connector: ChargingConnector = ChargingConnector(charging=self)
-            self.state: EnumAttribute = EnumAttribute("state", parent=self)
-            self.type: EnumAttribute = EnumAttribute("type", parent=self)
+            self.state: EnumAttribute[Charging.ChargingState] = EnumAttribute("state", parent=self)
+            self.type: EnumAttribute[Charging.ChargingType] = EnumAttribute("type", parent=self)
             self.rate: SpeedAttribute = SpeedAttribute("rate", parent=self)
             self.power: PowerAttribute = PowerAttribute("power", parent=self)
             self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self)

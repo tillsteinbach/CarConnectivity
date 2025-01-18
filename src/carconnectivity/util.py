@@ -4,8 +4,9 @@ Module containing generic utility functions and classes.
 This module provides utility functions and classes for logging and other purposes.
 """
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, NoReturn
 
+import argparse
 import logging
 import re
 import json
@@ -153,3 +154,22 @@ class ExtendedWithNullEncoder(ExtendedEncoder):
             return super().default(o)
         except TypeError:
             return None
+
+
+class ThrowingArgumentParser(argparse.ArgumentParser):
+    """
+    A custom argument parser that raises an exception instead of exiting on error.
+
+    This class extends `argparse.ArgumentParser` and overrides the `error` method
+    to raise an `argparse.ArgumentError` instead of printing an error message and
+    exiting the program.
+
+    Methods:
+        error(message: str) -> NoReturn:
+            Raises an `argparse.ArgumentError` with the provided error message.
+
+    Args:
+        message (str): The error message to be included in the raised exception.
+    """
+    def error(self, message) -> NoReturn:
+        raise argparse.ArgumentError(argument=None, message=message)

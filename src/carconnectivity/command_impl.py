@@ -11,6 +11,7 @@ from carconnectivity.objects import GenericObject
 from carconnectivity.errors import SetterError
 from carconnectivity.units import Temperature
 from carconnectivity.climatization import Climatization
+from carconnectivity.util import ThrowingArgumentParser
 
 if TYPE_CHECKING:
     from carconnectivity.objects import Optional
@@ -34,11 +35,8 @@ class ClimatizationStartStopCommand(GenericCommand):
 
     @value.setter
     def value(self, new_value: Optional[Union[str, Dict]]) -> None:
-        """
-        Setting the value directly is not allowed. GenericAttributes are not mutable by the user.
-        """
         if isinstance(new_value, str):
-            parser = argparse.ArgumentParser(prog='', add_help=False, exit_on_error=False)
+            parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
             parser.add_argument('command', help='Command to execute', type=ClimatizationStartStopCommand.Command,
                                 choices=list(ClimatizationStartStopCommand.Command))
             if self.parent is not None and isinstance((climatization := self.parent.parent), Climatization) and climatization.settings is not None \
@@ -65,13 +63,11 @@ class ClimatizationStartStopCommand(GenericCommand):
             new_value = newvalue_dict
         elif isinstance(new_value, dict):
             if 'command' in new_value and isinstance(new_value['command'], str):
-                if new_value['command'].upper() == 'start':
-                    new_value['command'] = ClimatizationStartStopCommand.Command.START
-                elif new_value['command'].upper() == 'stop':
-                    new_value['command'] = ClimatizationStartStopCommand.Command.STOP
+                if new_value['command'] in ClimatizationStartStopCommand.Command:
+                    new_value['command'] = ClimatizationStartStopCommand.Command(new_value['command'])
                 else:
                     raise ValueError('Invalid value for ClimatizationStartStopCommand. '
-                                     'Command must be either "START" or "STOP".')
+                                     f'Command must be one of {ClimatizationStartStopCommand.Command}')
         if self._is_changeable:
             for hook in self._on_set_hooks:
                 new_value = hook(self, new_value)
@@ -86,6 +82,63 @@ class ClimatizationStartStopCommand(GenericCommand):
         Attributes:
             START (str): Command to start the climatization.
             STOP (str): Command to stop the climatization.
+        """
+        START = 'start'
+        STOP = 'stop'
+
+        def __str__(self) -> str:
+            return self.value
+
+
+class ChargingStartStopCommand(GenericCommand):
+    """
+    ChargingStartStopCommand is a command class for starting or stopping the charging.
+
+    Command (Enum): Enum class representing different commands for charging.
+
+    """
+    def __init__(self, name: str = 'start-stop', parent: Optional[GenericObject] = None) -> None:
+        super().__init__(name=name, parent=parent)
+
+    @property
+    def value(self) -> Optional[Union[str, Dict]]:
+        return super().value
+
+    @value.setter
+    def value(self, new_value: Optional[Union[str, Dict]]) -> None:
+        if isinstance(new_value, str):
+            parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
+            parser.add_argument('command', help='Command to execute', type=ChargingStartStopCommand.Command,
+                                choices=list(ChargingStartStopCommand.Command))
+            try:
+                args = parser.parse_args(new_value.split(sep=' '))
+            except argparse.ArgumentError as e:
+                raise SetterError(f'Invalid format for ChargingStartStopCommand: {e.message} {parser.format_usage()}') from e
+
+            newvalue_dict = {}
+            newvalue_dict['command'] = args.command
+            new_value = newvalue_dict
+        elif isinstance(new_value, dict):
+            if 'command' in new_value and isinstance(new_value['command'], str):
+                if new_value['command'] in ChargingStartStopCommand.Command:
+                    new_value['command'] = ChargingStartStopCommand.Command(new_value['command'])
+                else:
+                    raise ValueError('Invalid value for ChargingStartStopCommand. '
+                                     f'Command must be one of {ChargingStartStopCommand.Command}')
+        if self._is_changeable:
+            for hook in self._on_set_hooks:
+                new_value = hook(self, new_value)
+            self._set_value(new_value)
+        else:
+            raise TypeError('You cannot set this attribute. Attribute is not mutable.')
+
+    class Command(Enum):
+        """
+        Enum class representing different commands for charging.
+
+        Attributes:
+            START (str): Command to start the charging.
+            STOP (str): Command to stop the charging.
         """
         START = 'start'
         STOP = 'stop'
