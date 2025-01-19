@@ -8,6 +8,8 @@ import pkgutil
 import json
 import logging
 import os
+from datetime import datetime, timezone
+from cryptography.fernet import Fernet
 
 import carconnectivity_connectors
 import carconnectivity_plugins
@@ -30,6 +32,11 @@ if TYPE_CHECKING:
     from carconnectivity_plugins.base.plugin import BasePlugin
 
 LOG: logging.Logger = logging.getLogger("carconnectivity")
+
+TOKENSTORE_FORMAT_VERSION: str = '1.0'
+CACHE_FORMAT_VERSION: str = '1.0'
+TOKENSTORE_KEY: str = '5weee2AYwL08LfVsDzzzDL82ffN6lWgwjUHYPzdzZBk='
+CACHE_KEY: str = '5weee2AYwL08LfVsDzzzDL82ffN6lWgwjUHYPzdzZBk='
 
 
 def __iter_namespace(ns_pkg) -> Iterator[pkgutil.ModuleInfo]:
@@ -109,7 +116,16 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         if self.__tokenstore_file is not None:
             try:
                 with open(file=self.__tokenstore_file, mode='r', encoding='utf8') as file:
-                    self.__tokenstore = json.load(file)
+                    tokenstore_file_dict: Dict[str, Any] = json.load(file)
+                    if 'format_version' not in tokenstore_file_dict or tokenstore_file_dict['format_version'] != TOKENSTORE_FORMAT_VERSION:
+                        LOG.info('Tokenstore file has wrong format version, ignoring it')
+                        self.__tokenstore = {}
+                    else:
+                        if 'tokenstore_encrypted' in self.config['carConnectivity'] and not self.config['carConnectivity']['tokenstore_encrypted']:
+                            self.__tokenstore = tokenstore_file_dict['tokenstore']
+                        else:
+                            fernet = Fernet(TOKENSTORE_KEY.encode('utf-8'))
+                            self.__tokenstore = json.loads(fernet.decrypt(tokenstore_file_dict['tokenstore'].encode('utf-8')).decode('utf-8'))
             except json.JSONDecodeError as err:
                 LOG.info('Could not use tokenstore from file %s (%s)', tokenstore_file, err.msg)
                 self.__tokenstore = {}
@@ -124,7 +140,16 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
             LOG.info('Reading cachefile %s', cache_file)
             try:
                 with open(self.__cache_file, 'r', encoding='utf8') as file:
-                    self.__cache = json.load(file)
+                    cache_file_dict: Dict[str, Any] = json.load(file)
+                    if 'format_version' not in cache_file_dict or cache_file_dict['format_version'] != CACHE_FORMAT_VERSION:
+                        LOG.info('Cache file has wrong format version, ignoring it')
+                        self.__cache = {}
+                    else:
+                        if 'cache_encrypted' in self.config['carConnectivity'] and not self.config['carConnectivity']['cache_encrypted']:
+                            self.__cache = cache_file_dict['cache']
+                        else:
+                            fernet = Fernet(CACHE_KEY.encode('utf-8'))
+                            self.__cache = json.loads(fernet.decrypt(cache_file_dict['cache'].encode('utf-8')).decode('utf-8'))
             except json.decoder.JSONDecodeError:
                 LOG.error('Cachefile %s seems corrupted will delete it and try to create a new one. '
                           'If this problem persists please check if a problem with your disk exists.', self.__cache_file)
@@ -192,7 +217,15 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         if self.__tokenstore and self.__tokenstore_file:
             try:
                 with open(file=self.__tokenstore_file, mode='w', encoding='utf8') as file:
-                    json.dump(self.__tokenstore, file)
+                    tokenstore_file_dict: Dict[str, Any] = {}
+                    tokenstore_file_dict['format_version'] = TOKENSTORE_FORMAT_VERSION
+                    tokenstore_file_dict['date'] = datetime.now(tz=timezone.utc).isoformat()
+                    if 'tokenstore_encrypted' in self.config['carConnectivity'] and not self.config['carConnectivity']['tokenstore_encrypted']:
+                        tokenstore_file_dict['tokenstore'] = self.__tokenstore
+                    else:
+                        fernet = Fernet(TOKENSTORE_KEY.encode('utf-8'))
+                        tokenstore_file_dict['tokenstore'] = fernet.encrypt(json.dumps(self.__tokenstore).encode('utf-8')).decode('utf-8')
+                    json.dump(tokenstore_file_dict, file)
                 LOG.info('Writing tokenstore to file %s', self.__tokenstore_file)
             except ValueError as err:  # pragma: no cover
                 LOG.info('Could not write tokenstore to file %s (%s)', self.__tokenstore_file, err)
@@ -201,7 +234,15 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         if self.__cache and self.__cache_file:
             LOG.info('Writing cachefile %s', self.__cache_file)
             with open(file=self.__cache_file, mode='w', encoding='utf8') as file:
-                json.dump(self.__cache, file, cls=ExtendedEncoder)
+                cache_file_dict: Dict[str, Any] = {}
+                cache_file_dict['format_version'] = CACHE_FORMAT_VERSION
+                cache_file_dict['date'] = datetime.now(tz=timezone.utc).isoformat()
+                if 'cache_encrypted' in self.config['carConnectivity'] and not self.config['carConnectivity']['cache_encrypted']:
+                    cache_file_dict['cache'] = self.__cache
+                else:
+                    fernet = Fernet(CACHE_KEY.encode('utf-8'))
+                    cache_file_dict['cache'] = fernet.encrypt(json.dumps(self.__cache).encode('utf-8')).decode('utf-8')
+                json.dump(cache_file_dict, file, cls=ExtendedEncoder)
 
     def startup(self) -> None:
         """
