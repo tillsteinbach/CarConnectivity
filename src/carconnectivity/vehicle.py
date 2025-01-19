@@ -50,6 +50,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.vin.parent = self
             self.name: StringAttribute = origin.name
             self.name.parent = self
+            self.manufacturer: StringAttribute = origin.manufacturer
+            self.manufacturer.parent = self
             self.model: StringAttribute = origin.model
             self.model.parent = self
             self.type: EnumAttribute = origin.type
@@ -91,6 +93,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
                 raise ValueError('VIN cannot be None')
             self.vin = StringAttribute("vin", self, vin.upper())
             self.name = StringAttribute("name", self)
+            self.manufacturer = StringAttribute("manufacturer", self)
             self.model = StringAttribute("model", self)
             self.type = EnumAttribute("type", parent=self)
             self.license_plate = StringAttribute("license_plate", self)
