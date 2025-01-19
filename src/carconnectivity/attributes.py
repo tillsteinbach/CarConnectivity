@@ -757,9 +757,14 @@ class TemperatureAttribute(GenericAttribute[float, Temperature]):
         Returns:
             float: The temperature in the specified unit.
         """
-        if unit is None or self.unit is None:
-            raise ValueError('No unit specified or value has no unit')
-        return self.convert(self.value, self.unit, unit)
+        if unit is None:
+            raise ValueError('No unit specified')
+        if self.unit is None:
+            target_unit = Temperature.C
+            LOG.warning('No unit specified for temperature in Attribute %s, defaulting to Celsius', self.name)
+        else:
+            target_unit = self.unit
+        return self.convert(self.value, target_unit, unit)
 
     def in_locale(self, locale: str) -> Tuple[Optional[T], Optional[U]]:
         """
