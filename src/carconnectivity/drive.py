@@ -67,6 +67,7 @@ class GenericDrive(GenericObject):
             return_string += f'{self.range}\n'
         return return_string
 
+    # pylint: disable=duplicate-code
     class Type(Enum):
         """
         Enum representing different types of drives.
@@ -80,6 +81,7 @@ class GenericDrive(GenericObject):
         LPG = 'lpg'
         INVALID = 'invalid'
         UNKNOWN = 'unknown drive type'
+    # pylint: enable=duplicate-code
 
 
 class ElectricDrive(GenericDrive):

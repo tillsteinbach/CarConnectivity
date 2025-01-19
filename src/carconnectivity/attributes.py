@@ -39,7 +39,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         last_updated_local (Optional[datetime]): The last time the attribute value was updated in carconnectivity.
     """
 
-    def __init__(self, name: str, parent: GenericObject, value: Optional[T] = None, unit: Optional[U] = None) -> None:
+    def __init__(self, name: str, parent: Optional[GenericObject], value: Optional[T] = None, unit: Optional[U] = None) -> None:
         """
         Initialize an attribute for a car connectivity object.
 
@@ -51,6 +51,8 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         """
         super().__init__()
         self.__name: str = name
+        if parent is None:
+            raise ValueError('Parent object is required')
         self.__parent: GenericObject = parent
         self.__parent.children.append(self)
         self.__value: Optional[T] = None
@@ -99,6 +101,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         if self.enabled:
             self.enabled = False
 
+    # pylint: disable=duplicate-code
     def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, entries_sorted=True) \
             -> List[Tuple[Callable, Observable.ObserverEvent, Observable.ObserverPriority, bool]]:
         """
@@ -121,6 +124,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
                 return int(entry[2])
             return sorted(observers, key=get_priority)
         return list(observers)
+    # pylint: enable=duplicate-code
 
     @property
     def name(self) -> str:
@@ -288,6 +292,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         del locale
         return self.value, self.unit
 
+    # pylint: disable=duplicate-code
     @value.setter
     def value(self, new_value: T) -> None:
         """
@@ -299,6 +304,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             self._set_value(new_value)
         else:
             raise TypeError('You cannot set this attribute. Attribute is not mutable.')
+    # pylint: enable=duplicate-code
 
     @property
     def enabled(self) -> bool:
@@ -310,6 +316,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         """
         return self.__enabled
 
+    # pylint: disable=duplicate-code
     @enabled.setter
     def enabled(self, set_enabled: bool) -> None:
         if set_enabled:
@@ -329,6 +336,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             # Disable parent only if all children are disabled
             if all(not child.enabled for child in self.__parent.children):
                 self.__parent.enabled = False
+    # pylint: enable=duplicate-code
 
     @property
     def parent(self) -> GenericObject:
@@ -518,16 +526,12 @@ class RangeAttribute(GenericAttribute[float, Length]):
         - Kilometers to miles
         - Miles to kilometers
         """
-        if from_unit is None or to_unit is None or value is None:
+        if from_unit is None or to_unit is None or value is None or from_unit == to_unit:
             return value
-        elif to_unit == from_unit:
-            return value
-        elif to_unit == Length.KM:
-            if from_unit == Length.MI:
-                return value * 1.609344
-        elif to_unit == Length.MI:
-            if from_unit == Length.KM:
-                return value / 1.609344
+        if from_unit == Length.MI and to_unit == Length.KM:
+            return value * 1.609344
+        if from_unit == Length.KM and to_unit == Length.MI:
+            return value / 1.609344
         return value
 
     def range_in(self, unit: Length) -> Optional[float]:
@@ -589,16 +593,12 @@ class SpeedAttribute(GenericAttribute[float, Speed]):
         - Kilometers per hour to miles per hour
         - Miles per hour to kilometers per hour
         """
-        if from_unit is None or to_unit is None or value is None:
+        if from_unit is None or to_unit is None or value is None or to_unit == from_unit:
             return value
-        elif to_unit == from_unit:
-            return value
-        elif to_unit == Speed.KMH:
-            if from_unit == Speed.MPH:
-                return value * 1.609344
-        elif to_unit == Speed.MPH:
-            if from_unit == Speed.KMH:
-                return value / 1.609344
+        if from_unit == Speed.MPH and to_unit == Speed.KMH:
+            return value * 1.609344
+        if from_unit == Speed.KMH and to_unit == Speed.MPH:
+            return value / 1.609344
         return value
 
     def speed_in(self, unit: Speed) -> Optional[float]:
@@ -660,16 +660,12 @@ class PowerAttribute(GenericAttribute):
         - Watts to Kilowatts
         - Kilowatts to Watts
         """
-        if from_unit is None or to_unit is None or value is None:
+        if from_unit is None or to_unit is None or value is None or to_unit == from_unit:
             return value
-        elif to_unit == from_unit:
-            return value
-        elif to_unit == Power.KW:
-            if from_unit == Power.W:
-                return value / 1000
-        elif to_unit == Power.W:
-            if from_unit == Power.KW:
-                return value * 1000
+        if from_unit == Power.W and to_unit == Power.KW:
+            return value / 1000
+        if from_unit == Power.KW and to_unit == Power.W:
+            return value * 1000
         return value
 
     def power_in(self, unit: Power) -> Optional[float]:
@@ -711,7 +707,7 @@ class TemperatureAttribute(GenericAttribute[float, Temperature]):
         super().__init__(name, parent, value, unit=unit)
 
     @staticmethod
-    def convert(value, from_unit: U, to_unit: U) -> T:
+    def convert(value, from_unit: U, to_unit: U) -> T:  # pylint: disable=too-many-return-statements
         """
         Convert a temperature value from one unit to another.
 
@@ -732,24 +728,22 @@ class TemperatureAttribute(GenericAttribute[float, Temperature]):
         - Kelvin to Celsius
         - Kelvin to Fahrenheit
         """
-        if from_unit is None or to_unit is None or value is None:
+        if from_unit is None or to_unit is None or value is None or to_unit == from_unit:
             return value
-        elif to_unit == from_unit:
-            return value
-        elif to_unit == Temperature.C:
+        if to_unit == Temperature.C:
             if from_unit == Temperature.F:
                 return (value - 32.0) * (5.0 / 9.0)
-            elif from_unit == Temperature.K:
+            if from_unit == Temperature.K:
                 return value - 273.15
-        elif to_unit == Temperature.F:
+        if to_unit == Temperature.F:
             if from_unit == Temperature.C:
                 return ((value * (9.0 / 5.0)) + 32.0)
-            elif from_unit == Temperature.K:
+            if from_unit == Temperature.K:
                 return ((value - 273.15) * (9.0 / 5.0)) + 32.0
-        elif to_unit == Temperature.K:
+        if to_unit == Temperature.K:
             if from_unit == Temperature.C:
                 return value + 273.15
-            elif from_unit == Temperature.F:
+            if from_unit == Temperature.F:
                 return 273.5 + ((value - 32.0) * (5.0 / 9.0))
         return value
 

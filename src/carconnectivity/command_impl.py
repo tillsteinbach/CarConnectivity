@@ -33,6 +33,7 @@ class ClimatizationStartStopCommand(GenericCommand):
     def value(self) -> Optional[Union[str, Dict]]:
         return super().value
 
+    # pylint: disable=duplicate-code
     @value.setter
     def value(self, new_value: Optional[Union[str, Dict]]) -> None:
         if isinstance(new_value, str):
@@ -73,7 +74,8 @@ class ClimatizationStartStopCommand(GenericCommand):
                 new_value = hook(self, new_value)
             self._set_value(new_value)
         else:
-            raise TypeError('You cannot set this attribute. Attribute is not mutable.')
+            raise TypeError('You cannot use this command. Command is not implemented.')
+    # pylint: enable=duplicate-code
 
     class Command(Enum):
         """

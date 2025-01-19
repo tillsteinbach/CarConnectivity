@@ -196,6 +196,7 @@ class GenericObject(Observable):
         """
         return self.__enabled
 
+    # pylint: disable=duplicate-code
     @enabled.setter
     def enabled(self, set_enabled: bool) -> None:
 
@@ -222,6 +223,7 @@ class GenericObject(Observable):
             if self.__parent is not None and \
                     all(not child.enabled for child in self.__parent.children):
                 self.__parent.enabled = False
+    # pylint: enable=duplicate-code
 
     def get_by_path(self, address_string: str) -> Union[GenericObject, GenericAttribute, Literal[False]]:
         """

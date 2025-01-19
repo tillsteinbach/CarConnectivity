@@ -33,6 +33,7 @@ class Windows(GenericObject):  # pylint: disable=too-many-instance-attributes
                 return_string += f'\t{window}'
         return return_string
 
+    # pylint: disable=duplicate-code
     class OpenState(Enum):
         """
         Enum for window open state.
@@ -42,6 +43,7 @@ class Windows(GenericObject):  # pylint: disable=too-many-instance-attributes
         UNSUPPORTED = 'unsupported'
         INVALID = 'invalid'
         UNKNOWN = 'unknown open state'
+    # pylint: enable=duplicate-code
 
     class Window(GenericObject):
         """

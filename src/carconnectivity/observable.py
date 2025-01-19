@@ -98,6 +98,7 @@ class Observable:
         """
         return [observerEntry[0] for observerEntry in self.get_observer_entries(flags, on_transaction_end)]
 
+    # pylint: disable=duplicate-code
     def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, entries_sorted=True) -> List[Any]:
         """
         Retrieve a sorted list of observer entries based on the specified flags and transaction end condition.
@@ -122,6 +123,7 @@ class Observable:
                 return int(entry[2])
             return sorted(observers, key=get_priority)
         return list(observers)
+    # pylint: enable=duplicate-code
 
     def notify(self, flags: Observable.ObserverEvent) -> None:
         """

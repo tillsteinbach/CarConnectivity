@@ -36,6 +36,7 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
                 return_string += f'\t{door}'
         return return_string
 
+    # pylint: disable=duplicate-code
     class OpenState(Enum):
         """
         Enum for door open state.
@@ -45,6 +46,7 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
         UNSUPPORTED = 'unsupported'
         INVALID = 'invalid'
         UNKNOWN = 'unknown open state'
+    # pylint: enable=duplicate-code
 
     class LockState(Enum):
         """

@@ -14,7 +14,7 @@ import carconnectivity_plugins
 
 from carconnectivity.objects import GenericObject
 from carconnectivity.garage import Garage
-from carconnectivity.util import ExtendedEncoder
+from carconnectivity.json_util import ExtendedEncoder
 from carconnectivity.errors import ConfigurationError
 from carconnectivity.connectors import Connectors
 from carconnectivity.plugins import Plugins
@@ -49,7 +49,7 @@ discovered_plugins: Dict[str, ModuleType] = {
 }
 
 
-class CarConnectivity(GenericObject):
+class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
     CarConnectivity class is the main class to interact with the carconnectivity library.
 
@@ -59,6 +59,7 @@ class CarConnectivity(GenericObject):
         plugins (List[BasePlugin]): List of plugin instances.
         garage (Garage): Instance of the Garage class.
     """
+    # pylint: disable=too-many-statements, too-many-branches, too-many-locals
     def __init__(self, config: Dict, tokenstore_file: Optional[str] = None, cache_file: Optional[str] = None) -> None:
         """
         Initialize the CarConnectivity object.
@@ -89,10 +90,10 @@ class CarConnectivity(GenericObject):
         # Configure logging
         if 'log_level' in config['carConnectivity'] and config['carConnectivity']['log_level'] is not None:
             config['carConnectivity']['log_level'] = config['carConnectivity']['log_level'].upper()
-            if config['carConnectivity']['log_level'] in logging.getLevelNamesMapping():
+            if config['carConnectivity']['log_level'] in logging._nameToLevel:
                 LOG.setLevel(config['carConnectivity']['log_level'])
             else:
-                raise ConfigurationError(f'Invalid log level: "{config["carConnectivity"]["log_level"]}" not in {list(logging.getLevelNamesMapping().keys())}')
+                raise ConfigurationError(f'Invalid log level: "{config["carConnectivity"]["log_level"]}" not in {list(logging._nameToLevel.keys())}')
         if 'log_format' in config['carConnectivity'] and config['carConnectivity']['log_format'] is not None:
             log_format: str = config['carConnectivity']['log_format']
         else:

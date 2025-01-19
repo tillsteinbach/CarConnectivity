@@ -40,6 +40,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
     license_plate : StringAttribute
         The license plate of the vehicle.
     """
+    # pylint: disable=too-many-statements
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
                  origin: Optional[GenericVehicle] = None) -> None:
         if origin is not None:
@@ -124,7 +125,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
         """
         return connector in self.managing_connectors
 
-    def __str__(self) -> str:
+    def __str__(self) -> str:  # pylint: disable=too-many-branches
         return_string: str = 'Vehicle:\n'
         return_string += f'{self.vin}\n'
         if self.name.enabled:
@@ -181,6 +182,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             INVALID = 'invalid'
             UNKNOWN = 'unknown steering position'
 
+    # pylint: disable=duplicate-code
     class Type(Enum):
         """
         Enum representing different types of cars.
@@ -195,6 +197,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
         LPG = 'lpg'
         INVALID = 'invalid'
         UNKNOWN = 'unknown car type'
+    # pylint: enable=duplicate-code
 
     class State(Enum):
         """

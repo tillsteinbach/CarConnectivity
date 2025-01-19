@@ -30,7 +30,7 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
             car_connectivity (CarConnectivity): The instance in which the plugin is running.
             config (Dict): A dictionary containing the configuration parameters for this plugin only.
         """
-        super(BasePlugin, self).__init__(object_id=plugin_id, parent=car_connectivity.plugins)
+        super().__init__(object_id=plugin_id, parent=car_connectivity.plugins)
         self.car_connectivity: CarConnectivity = car_connectivity
         self.config: Dict = config
         self.log_level = StringAttribute(name="log_level", parent=self)

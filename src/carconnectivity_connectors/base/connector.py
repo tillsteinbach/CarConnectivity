@@ -30,7 +30,7 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
             car_connectivity (CarConnectivity): The instance in which the connector is running.
             config (Dict): A dictionary containing the configuration parameters for this connector only.
         """
-        super(BaseConnector, self).__init__(object_id=connector_id, parent=car_connectivity.connectors)
+        super().__init__(object_id=connector_id, parent=car_connectivity.connectors)
         self.car_connectivity: CarConnectivity = car_connectivity
         self.config: Dict = config
         self.log_level = StringAttribute(name="log_level", parent=self)

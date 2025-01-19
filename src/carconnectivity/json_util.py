@@ -12,16 +12,12 @@ if TYPE_CHECKING:
 
 
 class ExtendedEncoder(json.JSONEncoder):
-    """Custom JSON encoder that serializes datetime objects to ISO 8601 format and Enum values to their corresponding values.
-
-    This encoder extends the default JSONEncoder to handle additional types such as datetime and Enum.
-    """
+    """Datetime object encode used for json serialization"""
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
     def default(self, o: Any) -> str:
-        """
-        Serialize datetime object to isodate string and Enum values to their corresponding values
+        """Serialize datetime object to isodate string
 
         Args:
             o (datetime): datetime object
@@ -37,10 +33,10 @@ class ExtendedEncoder(json.JSONEncoder):
 
 
 class ExtendedWithNullEncoder(ExtendedEncoder):
-    """Datetime object encode used for json serialization"""
+    """Encoder allowing null used for json serialization"""
 
     def default(self, o: Any) -> str:
         try:
             return super().default(o)
         except TypeError:
-            return 'null'
+            return '(null)'
