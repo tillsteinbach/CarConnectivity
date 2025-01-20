@@ -38,6 +38,7 @@ connectors = [
 plugins = [
     'carconnectivity-plugin-mqtt',
     'carconnectivity-plugin-abrp',
+    'carconnectivity-plugin-homekit',
 ]
 
 [project.urls]
