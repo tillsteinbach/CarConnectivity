@@ -39,7 +39,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         last_updated_local (Optional[datetime]): The last time the attribute value was updated in carconnectivity.
     """
 
-    def __init__(self, name: str, parent: Optional[GenericObject], value: Optional[T] = None, unit: Optional[U] = None) -> None:
+    def __init__(self, name: str, parent: Optional[GenericObject], value: Optional[T] = None, value_type: Type[T] = None, unit: Optional[U] = None) -> None:
         """
         Initialize an attribute for a car connectivity object.
 
@@ -56,6 +56,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         self.__parent: GenericObject = parent
         self.__parent.children.append(self)
         self.__value: Optional[T] = None
+        self.__value_type: Type[T] = value_type or type(value) if value is not None else None
         self.__unit: Optional[U] = unit
         self.__unit_type: Type[U] = type(unit) if unit is not None else None
         self._is_changeable: bool = False
@@ -118,7 +119,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         observers: Set[Tuple[Callable, Observable.ObserverEvent, Observable.ObserverPriority, bool]] \
             = set(super().get_observer_entries(flags, on_transaction_end, False))
         if self.__parent is not None:
-            observers.update(self.__parent.get_observer_entries(flags, on_transaction_end, False))
+            observers.update(self.__parent.get_observer_entries(flags=flags, on_transaction_end=on_transaction_end, entries_sorted=False))
         if entries_sorted:
             def get_priority(entry) -> int:
                 return int(entry[2])
@@ -217,6 +218,9 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         """
         flags: Observable.ObserverEvent = Observable.ObserverEvent.NONE
         now: datetime = datetime.now(tz=timezone.utc)
+
+        value = self.type_conversion(value)
+
         # Value from the past
         if self.last_updated is not None and measured is not None and self.last_updated > measured:
             LOG.debug('Value from the past: %s: %s > %s', self.name, self.last_updated, measured)
@@ -248,6 +252,21 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             flags |= Observable.ObserverEvent.VALUE_CHANGED
             self.__unit = unit
         self.notify(flags)
+
+    def type_conversion(self, value: T) -> bool:
+        """
+        Convert the value to the correct type.
+
+        Args:
+            value (T): The value to convert.
+
+        Returns:
+            bool: The converted value.
+        """
+        if self.__value_type is float and not isinstance(value, float):
+            LOG.debug('Implicitly converting value to float: %s', value)
+            return float(value)
+        return value
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -455,7 +474,7 @@ class BooleanAttribute(GenericAttribute[bool, None]):
     A class used to represent a Boolean Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[bool] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, unit=None)
+        super().__init__(name=name, parent=parent, value=value, value_type=bool, unit=None)
 
 
 class FloatAttribute(GenericAttribute[float, GenericUnit]):
@@ -463,15 +482,15 @@ class FloatAttribute(GenericAttribute[float, GenericUnit]):
     A class used to represent a float Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Optional[U] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, unit=unit)
+        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit)
 
 
 class EnumAttribute(Generic[T], GenericAttribute[T, None]):
     """
     A class used to represent a Enum Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: Optional[Enum] = None) -> None:
-        super().__init__(name, parent, value, None)
+    def __init__(self, name: str, parent: GenericObject, value: Optional[Enum] = None, value_type: Type[Enum] = Enum) -> None:
+        super().__init__(name=name, parent=parent, value=value, value_type=value_type, unit=None)
 
     def __str__(self) -> str:
         return f"{self.name}: {self.value.value if self.value else None}"
@@ -482,7 +501,7 @@ class StringAttribute(GenericAttribute[str, None]):
     A class used to represent a String Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[str] = None) -> None:
-        super().__init__(name, parent, value, None)
+        super().__init__(name=name, parent=parent, value=value, value_type=str, unit=None)
 
 
 class DateAttribute(GenericAttribute[datetime, None]):
@@ -490,7 +509,7 @@ class DateAttribute(GenericAttribute[datetime, None]):
     A class used to represent a Date Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[datetime] = None) -> None:
-        super().__init__(name, parent, value, None)
+        super().__init__(name=name, parent=parent, value=value, value_type=datetime, unit=None)
 
 
 class DurationAttribute(GenericAttribute[timedelta, None]):
@@ -498,7 +517,7 @@ class DurationAttribute(GenericAttribute[timedelta, None]):
     A class used to represent a Duration.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[timedelta] = None) -> None:
-        super().__init__(name, parent, value, None)
+        super().__init__(name=name, parent=parent, value=value, value_type=timedelta, unit=None)
 
 
 class RangeAttribute(GenericAttribute[float, Length]):
@@ -506,7 +525,7 @@ class RangeAttribute(GenericAttribute[float, Length]):
     A class used to represent a Range Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Length = Length.KM) -> None:
-        super().__init__(name, parent, value, unit)
+        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -573,7 +592,7 @@ class SpeedAttribute(GenericAttribute[float, Speed]):
     A class used to represent a Speed Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Speed = Speed.KMH) -> None:
-        super().__init__(name, parent, value, unit)
+        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -640,7 +659,7 @@ class PowerAttribute(GenericAttribute):
     A class used to represent a power Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Power = Power.KW) -> None:
-        super().__init__(name, parent, value, unit)
+        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -688,7 +707,7 @@ class CurrentAttribute(GenericAttribute[float, Current]):
     A class used to represent a current Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Current = Current.A) -> None:
-        super().__init__(name=name, parent=parent, value=value, unit=unit)
+        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit)
 
 
 class LevelAttribute(GenericAttribute[float, Level]):
@@ -696,7 +715,7 @@ class LevelAttribute(GenericAttribute[float, Level]):
     A class used to represent a Level Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None) -> None:
-        super().__init__(name, parent, value, unit=Level.PERCENTAGE)
+        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=Level.PERCENTAGE)
 
 
 class TemperatureAttribute(GenericAttribute[float, Temperature]):
@@ -704,7 +723,7 @@ class TemperatureAttribute(GenericAttribute[float, Temperature]):
     A class used to represent a Temperature Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[T] = None, unit: Temperature = Temperature.C) -> None:
-        super().__init__(name, parent, value, unit=unit)
+        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:  # pylint: disable=too-many-return-statements

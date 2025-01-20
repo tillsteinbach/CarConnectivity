@@ -40,6 +40,8 @@ class GenericObject(Observable):
             self.__parent: Optional[GenericObject] = origin.parent
             self.__enabled: bool = origin.enabled
             self.__children: List[Union[GenericObject, GenericAttribute]] = origin.children
+            if self.enabled:
+                self.notify(flags=Observable.ObserverEvent.UPDATED)
         else:
             super().__init__()
             if object_id is None:
@@ -69,7 +71,7 @@ class GenericObject(Observable):
         observers: Set[Tuple[Callable, Observable.ObserverEvent, Observable.ObserverPriority, bool]] \
             = set(super().get_observer_entries(flags, on_transaction_end, False))
         if self.__parent is not None:
-            observers.update(self.__parent.get_observer_entries(flags, on_transaction_end, False))
+            observers.update(self.__parent.get_observer_entries(flags=flags, on_transaction_end=on_transaction_end, entries_sorted=False))
         if entries_sorted:
             def get_priority(entry) -> int:
                 return int(entry[2])
