@@ -19,7 +19,7 @@ Python API to connect to various car services. If you are not a developer and en
 - [CarConnectivity-MQTT](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt): A MQTT Client that provides Vehicle data to the MQTT Broker of your choice (e.g. your home automation solution such as [ioBroker](https://www.iobroker.net), [FHEM](https://fhem.de) or [Home Assistant](https://www.home-assistant.io))
 
 ## Supported Car Brands
-CarConenctivity uses a plugin architecture to enable access to the services of various brands. Currently known plugins are:
+CarConenctivity uses a connector plugin architecture to enable access to the services of various brands. Currently known connector plugins are:
 
 | Brand      | Connector                                                                                                     |
 |------------|---------------------------------------------------------------------------------------------------------------|
@@ -28,6 +28,18 @@ CarConenctivity uses a plugin architecture to enable access to the services of v
 
 If you know of a connector not listed here let me know and I will add it to the list.
 If you are a python developer and willing to implement a connector for a brand not listed here, let me know and I try to support you as good as possible
+
+## Supported Plugins
+CarConenctivity uses a plugin architecture to enable connectivity to other services and protocols. Currently known plugins are:
+
+| Service of Protocol          | Connector                                                                                         |
+|------------------------------|---------------------------------------------------------------------------------------------------|
+| MQTT                         | [CarConnectivity-plugin-mqtt](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt)       |
+| A Better Routeplanner (ABRP) | [CarConnectivity-plugin-abrp](https://github.com/tillsteinbach/CarConnectivity-plugin-abrp)       |
+| Apple Homekit                | [CarConnectivity-plugin-homekit](https://github.com/tillsteinbach/CarConnectivity-plugin-homekit) |
+
+If you know of a plugin not listed here let me know and I will add it to the list.
+If you are a python developer and willing to implement a plugin for a service not listed here, let me know and I try to support you as good as possible
 
 ## Configuration
 In your carconnectivity.json configuration add a section for the connectors you like to use like this:
