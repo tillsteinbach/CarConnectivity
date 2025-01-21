@@ -56,7 +56,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         self.__parent: GenericObject = parent
         self.__parent.children.append(self)
         self.__value: Optional[T] = None
-        self.__value_type: Type[T] = value_type or type(value) if value is not None else None
+        self.__value_type: Type[T] = value_type if value_type is not None else type(value) if value is not None else None
         self.__unit: Optional[U] = unit
         self.__unit_type: Type[U] = type(unit) if unit is not None else None
         self._is_changeable: bool = False
@@ -263,7 +263,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             bool: The converted value.
         """
-        if self.__value_type is float and not isinstance(value, float):
+        if self.__value_type is float and value is not None and not isinstance(value, float):
             LOG.debug('Implicitly converting value to float: %s', value)
             return float(value)
         return value

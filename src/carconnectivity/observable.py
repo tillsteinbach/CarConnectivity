@@ -19,13 +19,13 @@ class Observable:
     """
     def __init__(self, origin: Optional[Observable] = None) -> None:
         if origin is not None:
-            self.__observers: Set[Tuple[Callable[[Optional[Any], Observable.ObserverEvent], None],
+            self.__observers: Set[Tuple[Callable[[Any, Observable.ObserverEvent], None],
                                         Observable.ObserverEvent, Observable.ObserverPriority, bool]] = origin.__observers  # pylint: disable=protected-access
             self.flags_to_notify_on_transaction_end: Observable.ObserverEvent = origin.flags_to_notify_on_transaction_end
             self.__delay_notifications: bool = origin.__delay_notifications  # pylint: disable=protected-access
             self.__delayed_flags: Observable.ObserverEvent = origin.__delayed_flags  # pylint: disable=protected-access
         else:
-            self.__observers: Set[Tuple[Callable[[Optional[Any], Observable.ObserverEvent], None],
+            self.__observers: Set[Tuple[Callable[[Any, Observable.ObserverEvent], None],
                                         Observable.ObserverEvent, Observable.ObserverPriority, bool]] = set()
             self.flags_to_notify_on_transaction_end: Observable.ObserverEvent = Observable.ObserverEvent.NONE
             self.__delay_notifications: bool = False
@@ -52,7 +52,7 @@ class Observable:
             self.notify(self.__delayed_flags)
             self.__delayed_flags = Observable.ObserverEvent.NONE
 
-    def add_observer(self, observer: Callable[[Optional[Any], Observable.ObserverEvent], None], flag: Observable.ObserverEvent,
+    def add_observer(self, observer: Callable[[Any, Observable.ObserverEvent], None], flag: Observable.ObserverEvent,
                      priority: Optional[Observable.ObserverPriority] = None, on_transaction_end: bool = False) -> None:
         """
         Adds an observer to the list of observers.
@@ -70,7 +70,7 @@ class Observable:
             priority = Observable.ObserverPriority.USER_MID  # pyright: ignore[reportAssignmentType]
         self.__observers.add((observer, flag, priority, on_transaction_end))
 
-    def remove_observer(self, observer: Callable[[Optional[Any], Observable.ObserverEvent], None], flag: Optional[Observable.ObserverEvent] = None) -> None:
+    def remove_observer(self, observer: Callable[[Any, Observable.ObserverEvent], None], flag: Optional[Observable.ObserverEvent] = None) -> None:
         """
         Removes an observer from the list of observers.
 
@@ -85,7 +85,7 @@ class Observable:
         self.__observers = set(filter(lambda observerEntry: observerEntry[0] == observer
                                       or (flag is not None and observerEntry[1] == flag), self.__observers))  # pyright: ignore [reportAttributeAccessIssue]
 
-    def get_observers(self, flags, on_transaction_end: bool = False) -> List[Callable[[Optional[Any], Observable.ObserverEvent], None]]:
+    def get_observers(self, flags, on_transaction_end: bool = False) -> List[Callable[[Any, Observable.ObserverEvent], None]]:
         """
         Retrieve a list of observers based on the specified flags.
 
@@ -100,7 +100,7 @@ class Observable:
 
     # pylint: disable=duplicate-code
     def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, entries_sorted=True) -> \
-            List[Callable[[Optional[Any], Observable.ObserverEvent], None]]:
+            List[Callable[[Any, Observable.ObserverEvent], None]]:
         """
         Retrieve a sorted list of observer entries based on the specified flags and transaction end condition.
 
@@ -112,7 +112,7 @@ class Observable:
         Returns:
             List[Any]: A sorted list of observer entries that match the specified criteria.
         """
-        observers: Set[Tuple[Callable[[Optional[Any], Observable.ObserverEvent], None], Observable.ObserverEvent, Observable.ObserverPriority, bool]] = set()
+        observers: Set[Tuple[Callable[[Any, Observable.ObserverEvent], None], Observable.ObserverEvent, Observable.ObserverPriority, bool]] = set()
         for observer_entry in self.__observers:
             observer, observerflags, priority, observer_on_transaction_complete = observer_entry
             del observer
@@ -143,7 +143,7 @@ class Observable:
         """
         #  Notify observers if delay is not enabled
         if not self.delay_notifications:
-            observers: List[Callable[[Optional[Any], Observable.ObserverEvent], None]] = self.get_observers(flags=flags, on_transaction_end=False)
+            observers: List[Callable[[Any, Observable.ObserverEvent], None]] = self.get_observers(flags=flags, on_transaction_end=False)
             for observer in observers:
                 observer(element=self, flags=flags)
         else:
@@ -170,7 +170,7 @@ class Observable:
             None
         """
         if self.flags_to_notify_on_transaction_end != Observable.ObserverEvent.NONE:
-            observers: List[Callable[[Optional[Any], Observable.ObserverEvent], None]] = \
+            observers: List[Callable[[Any, Observable.ObserverEvent], None]] = \
                 self.get_observers(flags=self.flags_to_notify_on_transaction_end, on_transaction_end=True)
             for observer in observers:
                 observer(element=self, flags=self.flags_to_notify_on_transaction_end)
