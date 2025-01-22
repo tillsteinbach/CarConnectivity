@@ -53,7 +53,8 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
         def __init__(self, parent: Optional[GenericObject] = None, origin: Optional[Climatization.Settings] = None) -> None:
             if origin is not None:
                 super().__init__(origin=origin)
-                self.commands: Commands = Commands(parent=self)
+                self.commands: Commands = origin.commands
+                self.commands.parent = self
                 self.target_temperature: TemperatureAttribute = origin.target_temperature
                 self.target_temperature.parent = self
                 self.window_heating: BooleanAttribute = origin.window_heating
@@ -64,6 +65,7 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
                 self.climatization_at_unlock.parent = self
             else:
                 super().__init__(object_id="settings", parent=parent)
+                self.commands: Commands = Commands(parent=self)
                 self.target_temperature: TemperatureAttribute = TemperatureAttribute("target_temperature", parent=self)
                 self.window_heating: BooleanAttribute = BooleanAttribute("window_heating", parent=self)
                 self.seat_heating: BooleanAttribute = BooleanAttribute("seat_heating", parent=self)

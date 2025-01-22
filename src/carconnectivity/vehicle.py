@@ -21,6 +21,7 @@ from carconnectivity.drive import ElectricDrive
 from carconnectivity.units import Length
 from carconnectivity.position import Position
 from carconnectivity.climatization import Climatization
+from carconnectivity.commands import Commands
 
 if TYPE_CHECKING:
     from typing import Optional
@@ -46,6 +47,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
         if origin is not None:
             super().__init__(origin=origin)
             self.delay_notifications = True
+            self.commands: Commands = origin.commands
+            self.commands.parent = self
             self.vin: StringAttribute = origin.vin
             self.vin.parent = self
             self.name: StringAttribute = origin.name
@@ -91,6 +94,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.delay_notifications = True
             if vin is None:
                 raise ValueError('VIN cannot be None')
+            self.commands: Commands = Commands(parent=self)
             self.vin = StringAttribute("vin", self, vin.upper())
             self.name = StringAttribute("name", self)
             self.manufacturer = StringAttribute("manufacturer", self)

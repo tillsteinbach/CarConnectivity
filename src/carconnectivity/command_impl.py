@@ -147,3 +147,57 @@ class ChargingStartStopCommand(GenericCommand):
 
         def __str__(self) -> str:
             return self.value
+
+
+class HonkAndFlashCommand(GenericCommand):
+    """
+    HonkAndFlashCommand is a command class for honking and flashing the lights.
+    """
+    def __init__(self, name: str = 'honk-flash', parent: Optional[GenericObject] = None) -> None:
+        super().__init__(name=name, parent=parent)
+
+    @property
+    def value(self) -> Optional[Union[str, Dict]]:
+        return super().value
+
+    @value.setter
+    def value(self, new_value: Optional[Union[str, Dict]]) -> None:
+        if isinstance(new_value, str):
+            parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
+            parser.add_argument('command', help='Command to execute', type=HonkAndFlashCommand.Command,
+                                choices=list(HonkAndFlashCommand.Command))
+            try:
+                args = parser.parse_args(new_value.split(sep=' '))
+            except argparse.ArgumentError as e:
+                raise SetterError(f'Invalid format for HonkAndFlashCommand: {e.message} {parser.format_usage()}') from e
+
+            newvalue_dict = {}
+            newvalue_dict['command'] = args.command
+            new_value = newvalue_dict
+        elif isinstance(new_value, dict):
+            if 'command' in new_value and isinstance(new_value['command'], str):
+                if new_value['command'] in HonkAndFlashCommand.Command:
+                    new_value['command'] = HonkAndFlashCommand.Command(new_value['command'])
+                else:
+                    raise ValueError('Invalid value for HonkAndFlashCommand. '
+                                     f'Command must be one of {HonkAndFlashCommand.Command}')
+        if self._is_changeable:
+            for hook in self._on_set_hooks:
+                new_value = hook(self, new_value)
+            self._set_value(new_value)
+        else:
+            raise TypeError('You cannot set this attribute. Attribute is not mutable.')
+
+    class Command(Enum):
+        """
+        Enum class representing different commands for honking and flashing the lights.
+
+        Attributes:
+            FLASH (str): Command to flash the lights.
+            HONK_AND_FLASH (str): Command to honk and flash the lights.
+        """
+        FLASH = 'flash'
+        HONK_AND_FLASH = 'honk-and-flash'
+
+        def __str__(self) -> str:
+            return self.value
