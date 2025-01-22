@@ -6,6 +6,7 @@ from enum import Enum
 
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import EnumAttribute
+from carconnectivity.commands import Commands
 
 if TYPE_CHECKING:
     from typing import Optional, Dict
@@ -20,6 +21,7 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
         if vehicle is None:
             raise ValueError('Cannot create doors without vehicle')
         super().__init__(object_id='doors', parent=vehicle)
+        self.commands: Commands = Commands(parent=self)
         self.open_state = EnumAttribute("open_state", self)
         self.lock_state = EnumAttribute("lock_state", self)
         self.doors: Dict[str, Doors.Door] = {}
