@@ -45,7 +45,8 @@ plugins = [
 [project.urls]
 
 [project.scripts]
-allcars = "allCars:main"
+carconnectivity-mqtt = "carconnectivity.carconnectivity_base:main"
+allcars = "all_cars:main"
 
 [tool.setuptools_scm]
 write_to = "src/carconnectivity/_version.py"
