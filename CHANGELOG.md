@@ -8,6 +8,6 @@ All notable changes to this project will be documented in this file.
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/WeConnect-python/compare/v0.1...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.1...HEAD
 
-[0.1]: https://github.com/tillsteinbach/WeConnect-python/releases/tag/v0.1
+[0.1]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.1
