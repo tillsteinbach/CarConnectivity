@@ -56,4 +56,3 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
             self.door_id: str = door_id
             self.open_state = EnumAttribute("open_state", self)
             self.lock_state = EnumAttribute("lock_state", self)
-

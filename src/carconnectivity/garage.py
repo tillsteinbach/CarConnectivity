@@ -95,4 +95,3 @@ class Garage(GenericObject):
             list[str]: A list containing all the vehicle vins.
         """
         return list(self._vehicles.keys())
-

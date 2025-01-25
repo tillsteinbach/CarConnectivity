@@ -20,6 +20,7 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
     A class to represent the charging of a vehicle.
     """
+    # pylint: disable=duplicate-code
     def __init__(self, vehicle: Optional[ElectricVehicle] = None,  origin: Optional[Charging] = None) -> None:
         if origin is not None:
             super().__init__(origin=origin)
@@ -54,6 +55,8 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
             self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self)
             self.settings: Charging.Settings = Charging.Settings(parent=self)
         self.delay_notifications = False
+
+    # pylint: enable=duplicate-code
 
     class ChargingState(Enum,):
         """

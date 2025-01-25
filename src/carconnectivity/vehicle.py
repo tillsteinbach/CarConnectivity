@@ -41,7 +41,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
     license_plate : StringAttribute
         The license plate of the vehicle.
     """
-    # pylint: disable=too-many-statements
+    # pylint: disable-next=too-many-statements,duplicate-code
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
                  origin: Optional[GenericVehicle] = None) -> None:
         if origin is not None:
@@ -119,6 +119,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
 
             self.enabled = True
         self.delay_notifications = False
+    # pylint: enable=duplicate-code
 
     def is_managed_by_connector(self, connector: Optional[BaseConnector]) -> bool:
         """

@@ -18,4 +18,3 @@ class Software(GenericObject):
     def __init__(self, vehicle: GenericVehicle) -> None:
         super().__init__(object_id='software', parent=vehicle)
         self.version = StringAttribute('version', parent=self)
-

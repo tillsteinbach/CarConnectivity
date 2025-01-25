@@ -39,6 +39,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         last_updated_local (Optional[datetime]): The last time the attribute value was updated in carconnectivity.
     """
 
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: Optional[GenericObject], value: Optional[T] = None, value_type: Type[T] = None, unit: Optional[U] = None) -> None:
         """
         Initialize an attribute for a car connectivity object.
