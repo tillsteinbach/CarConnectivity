@@ -39,6 +39,7 @@ DEFAULT_LOG_LEVEL = "ERROR"
 LOG: logging.Logger = logging.getLogger("carconnectivity-example")
 
 
+#  pylint: disable=duplicate-code
 def main() -> None:
     """ Simple example showing how to retrieve all vehicles from the account """
     parser = argparse.ArgumentParser(
