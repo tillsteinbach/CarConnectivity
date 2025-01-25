@@ -14,7 +14,8 @@ authors = [
     { name = "Till Steinbach" }
 ]
 dependencies = [
-    "argparse"
+    "argparse",
+    "cryptography",
 ]
 readme = "README.md"
 license = { file = "LICENSE" }
