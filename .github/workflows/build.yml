@@ -36,6 +36,9 @@ jobs:
     - name: Build
       run: |
         python -m build
+    - name: Install
+      run: |
+        find ./dist/*.whl | xargs pip install
     - name: Lint
       run: |
         make lint

@@ -40,4 +40,3 @@ class Lights(GenericObject):  # pylint: disable=too-many-instance-attributes
             super().__init__(object_id=light_id, parent=lights)
             self.light_id: str = light_id
             self.light_state = EnumAttribute("light_state", self)
-
