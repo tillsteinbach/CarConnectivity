@@ -45,7 +45,7 @@ plugins = [
 [project.urls]
 
 [project.scripts]
-carconnectivity-mqtt = "carconnectivity.carconnectivity_base:main"
+carconnectivity = "carconnectivity.carconnectivity_base:main"
 allcars = "all_cars:main"
 
 [tool.setuptools_scm]
