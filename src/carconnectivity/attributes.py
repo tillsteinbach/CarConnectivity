@@ -382,7 +382,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
 
     def __str__(self) -> str:
         unit_str = self.__unit.value if self.__unit else ""
-        return f"{self.__name}: {self.__value}{unit_str}"
+        return f"{self.__value}{unit_str}"
 
     def get_by_path(self, address_string: str) -> Union[GenericObject, GenericAttribute, Literal[False]]:  # pylint: disable=too-many-return-statements
         """
@@ -493,7 +493,7 @@ class EnumAttribute(Generic[T], GenericAttribute[T, None]):
         super().__init__(name=name, parent=parent, value=value, value_type=value_type, unit=None)
 
     def __str__(self) -> str:
-        return f"{self.name}: {self.value.value if self.value else None}"
+        return f"{self.value.value if self.value else None}"
 
 
 class StringAttribute(GenericAttribute[str, None]):

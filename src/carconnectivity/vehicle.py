@@ -132,37 +132,6 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
         """
         return connector in self.managing_connectors
 
-    def __str__(self) -> str:  # pylint: disable=too-many-branches
-        return_string: str = 'Vehicle:\n'
-        return_string += f'{self.vin}\n'
-        if self.name.enabled:
-            return_string += f'{self.name}\n'
-        if self.model.enabled:
-            return_string += f'{self.model}\n'
-        if self.license_plate.enabled:
-            return_string += f'{self.license_plate}\n'
-        if self.type.enabled:
-            return_string += f'{self.type}\n'
-        if self.odometer.enabled:
-            return_string += f'{self.odometer}\n'
-        if self.state.enabled:
-            return_string += f'{self.state}\n'
-        if self.drives.enabled:
-            return_string += f'{self.drives}\n'
-        if self.doors.enabled:
-            return_string += f'{self.doors}\n'
-        if self.windows.enabled:
-            return_string += f'{self.windows}\n'
-        if self.lights.enabled:
-            return_string += f'{self.lights}\n'
-        if self.software.enabled:
-            return_string += f'{self.software}\n'
-        if self.position.enabled:
-            return_string += f'{self.position}\n'
-        if self.outside_temperature.enabled:
-            return_string += f'{self.outside_temperature}\n'
-        return return_string
-
     class VehicleSpecification(GenericObject):
         """
         A class to represent the specification of a vehicle.

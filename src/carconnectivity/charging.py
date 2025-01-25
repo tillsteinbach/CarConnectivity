@@ -55,16 +55,6 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
             self.settings: Charging.Settings = Charging.Settings(parent=self)
         self.delay_notifications = False
 
-    def __str__(self) -> str:
-        return_string: str = 'Charging:\n'
-        if self.state.enabled and self.state.value is not None:
-            return_string += f'State: {self.state.value.value}\n'
-        if self.type.enabled and self.type.value is not None:
-            return_string += f'Type: {self.type.value.value}\n'
-        if self.estimated_date_reached.enabled:
-            return_string += f'Estimated time reached: {self.estimated_date_reached.value}\n'
-        return return_string
-
     class ChargingState(Enum,):
         """
         Enum representing the various states of charging.

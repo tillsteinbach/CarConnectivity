@@ -35,17 +35,6 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
             self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", self)
             self.settings: Climatization.Settings = Climatization.Settings(parent=self)
 
-    def __str__(self) -> str:
-        return_string: str = 'Climatization:'
-        if self.state.enabled and self.state.value is not None:
-            return_string += f'State: {self.state.value.value}'
-        if self.estimated_date_reached.enabled and self.estimated_date_reached.value is not None:
-            return_string += f'Estimated Date Temperature Reached: {self.estimated_date_reached.value}'
-        if self.settings is not None and self.settings.enabled:
-            return_string += f'Settings: {self.settings}'
-        return_string += '\n'
-        return return_string
-
     class Settings(GenericObject):
         """
         This class represents the settings for car  charging.

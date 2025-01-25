@@ -19,8 +19,3 @@ class Software(GenericObject):
         super().__init__(object_id='software', parent=vehicle)
         self.version = StringAttribute('version', parent=self)
 
-    def __str__(self) -> str:
-        return_string: str = 'Software:\n'
-        if self.version.enabled:
-            return_string += f'\t{self.version}\n'
-        return return_string

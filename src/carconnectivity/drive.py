@@ -39,14 +39,6 @@ class Drives(GenericObject):
         """
         self.drives[drive.id] = drive
 
-    def __str__(self) -> str:
-        return_string: str = 'Drives:\n'
-        if self.total_range.enabled:
-            return_string += f'{self.total_range}\n'
-        for drive in self.drives.values():
-            return_string += f'\t{drive}\n'
-        return return_string
-
 
 class GenericDrive(GenericObject):
     """
@@ -58,14 +50,6 @@ class GenericDrive(GenericObject):
         self.range: RangeAttribute = RangeAttribute(name="range", parent=self, value=None, unit=Length.UNKNOWN)
         self.level: LevelAttribute = LevelAttribute(name="level", parent=self, value=None)
         self.enabled = True
-
-    def __str__(self) -> str:
-        return_string: str = f'Drive: {self.id}\n'
-        if self.type.enabled:
-            return_string += f'{self.type}\n'
-        if self.range.enabled:
-            return_string += f'{self.range}\n'
-        return return_string
 
     # pylint: disable=duplicate-code
     class Type(Enum):

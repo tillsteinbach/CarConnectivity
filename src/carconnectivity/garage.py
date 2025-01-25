@@ -96,5 +96,3 @@ class Garage(GenericObject):
         """
         return list(self._vehicles.keys())
 
-    def __str__(self) -> str:
-        return 'Garage:\n' + '\n'.join(f'  {vehicle}' for vehicle in self._vehicles.values())

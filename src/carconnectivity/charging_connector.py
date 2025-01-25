@@ -27,16 +27,6 @@ class ChargingConnector(GenericObject):  # pylint: disable=too-many-instance-att
         self.external_power: EnumAttribute = EnumAttribute("lock_state", parent=self)
         self.delay_notifications = False
 
-    def __str__(self) -> str:
-        return_string: str = 'Connector:\n'
-        if self.connection_state.enabled and self.connection_state.value is not None:
-            return_string += f'Connection State: {self.connection_state.value.value}\n'
-        if self.lock_state.enabled and self.lock_state.value is not None:
-            return_string += f'Lock State: {self.lock_state.value.value}\n'
-        if self.external_power.enabled and self.external_power.value is not None:
-            return_string += f'External Power: {self.external_power.value.value}\n'
-        return return_string
-
     class ChargingConnectorConnectionState(Enum,):
         """
         Enum representing the connection state of the connector.

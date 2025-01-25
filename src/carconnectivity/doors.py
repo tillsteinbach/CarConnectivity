@@ -26,18 +26,6 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
         self.lock_state = EnumAttribute("lock_state", self)
         self.doors: Dict[str, Doors.Door] = {}
 
-    def __str__(self) -> str:
-        return_string: str = 'Doors:'
-        if self.open_state.enabled and self.open_state.value is not None:
-            return_string += f' {self.open_state.value.value}'
-        if self.lock_state.enabled and self.lock_state.value is not None:
-            return_string += f' {self.lock_state.value.value}'
-        return_string += '\n'
-        for door in self.doors.values():
-            if door is not None and door.enabled:
-                return_string += f'\t{door}'
-        return return_string
-
     # pylint: disable=duplicate-code
     class OpenState(Enum):
         """
@@ -69,11 +57,3 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
             self.open_state = EnumAttribute("open_state", self)
             self.lock_state = EnumAttribute("lock_state", self)
 
-        def __str__(self) -> str:
-            return_string: str = f'Door {self.door_id}:'
-            if self.open_state.enabled and self.open_state.value is not None:
-                return_string += f' {self.open_state.value.value}'
-            if self.lock_state.enabled and self.lock_state.value is not None:
-                return_string += f' {self.lock_state.value.value}'
-            return_string += '\n'
-            return return_string

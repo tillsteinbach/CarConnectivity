@@ -23,16 +23,6 @@ class Lights(GenericObject):  # pylint: disable=too-many-instance-attributes
         self.light_state = EnumAttribute("light_state", self)
         self.lights: dict[str, Lights.Light] = {}
 
-    def __str__(self) -> str:
-        return_string: str = 'Lights:'
-        if self.light_state.enabled and self.light_state.value is not None:
-            return_string += f' {self.light_state.value.value}'
-        return_string += '\n'
-        for light in self.lights.values():
-            if light is not None and light.enabled:
-                return_string += f'\t{light}'
-        return return_string
-
     class LightState(Enum):
         """
         Enum for light state.
@@ -51,9 +41,3 @@ class Lights(GenericObject):  # pylint: disable=too-many-instance-attributes
             self.light_id: str = light_id
             self.light_state = EnumAttribute("light_state", self)
 
-        def __str__(self) -> str:
-            return_string: str = f'Light {self.light_id}:'
-            if self.light_state.enabled and self.light_state.value is not None:
-                return_string += f' {self.light_state.value.value}'
-            return_string += '\n'
-            return return_string

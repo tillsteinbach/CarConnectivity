@@ -21,15 +21,6 @@ class Position(GenericObject):  # pylint: disable=too-many-instance-attributes
         self.latitude: FloatAttribute = FloatAttribute("latitude", self)
         self.longitude: FloatAttribute = FloatAttribute("longitude", self)
 
-    def __str__(self) -> str:
-        return_string: str = 'Position:'
-        if self.latitude.enabled and self.latitude.value is not None:
-            return_string += f' {self.latitude.value}'
-        if self.longitude.enabled and self.longitude.value is not None:
-            return_string += f' {self.longitude.value}'
-        return_string += '\n'
-        return return_string
-
     class PositionType(Enum):
         """
         Enum for position type.

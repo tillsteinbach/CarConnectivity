@@ -297,11 +297,6 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         """
         return self.garage
 
-    def __str__(self) -> str:
-        return_string: str = ''
-        return_string += str(self.get_garage())
-        return return_string
-
     def is_healthy(self) -> bool:
         """
         Returns whether the carconnectivity instance and its connectors and plugins is healthy.

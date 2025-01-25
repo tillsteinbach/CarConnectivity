@@ -55,6 +55,17 @@ class GenericObject(Observable):
                 parent.children.append(self)
             self.__children: List[Union[GenericObject, GenericAttribute]] = []
 
+    def __str__(self) -> str:
+        return_string: str = ''
+        for element in sorted(self.__children, key=lambda x: x.id):
+            if element.enabled:
+                if isinstance(element, GenericAttribute):
+                    return_string += f'{element.id}: {element}\n'
+                else:
+                    return_string += f'{element.id}:\n'
+                    return_string += ''.join(['\t' + line for line in str(element).splitlines(True)])
+        return return_string
+
     def get_observer_entries(self, flags: Observable.ObserverEvent, on_transaction_end: bool = False, entries_sorted=True) \
             -> List[Tuple[Callable, Observable.ObserverEvent, Observable.ObserverPriority, bool]]:
         """

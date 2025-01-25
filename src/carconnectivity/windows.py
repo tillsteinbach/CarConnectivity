@@ -23,16 +23,6 @@ class Windows(GenericObject):  # pylint: disable=too-many-instance-attributes
         self.open_state = EnumAttribute("open_state", self)
         self.windows: Dict[str, Windows.Window] = {}
 
-    def __str__(self) -> str:
-        return_string: str = 'Windows:'
-        if self.open_state.enabled and self.open_state.value is not None:
-            return_string += f' {self.open_state.value.value}'
-        return_string += '\n'
-        for window in self.windows.values():
-            if window is not None and window.enabled:
-                return_string += f'\t{window}'
-        return return_string
-
     # pylint: disable=duplicate-code
     class OpenState(Enum):
         """
@@ -53,10 +43,3 @@ class Windows(GenericObject):  # pylint: disable=too-many-instance-attributes
             super().__init__(object_id=window_id, parent=windows)
             self.window_id: str = window_id
             self.open_state = EnumAttribute("open_state", self)
-
-        def __str__(self) -> str:
-            return_string: str = f'Window {self.window_id}:'
-            if self.open_state.enabled and self.open_state.value is not None:
-                return_string += f' {self.open_state.value.value}'
-            return_string += '\n'
-            return return_string
