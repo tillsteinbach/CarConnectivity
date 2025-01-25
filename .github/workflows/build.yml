@@ -10,10 +10,12 @@ on:
     paths:
      - .github/workflows/build.yml
      - '**.py'
+     - 'pyproject.toml'
   pull_request:
     paths:
      - .github/workflows/build.yml
      - '**.py'
+     - 'pyproject.toml'
 
 jobs:
   build-python:
