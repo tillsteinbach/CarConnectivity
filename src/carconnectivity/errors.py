@@ -34,7 +34,7 @@ class SetterError(CarConnectivityError):
     """
 
 
-class ControlError(SetterError):
+class CommandError(SetterError):
     """
     Exception raised for errors when controlling something.
     """

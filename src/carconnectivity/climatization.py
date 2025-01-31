@@ -52,6 +52,10 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
                 self.seat_heating.parent = self
                 self.climatization_at_unlock: BooleanAttribute = origin.climatization_at_unlock
                 self.climatization_at_unlock.parent = self
+                self.climatization_without_external_power: BooleanAttribute = origin.climatization_without_external_power
+                self.climatization_without_external_power.parent = self
+                self.heater_source: EnumAttribute = origin.heater_source
+                self.heater_source.parent = self
             else:
                 super().__init__(object_id="settings", parent=parent)
                 self.commands: Commands = Commands(parent=self)
@@ -59,6 +63,19 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
                 self.window_heating: BooleanAttribute = BooleanAttribute("window_heating", parent=self)
                 self.seat_heating: BooleanAttribute = BooleanAttribute("seat_heating", parent=self)
                 self.climatization_at_unlock: BooleanAttribute = BooleanAttribute("climatization_at_unlock", parent=self)
+                self.climatization_without_external_power: BooleanAttribute = BooleanAttribute("climatization_without_external_power", parent=self)
+                self.heater_source: EnumAttribute = EnumAttribute("heater_source", parent=self, value_type=Climatization.Settings.HeaterSource)
+
+        class HeaterSource(Enum,):
+            """
+            Enum representing different sources of a heater.
+
+            Attributes:
+                ELECTRIC (str): Represents an electric heater source.
+                UNKNOWN (str): Represents an unknown heater source.
+            """
+            ELECTRIC = 'electric'
+            UNKNOWN = 'unknown heater source'
 
     class ClimatizationState(Enum,):
         """

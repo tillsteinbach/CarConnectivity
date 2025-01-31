@@ -258,3 +258,62 @@ class LockUnlockCommand(GenericCommand):
 
         def __str__(self) -> str:
             return self.value
+
+
+class WakeSleepCommand(GenericCommand):
+    """
+    WakeCommand is a command class for waking up a vehicle.
+
+    Command (Enum): Enum class representing different commands for wake/sleep.
+
+    """
+    def __init__(self, name: str = 'wake-sleep', parent: Optional[GenericObject] = None) -> None:
+        super().__init__(name=name, parent=parent)
+
+    @property
+    def value(self) -> Optional[Union[str, Dict]]:
+        return super().value
+
+    # pylint: disable=duplicate-code
+    @value.setter
+    def value(self, new_value: Optional[Union[str, Dict]]) -> None:
+        if isinstance(new_value, str):
+            parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
+            parser.add_argument('command', help='Command to execute', type=WakeSleepCommand.Command,
+                                choices=list(WakeSleepCommand.Command))
+            try:
+                args = parser.parse_args(new_value.split(sep=' '))
+            except argparse.ArgumentError as e:
+                raise SetterError(f'Invalid format for WakeSleepCommand: {e.message} {parser.format_usage()}') from e
+
+            newvalue_dict = {}
+            newvalue_dict['command'] = args.command
+            new_value = newvalue_dict
+        elif isinstance(new_value, dict):
+            if 'command' in new_value and isinstance(new_value['command'], str):
+                if new_value['command'] in WakeSleepCommand.Command:
+                    new_value['command'] = WakeSleepCommand.Command(new_value['command'])
+                else:
+                    raise ValueError('Invalid value for WakeSleepCommand. '
+                                     f'Command must be one of {WakeSleepCommand.Command}')
+        if self._is_changeable:
+            for hook in self._on_set_hooks:
+                new_value = hook(self, new_value)
+            self._set_value(new_value)
+        else:
+            raise TypeError('You cannot use this command. Command is not implemented.')
+    # pylint: enable=duplicate-code
+
+    class Command(Enum):
+        """
+        Enum representing different commands for car connectivity.
+
+        Attributes:
+            WAKE (str): Command to wake up the vehicle.
+            SLEEP (str): Command to put the vehicle to sleep.
+        """
+        WAKE = 'wake'
+        SLEEP = 'sleep'
+
+        def __str__(self) -> str:
+            return self.value

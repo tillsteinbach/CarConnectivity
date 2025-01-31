@@ -99,6 +99,18 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         if hook in self._on_set_hooks:
             self._on_set_hooks.remove(hook)
 
+    def _has_on_set_hook(self, hook: Callable[[Self, T], T]) -> bool:
+        """
+        Check if a hook is present in the list of hooks to be called when the value is set.
+
+        Args:
+            hook (Callable): The hook to check.
+
+        Returns:
+            bool: True if the hook is present, False otherwise.
+        """
+        return hook in self._on_set_hooks
+
     def __del__(self) -> None:
         if self.enabled:
             self.enabled = False
@@ -249,7 +261,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             else:
                 self.enabled = False
         # Unit was changed
-        if self.__unit != unit:
+        if unit is not None and self.__unit != unit:
             flags |= Observable.ObserverEvent.VALUE_CHANGED
             self.__unit = unit
         self.notify(flags)
@@ -264,6 +276,20 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             bool: The converted value.
         """
+        if self.__value_type is bool and value is not None and not isinstance(value, bool):
+            LOG.debug('Implicitly converting value to bool: %s', value)
+            if isinstance(value, str):
+                if value.lower() in [x.lower() for x in ['true', 'yes', '1', 'on']]:
+                    return True
+                if value.lower() in [x.lower() for x in ['false', 'no', '0', 'off']]:
+                    return False
+                raise ValueError('Not a value that can be interpreted as valid boolean value (True/False)')
+            if isinstance(value, (float, int)):
+                if value == 0:
+                    return False
+                return True
+            return bool(value)
+
         if self.__value_type is float and value is not None and not isinstance(value, float):
             LOG.debug('Implicitly converting value to float: %s', value)
             return float(value)
@@ -319,8 +345,12 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Setting the value directly is not allowed. GenericAttributes are not mutable by the user.
         """
         if self._is_changeable:
+            # First bring the value to the correct type
+            new_value = self.type_conversion(new_value)
+            # then execute all hooks
             for hook in self._on_set_hooks:
                 new_value = hook(self, new_value)
+            # finally set the value
             self._set_value(new_value)
         else:
             raise TypeError('You cannot set this attribute. Attribute is not mutable.')
