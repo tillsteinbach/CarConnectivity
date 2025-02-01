@@ -153,8 +153,9 @@ class HonkAndFlashCommand(GenericCommand):
     """
     HonkAndFlashCommand is a command class for honking and flashing the lights.
     """
-    def __init__(self, name: str = 'honk-flash', parent: Optional[GenericObject] = None) -> None:
+    def __init__(self, name: str = 'honk-flash', parent: Optional[GenericObject] = None, with_duration: bool = False) -> None:
         super().__init__(name=name, parent=parent)
+        self.with_duration: bool = with_duration
 
     @property
     def value(self) -> Optional[Union[str, Dict]]:
@@ -166,6 +167,8 @@ class HonkAndFlashCommand(GenericCommand):
             parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
             parser.add_argument('command', help='Command to execute', type=HonkAndFlashCommand.Command,
                                 choices=list(HonkAndFlashCommand.Command))
+            if self.with_duration:
+                parser.add_argument('--duration', dest='duration', help='Duration for honking and flashing in seconds', type=int, required=False)
             try:
                 args = parser.parse_args(new_value.split(sep=' '))
             except argparse.ArgumentError as e:
@@ -173,6 +176,8 @@ class HonkAndFlashCommand(GenericCommand):
 
             newvalue_dict = {}
             newvalue_dict['command'] = args.command
+            if self.with_duration:
+                newvalue_dict['duration'] = args.duration
             new_value = newvalue_dict
         elif isinstance(new_value, dict):
             if 'command' in new_value and isinstance(new_value['command'], str):
