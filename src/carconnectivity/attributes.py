@@ -266,7 +266,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             self.__unit = unit
         self.notify(flags)
 
-    def type_conversion(self, value: T) -> T:
+    def type_conversion(self, value: T) -> T:  # pylint: disable=too-many-return-statements
         """
         Convert the value to the correct type.
 
