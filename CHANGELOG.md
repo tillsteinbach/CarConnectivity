@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.2] - 2025-02-02
 ### Added
-# Adds heater source attribute and default implementation of wake command
+- Adds heater source attribute and default implementation of wake command
 
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
