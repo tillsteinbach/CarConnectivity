@@ -21,10 +21,11 @@ Python API to connect to various car services. If you are not a developer and en
 ## Supported Car Brands
 CarConenctivity uses a connector plugin architecture to enable access to the services of various brands. Currently known connector plugins are:
 
-| Brand      | Connector                                                                                                     |
-|------------|---------------------------------------------------------------------------------------------------------------|
-| Skoda      | [CarConnectivity-connector-skoda](https://github.com/tillsteinbach/CarConnectivity-connector-skoda)           |
-| Volkswagen | [CarConnectivity-connector-volkswagen](https://github.com/tillsteinbach/CarConnectivity-connector-volkswagen) |
+| Brand                            | Connector                                                                                                     |
+|----------------------------------|---------------------------------------------------------------------------------------------------------------|
+| Skoda                            | [CarConnectivity-connector-skoda](https://github.com/tillsteinbach/CarConnectivity-connector-skoda)           |
+| Volkswagen                       | [CarConnectivity-connector-volkswagen](https://github.com/tillsteinbach/CarConnectivity-connector-volkswagen) |
+| [Troniy](https://www.tronity.io) | [CarConnectivity-connector-tronity](https://github.com/tillsteinbach/CarConnectivity-connector-tronity)       |
 
 If you know of a connector not listed here let me know and I will add it to the list.
 If you are a python developer and willing to implement a connector for a brand not listed here, let me know and I try to support you as good as possible
