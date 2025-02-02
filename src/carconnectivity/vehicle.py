@@ -200,7 +200,7 @@ class ElectricVehicle(GenericVehicle):
             super().__init__(vin=vin, garage=garage, managing_connector=managing_connector)
         self.charging: Charging = Charging(vehicle=self)
 
-    def get_electric_drive(self) -> ElectricDrive:
+    def get_electric_drive(self) -> Optional[ElectricDrive]:
         """
         Returns the electric drive of the vehicle.
 
