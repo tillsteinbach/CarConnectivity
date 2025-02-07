@@ -62,6 +62,15 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         """
         raise NotImplementedError("Method get_version() must be implemented by plugin")
 
+    def get_type(self) -> str:
+        """
+        Returns the type of the plugin.
+
+        Returns:
+            str: The type of the plugin.
+        """
+        raise NotImplementedError("Method get_type() must be implemented by plugin")
+
     def is_healthy(self) -> bool:
         """
         Returns whether the plugin is healthy.

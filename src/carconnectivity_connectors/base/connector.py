@@ -70,6 +70,15 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
         """
         raise NotImplementedError("Method get_version() must be implemented by connector")
 
+    def get_type(self) -> str:
+        """
+        Returns the type of the connector.
+
+        Returns:
+            str: The type of the connector.
+        """
+        raise NotImplementedError("Method get_type() must be implemented by plugin")
+
     def is_healthy(self) -> bool:
         """
         Returns whether the connector is healthy.
