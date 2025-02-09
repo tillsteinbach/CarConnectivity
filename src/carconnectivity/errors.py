@@ -1,4 +1,9 @@
 """Module containing custom exceptions for the carconnectivity package."""
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from typing import Optional
 
 
 class CarConnectivityError(Exception):
@@ -26,6 +31,9 @@ class TooManyRequestsError(RetrievalError):
     This error is typically used to indicate that the client should
     slow down or wait before making further requests.
     """
+    def __init__(self, *args: object, retry_after: Optional[int] = None) -> None:
+        super().__init__(*args)
+        self.retry_after: Optional[int] = retry_after
 
 
 class SetterError(CarConnectivityError):

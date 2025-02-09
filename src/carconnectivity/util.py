@@ -9,10 +9,11 @@ from typing import TYPE_CHECKING, NoReturn
 import argparse
 import logging
 import re
+import collections
 from datetime import datetime, timezone
 
 if TYPE_CHECKING:
-    from typing import Dict, Tuple, Any
+    from typing import Dict, Tuple, Any, MutableSequence
     from logging import LogRecord
 
 
@@ -140,3 +141,27 @@ class ThrowingArgumentParser(argparse.ArgumentParser):
     """
     def error(self, message) -> NoReturn:
         raise argparse.ArgumentError(argument=None, message=message)
+
+
+class LogMemoryHandler():  # pylint: disable=protected-access
+    """
+    A custom memory handler that can be used to store log records in memory.
+
+    This class extends `logging.handlers.MemoryHandler` and overrides the `flush`
+    method to return the stored log records instead of writing them to a target.
+    """
+    def __init__(self, capacity: int = 100) -> None:
+        super().__init__(capacity, flushLevel=logging.ERROR, target=None)
+        self.storage: MutableSequence[LogRecord] = collections.deque(maxlen=capacity)
+
+    def emit(self, record: LogRecord) -> None:
+        self.storage.append(record)
+
+    def flush(self) -> list[LogRecord]:
+        """
+        Returns the stored log records.
+
+        Returns:
+            list[LogRecord]: The stored log records.
+        """
+        return list(self.storage)

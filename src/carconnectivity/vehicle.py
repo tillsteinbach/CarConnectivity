@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 from enum import Enum
 
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import StringAttribute, EnumAttribute, RangeAttribute, TemperatureAttribute
+from carconnectivity.attributes import StringAttribute, EnumAttribute, RangeAttribute, TemperatureAttribute, IntegerAttribute
 from carconnectivity.doors import Doors
 from carconnectivity.windows import Windows
 from carconnectivity.lights import Lights
@@ -57,6 +57,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.manufacturer.parent = self
             self.model: StringAttribute = origin.model
             self.model.parent = self
+            self.model_year: IntegerAttribute = origin.model_year
+            self.model_year.parent = self
             self.type: EnumAttribute = origin.type
             self.type.parent = self
             self.license_plate: StringAttribute = origin.license_plate
@@ -99,6 +101,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.name = StringAttribute("name", self)
             self.manufacturer = StringAttribute("manufacturer", self)
             self.model = StringAttribute("model", self)
+            self.model_year = IntegerAttribute("model_year", self)
             self.type = EnumAttribute("type", parent=self)
             self.license_plate = StringAttribute("license_plate", self)
             self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=Length.UNKNOWN)

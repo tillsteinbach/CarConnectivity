@@ -224,7 +224,7 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
                         tokenstore_file_dict['tokenstore'] = self.__tokenstore
                     else:
                         fernet = Fernet(TOKENSTORE_KEY.encode('utf-8'))
-                        tokenstore_file_dict['tokenstore'] = fernet.encrypt(json.dumps(self.__tokenstore).encode('utf-8')).decode('utf-8')
+                        tokenstore_file_dict['tokenstore'] = fernet.encrypt(json.dumps(self.__tokenstore, cls=ExtendedEncoder).encode('utf-8')).decode('utf-8')
                     json.dump(tokenstore_file_dict, file)
                 LOG.info('Writing tokenstore to file %s', self.__tokenstore_file)
             except ValueError as err:  # pragma: no cover

@@ -508,6 +508,14 @@ class BooleanAttribute(GenericAttribute[bool, None]):
         super().__init__(name=name, parent=parent, value=value, value_type=bool, unit=None)
 
 
+class IntegerAttribute(GenericAttribute[int, None]):
+    """
+    A class used to represent a Integer Attribute.
+    """
+    def __init__(self, name: str, parent: GenericObject, value: Optional[int] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, value_type=int, unit=None)
+
+
 class FloatAttribute(GenericAttribute[float, GenericUnit]):
     """
     A class used to represent a float Attribute.
