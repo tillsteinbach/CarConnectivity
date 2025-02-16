@@ -8,13 +8,13 @@ from typing import TYPE_CHECKING, NoReturn
 
 import argparse
 import logging
+import logging.handlers
 import re
 import collections
 from datetime import datetime, timezone
 
 if TYPE_CHECKING:
-    from typing import Dict, Tuple, Any, MutableSequence
-    from logging import LogRecord
+    from typing import Dict, Tuple, Any, MutableSequence, Optional
 
 
 def robust_time_parse(time_string: str) -> datetime:
@@ -40,7 +40,7 @@ def robust_time_parse(time_string: str) -> datetime:
     return datetime.fromisoformat(time_string)
 
 
-def log_extra_keys(log: logging.Logger, where: str, dictionary: Dict[str, Any], allowed_keys: set[str] = None) -> None:
+def log_extra_keys(log: logging.Logger, where: str, dictionary: Dict[str, Any], allowed_keys: Optional[set[str]] = None) -> None:
     """
     Logs a warning if there are any keys in the dictionary that are not in the allowed_keys set.
 
@@ -74,7 +74,7 @@ def config_remove_credentials(config: Dict[str, Any]) -> Dict[str, Any]:
         for key in config:
             if isinstance(config[key], dict):
                 config[key] = __recursive_remove_credentials(config[key])
-            if 'password' in key.lower() or 'token' in key.lower():
+            if 'pin' in key.lower() or 'secret' in key.lower() or 'password' in key.lower() or 'token' in key.lower():
                 config[key] = '***'
         return config
     config_copy: dict[str, Any] = config.copy()
@@ -95,7 +95,7 @@ class DuplicateFilter(logging.Filter):
         self.do_not_filter_above: int = do_not_filter_above
         self.filter_reset_seconds: int = filter_reset_seconds
 
-    def filter(self, record: LogRecord) -> bool:
+    def filter(self, record: logging.LogRecord) -> bool:
         # don't filter messages above the specified level
         if record.levelno >= self.do_not_filter_above:
             return True
@@ -143,25 +143,44 @@ class ThrowingArgumentParser(argparse.ArgumentParser):
         raise argparse.ArgumentError(argument=None, message=message)
 
 
-class LogMemoryHandler():  # pylint: disable=protected-access
+class LogMemoryHandler(logging.handlers.MemoryHandler):  # pylint: disable=protected-access
     """
     A custom memory handler that can be used to store log records in memory.
 
     This class extends `logging.handlers.MemoryHandler` and overrides the `flush`
     method to return the stored log records instead of writing them to a target.
     """
-    def __init__(self, capacity: int = 100) -> None:
+    def __init__(self, capacity: int = 1000) -> None:
+        self._capacity: int = capacity
+        self.storage: MutableSequence[logging.LogRecord] = collections.deque(maxlen=capacity)
         super().__init__(capacity, flushLevel=logging.ERROR, target=None)
-        self.storage: MutableSequence[LogRecord] = collections.deque(maxlen=capacity)
 
-    def emit(self, record: LogRecord) -> None:
-        self.storage.append(record)
-
-    def flush(self) -> list[LogRecord]:
+    @property
+    def capacity(self) -> int:
         """
-        Returns the stored log records.
+        Returns the capacity of the memory handler.
 
         Returns:
-            list[LogRecord]: The stored log records.
+            int: The capacity of the memory handler.
         """
-        return list(self.storage)
+        return self._capacity
+
+    @capacity.setter
+    def capacity(self, new_capacity: int) -> None:
+        """
+        Sets the capacity of the memory handler.
+
+        Args:
+            new_capacity (int): The new capacity of the memory handler.
+        """
+        self.storage = collections.deque(self.storage, maxlen=new_capacity)
+
+    def emit(self, record: logging.LogRecord) -> None:
+        self.storage.append(record)
+
+    def flush(self) -> None:
+        """
+        Flush stored log records.
+        Does nothing in this implementation.
+        """
+        return

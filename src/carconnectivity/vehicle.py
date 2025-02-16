@@ -23,6 +23,14 @@ from carconnectivity.position import Position
 from carconnectivity.climatization import Climatization
 from carconnectivity.commands import Commands
 
+SUPPORT_IMAGES = False
+try:
+    from PIL import Image  # pylint: disable=unused-import # noqa: F401
+    from carconnectivity.images import Images  # pylint: disable=ungrouped-imports
+    SUPPORT_IMAGES = True
+except ImportError:
+    pass
+
 if TYPE_CHECKING:
     from typing import Optional
     from carconnectivity.garage import Garage
@@ -86,6 +94,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.outside_temperature.parent = self
             self.specification: GenericVehicle.VehicleSpecification = origin.specification
             self.specification.parent = self
+            if SUPPORT_IMAGES:
+                self.images: Images = origin.images
             self.managing_connectors = origin.managing_connectors
         else:
             if vin is None:
@@ -97,15 +107,15 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             if vin is None:
                 raise ValueError('VIN cannot be None')
             self.commands: Commands = Commands(parent=self)
-            self.vin = StringAttribute("vin", self, vin.upper())
-            self.name = StringAttribute("name", self)
-            self.manufacturer = StringAttribute("manufacturer", self)
-            self.model = StringAttribute("model", self)
-            self.model_year = IntegerAttribute("model_year", self)
-            self.type = EnumAttribute("type", parent=self)
-            self.license_plate = StringAttribute("license_plate", self)
-            self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=Length.UNKNOWN)
-            self.state = EnumAttribute("state", parent=self)
+            self.vin = StringAttribute("vin", self, vin.upper(), tags={'carconnectivity'})
+            self.name = StringAttribute("name", self, tags={'carconnectivity'})
+            self.manufacturer = StringAttribute("manufacturer", self, tags={'carconnectivity'})
+            self.model = StringAttribute("model", self, tags={'carconnectivity'})
+            self.model_year = IntegerAttribute("model_year", self, tags={'carconnectivity'})
+            self.type = EnumAttribute("type", parent=self, tags={'carconnectivity'})
+            self.license_plate = StringAttribute("license_plate", self, tags={'carconnectivity'})
+            self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=Length.UNKNOWN, tags={'carconnectivity'})
+            self.state = EnumAttribute("state", parent=self, tags={'carconnectivity'})
             self.drives: Drives = Drives(vehicle=self)
             self.doors: Doors = Doors(vehicle=self)
             self.windows: Windows = Windows(vehicle=self)
@@ -113,8 +123,10 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.software: Software = Software(vehicle=self)
             self.position: Position = Position(parent=self)
             self.climatization: Climatization = Climatization(vehicle=self)
-            self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", self)
+            self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", self, tags={'carconnectivity'})
             self.specification: GenericVehicle.VehicleSpecification = GenericVehicle.VehicleSpecification(vehicle=self)
+            if SUPPORT_IMAGES:
+                self.images: Images = Images(vehicle=self)
 
             self.managing_connectors: list[BaseConnector] = []
             if managing_connector is not None:
@@ -140,7 +152,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
         """
         A class to represent the specification of a vehicle.
         """
-        def __init__(self, vehicle: Optional[GenericVehicle] = None, origin: Optional[GenericObject] = None) -> None:
+        def __init__(self, vehicle: Optional[GenericVehicle] = None, origin: Optional[GenericVehicle.VehicleSpecification] = None) -> None:
             if origin is not None:
                 super().__init__(origin=origin)
                 self.steering_wheel_position: EnumAttribute = origin.steering_wheel_position
@@ -150,7 +162,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
                     raise ValueError('Cannot create specification without vehicle')
                 super().__init__(object_id='specification', parent=vehicle)
                 self.delay_notifications = True
-                self.steering_wheel_position: EnumAttribute = EnumAttribute("steering_wheel_position", parent=self)
+                self.steering_wheel_position: EnumAttribute = EnumAttribute("steering_wheel_position", parent=self, tags={'carconnectivity'})
                 self.delay_notifications = False
 
         class SteeringPosition(Enum):

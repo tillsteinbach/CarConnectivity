@@ -42,6 +42,11 @@ plugins = [
     'carconnectivity-plugin-abrp',
     'carconnectivity-plugin-homekit',
 ]
+images = [
+    'pillow~=11.1.0',
+    'ascii_magic~=2.3.0'
+
+]
 
 [project.urls]
 

@@ -33,9 +33,9 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
         super().__init__(object_id=connector_id, parent=car_connectivity.connectors)
         self.car_connectivity: CarConnectivity = car_connectivity
         self.config: Dict = config
-        self.log_level = StringAttribute(name="log_level", parent=self)
-        self.version = StringAttribute(name="version", parent=self, value=self.get_version())
-        self.last_update: DateAttribute = DateAttribute(name="last_update", parent=self)
+        self.log_level = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'})
+        self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
+        self.last_update: DateAttribute = DateAttribute(name="last_update", parent=self, tags={'carconnectivity'})
 
     def fetch_all(self) -> None:
         """

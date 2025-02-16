@@ -20,7 +20,7 @@ class Lights(GenericObject):  # pylint: disable=too-many-instance-attributes
         if vehicle is None:
             raise ValueError('Cannot create lights without vehicle')
         super().__init__(object_id='lights', parent=vehicle)
-        self.light_state = EnumAttribute("light_state", self)
+        self.light_state = EnumAttribute("light_state", self, tags={'carconnectivity'})
         self.lights: dict[str, Lights.Light] = {}
 
     class LightState(Enum):
@@ -39,4 +39,4 @@ class Lights(GenericObject):  # pylint: disable=too-many-instance-attributes
         def __init__(self, light_id: str, lights: Lights) -> None:
             super().__init__(object_id=light_id, parent=lights)
             self.light_id: str = light_id
-            self.light_state = EnumAttribute("light_state", self)
+            self.light_state = EnumAttribute("light_state", self, tags={'carconnectivity'})

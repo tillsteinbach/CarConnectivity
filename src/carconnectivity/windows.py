@@ -20,7 +20,7 @@ class Windows(GenericObject):  # pylint: disable=too-many-instance-attributes
         if vehicle is None:
             raise ValueError('Cannot create windows without vehicle')
         super().__init__(object_id='windows', parent=vehicle)
-        self.open_state = EnumAttribute("open_state", self)
+        self.open_state = EnumAttribute("open_state", self, tags={'carconnectivity'})
         self.windows: Dict[str, Windows.Window] = {}
 
     # pylint: disable=duplicate-code
@@ -42,4 +42,4 @@ class Windows(GenericObject):  # pylint: disable=too-many-instance-attributes
         def __init__(self, window_id: str, windows: Windows) -> None:
             super().__init__(object_id=window_id, parent=windows)
             self.window_id: str = window_id
-            self.open_state = EnumAttribute("open_state", self)
+            self.open_state = EnumAttribute("open_state", self, tags={'carconnectivity'})

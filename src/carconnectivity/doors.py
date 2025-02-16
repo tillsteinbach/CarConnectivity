@@ -22,8 +22,8 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
             raise ValueError('Cannot create doors without vehicle')
         super().__init__(object_id='doors', parent=vehicle)
         self.commands: Commands = Commands(parent=self)
-        self.open_state = EnumAttribute("open_state", self)
-        self.lock_state = EnumAttribute("lock_state", self)
+        self.open_state = EnumAttribute("open_state", self, tags={'carconnectivity'})
+        self.lock_state = EnumAttribute("lock_state", self, tags={'carconnectivity'})
         self.doors: Dict[str, Doors.Door] = {}
 
     # pylint: disable=duplicate-code
@@ -54,5 +54,5 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
         def __init__(self, door_id: str, doors: Doors) -> None:
             super().__init__(object_id=door_id, parent=doors)
             self.door_id: str = door_id
-            self.open_state = EnumAttribute("open_state", self)
-            self.lock_state = EnumAttribute("lock_state", self)
+            self.open_state = EnumAttribute("open_state", self, tags={'carconnectivity'})
+            self.lock_state = EnumAttribute("lock_state", self, tags={'carconnectivity'})

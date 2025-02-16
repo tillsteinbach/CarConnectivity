@@ -22,9 +22,9 @@ class ChargingConnector(GenericObject):  # pylint: disable=too-many-instance-att
             raise ValueError('Cannot create connector without charging')
         super().__init__(object_id='connector', parent=charging)
         self.delay_notifications = True
-        self.connection_state: EnumAttribute = EnumAttribute("connection_state", parent=self)
-        self.lock_state: EnumAttribute = EnumAttribute("lock_state", parent=self)
-        self.external_power: EnumAttribute = EnumAttribute("lock_state", parent=self)
+        self.connection_state: EnumAttribute = EnumAttribute("connection_state", parent=self, tags={'carconnectivity'})
+        self.lock_state: EnumAttribute = EnumAttribute("lock_state", parent=self, tags={'carconnectivity'})
+        self.external_power: EnumAttribute = EnumAttribute("lock_state", parent=self, tags={'carconnectivity'})
         self.delay_notifications = False
 
     class ChargingConnectorConnectionState(Enum,):

@@ -22,6 +22,7 @@ from carconnectivity.connectors import Connectors
 from carconnectivity.plugins import Plugins
 from carconnectivity.attributes import StringAttribute
 from carconnectivity._version import __version__
+from carconnectivity.util import LogMemoryHandler
 
 if TYPE_CHECKING:
     from typing import Dict, Any, Optional, Iterator
@@ -89,8 +90,9 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         self.connectors: Connectors = Connectors(car_connectivity=self)
         self.plugins: Plugins = Plugins(car_connectivity=self)
         self.garage: Garage = Garage(self)
+        self.log_storage: LogMemoryHandler = LogMemoryHandler()
 
-        self.version: StringAttribute = StringAttribute(name="version", parent=self, value=__version__)
+        self.version: StringAttribute = StringAttribute(name="version", parent=self, value=__version__, tags={'carconnectivity'})
 
         if 'carConnectivity' not in config:
             raise ConfigurationError("Invalid configuration: 'carConnectivity' is missing")
@@ -112,6 +114,7 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
             formatter.datefmt = '%Y-%m-%dT%H:%M:%S%z'
         for handler in logging.getLogger().handlers:
             handler.setFormatter(formatter)
+        LOG.addHandler(self.log_storage)
 
         if self.__tokenstore_file is not None:
             try:
