@@ -2,12 +2,15 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from carconnectivity.objects import GenericObject
+import logging
 
+from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import StringAttribute
+from carconnectivity.errors import ConfigurationError
+from carconnectivity.util import LogMemoryHandler
 
 if TYPE_CHECKING:
-    from typing import Dict
+    from typing import Dict, Any
 
     from carconnectivity.carconnectivity import CarConnectivity
 
@@ -22,7 +25,7 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         shutdown() -> None:
             Placeholder method for shutting down the plugin.
     """
-    def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict) -> None:
+    def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger) -> None:
         """
         Initializes the connector with the given CarConnectivity instance and configuration.
 
@@ -32,9 +35,20 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         """
         super().__init__(object_id=plugin_id, parent=car_connectivity.plugins)
         self.car_connectivity: CarConnectivity = car_connectivity
-        self.config: Dict = config
+        self.active_config: Dict[str, Any] = {}
+        self.log_storage: LogMemoryHandler = LogMemoryHandler()
         self.log_level = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'})
         self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
+
+        # Configure logging
+        if 'log_level' in config and config['log_level'] is not None:
+            self.active_config['log_level'] = config['log_level'].upper()
+            if self.active_config['log_level'] in logging._nameToLevel:
+                log.setLevel(self.active_config['log_level'])
+                self.log_level._set_value(self.active_config['log_level'])  # pylint: disable=protected-access
+            else:
+                raise ConfigurationError(f'Invalid log level: "{self.active_config["log_level"]}" not in {list(logging._nameToLevel.keys())}')
+        log.addHandler(self.log_storage)
 
     def startup(self) -> None:
         """

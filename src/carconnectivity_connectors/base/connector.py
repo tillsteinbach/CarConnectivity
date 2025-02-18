@@ -2,12 +2,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from carconnectivity.objects import GenericObject
+import logging
 
+from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import StringAttribute, DateAttribute
+from carconnectivity.errors import ConfigurationError
 
 if TYPE_CHECKING:
-    from typing import Dict
+    from typing import Dict, Any, Optional
 
     from carconnectivity.carconnectivity import CarConnectivity
 
@@ -22,7 +24,7 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
         shutdown() -> None:
             Placeholder method for shutting down the connector.
     """
-    def __init__(self, connector_id: str, car_connectivity: CarConnectivity, config: Dict) -> None:
+    def __init__(self, connector_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, api_log: Optional[logging.Logger]) -> None:
         """
         Initializes the connector with the given CarConnectivity instance and configuration.
 
@@ -32,10 +34,28 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
         """
         super().__init__(object_id=connector_id, parent=car_connectivity.connectors)
         self.car_connectivity: CarConnectivity = car_connectivity
-        self.config: Dict = config
+        self.active_config: Dict[str, Any] = {}
         self.log_level = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'})
         self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
         self.last_update: DateAttribute = DateAttribute(name="last_update", parent=self, tags={'carconnectivity'})
+
+        # Configure logging
+        if 'log_level' in config and config['log_level'] is not None:
+            self.active_config['log_level'] = config['log_level'].upper()
+            if self.active_config['log_level'] in logging._nameToLevel:
+                log.setLevel(self.active_config['log_level'])
+                self.log_level._set_value(self.active_config['log_level'])  # pylint: disable=protected-access
+                logging.getLogger('requests').setLevel(self.active_config['log_level'])
+                logging.getLogger('urllib3').setLevel(self.active_config['log_level'])
+                logging.getLogger('oauthlib').setLevel(self.active_config['log_level'])
+            else:
+                raise ConfigurationError(f'Invalid log level: "{self.active_config["log_level"]}" not in {list(logging._nameToLevel.keys())}')
+        if api_log is not None and 'api_log_level' in config and config['api_log_level'] is not None:
+            self.active_config['api_log_level'] = config['api_log_level'].upper()
+            if self.active_config['api_log_level'] in logging._nameToLevel:
+                api_log.setLevel(self.active_config['api_log_level'])
+            else:
+                raise ConfigurationError(f'Invalid log level: "{self.active_config["api_log_level"]}" not in {list(logging._nameToLevel.keys())}')
 
     def fetch_all(self) -> None:
         """

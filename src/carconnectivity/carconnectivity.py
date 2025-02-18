@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import importlib
 import pkgutil
 
+import re
 import json
 import logging
 import os
@@ -115,6 +116,21 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         for handler in logging.getLogger().handlers:
             handler.setFormatter(formatter)
         LOG.addHandler(self.log_storage)
+        self.log_storage.setFormatter(formatter)
+
+        class NoPluginsConnectorsAPIDebug(logging.Filter):
+            """
+            A logging filter that excludes connector and plugin messages from the logs.
+
+            Methods:
+                filter(record): Determines if the log record should be logged.
+            """
+            def filter(self, record):
+                pattern = re.compile(r'carconnectivity\.(connectors|plugins)\..*-api-debug')
+                return not pattern.match(record.name)
+
+        #  Disable logging for plugins and connectors
+        self.log_storage.addFilter(NoPluginsConnectorsAPIDebug())
 
         if self.__tokenstore_file is not None:
             try:
