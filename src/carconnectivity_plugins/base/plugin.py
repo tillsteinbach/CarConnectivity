@@ -40,6 +40,7 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         self.log_level = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'})
         self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
 
+        # pylint: disable=duplicate-code
         # Configure logging
         if 'log_level' in config and config['log_level'] is not None:
             self.active_config['log_level'] = config['log_level'].upper()
@@ -49,6 +50,7 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
             else:
                 raise ConfigurationError(f'Invalid log level: "{self.active_config["log_level"]}" not in {list(logging._nameToLevel.keys())}')
         log.addHandler(self.log_storage)
+        # pylint: enable=duplicate-code
 
     def startup(self) -> None:
         """

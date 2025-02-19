@@ -44,6 +44,7 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
         self.last_update: DateAttribute = DateAttribute(name="last_update", parent=self, tags={'carconnectivity'})
 
         # Configure logging
+        # pylint: disable=duplicate-code
         if 'log_level' in config and config['log_level'] is not None:
             self.active_config['log_level'] = config['log_level'].upper()
             if self.active_config['log_level'] in logging._nameToLevel:
@@ -62,6 +63,7 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
                 raise ConfigurationError(f'Invalid log level: "{self.active_config["api_log_level"]}" not in {list(logging._nameToLevel.keys())}')
         log.addHandler(self.log_storage)
         api_log.addHandler(self.api_log_storage)
+        # pylint: enable=duplicate-code
 
     def fetch_all(self) -> None:
         """
