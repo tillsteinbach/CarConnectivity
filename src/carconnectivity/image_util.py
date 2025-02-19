@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from enum import Enum
 
+# pylint: disable=duplicate-code
 SUPPORT_IMAGES = False
 try:
     from PIL import Image
@@ -18,6 +19,7 @@ try:
     SUPPORT_ASCII_IMAGES = True
 except ImportError:
     pass
+# pylint: enable=duplicate-code
 
 if TYPE_CHECKING:
     from typing import Optional, Tuple

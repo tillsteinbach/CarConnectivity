@@ -25,6 +25,7 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
         shutdown() -> None:
             Placeholder method for shutting down the connector.
     """
+    # pylint: disable=too-many-instance-arguments, too-many-positional-arguments
     def __init__(self, connector_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, api_log: Optional[logging.Logger]) -> None:
         """
         Initializes the connector with the given CarConnectivity instance and configuration.

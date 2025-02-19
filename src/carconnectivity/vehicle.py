@@ -23,6 +23,7 @@ from carconnectivity.position import Position
 from carconnectivity.climatization import Climatization
 from carconnectivity.commands import Commands
 
+# pylint: disable=duplicate-code
 SUPPORT_IMAGES = False
 try:
     from PIL import Image  # pylint: disable=unused-import # noqa: F401
@@ -30,6 +31,7 @@ try:
     SUPPORT_IMAGES = True
 except ImportError:
     pass
+# pylint: enable=duplicate-code
 
 if TYPE_CHECKING:
     from typing import Optional

@@ -11,12 +11,14 @@ from datetime import datetime, timezone, timedelta
 from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power, Current
 from carconnectivity.observable import Observable
 
+# pylint: disable=duplicate-code
 SUPPORT_IMAGES = False
 try:
     from PIL import Image
     SUPPORT_IMAGES = True
 except ImportError:
     pass
+# pylint: enable=duplicate-code
 
 if TYPE_CHECKING:
     from typing import Any, Union, List, Literal, Callable, Tuple, Set, Self, Type
@@ -572,6 +574,7 @@ class FloatAttribute(GenericAttribute[float, GenericUnit]):
     """
     A class used to represent a float Attribute.
     """
+    # pylint: disable=too-many-instance-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Optional[U] = None,
                  tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
@@ -581,6 +584,7 @@ class EnumAttribute(Generic[T], GenericAttribute[T, None]):
     """
     A class used to represent a Enum Attribute.
     """
+    # pylint: disable=too-many-instance-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[Enum] = None, value_type: Type[Enum] = Enum,
                  tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=value_type, unit=None, tags=tags)
@@ -620,6 +624,7 @@ class RangeAttribute(GenericAttribute[float, Length]):
     """
     A class used to represent a Range Attribute.
     """
+    # pylint: disable=too-many-instance-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Length = Length.KM,
                  tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
@@ -688,6 +693,7 @@ class SpeedAttribute(GenericAttribute[float, Speed]):
     """
     A class used to represent a Speed Attribute.
     """
+    # pylint: disable=too-many-instance-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Speed = Speed.KMH,
                  tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
@@ -756,6 +762,7 @@ class PowerAttribute(GenericAttribute):
     """
     A class used to represent a power Attribute.
     """
+    # pylint: disable=too-many-instance-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Power = Power.KW,
                  tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
@@ -805,6 +812,7 @@ class CurrentAttribute(GenericAttribute[float, Current]):
     """
     A class used to represent a current Attribute.
     """
+    # pylint: disable=too-many-instance-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Current = Current.A,
                  tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
@@ -823,6 +831,7 @@ class TemperatureAttribute(GenericAttribute[float, Temperature]):
     """
     A class used to represent a Temperature Attribute.
     """
+    # pylint: disable=too-many-instance-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[T] = None, unit: Temperature = Temperature.C,
                  tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
@@ -912,6 +921,7 @@ if SUPPORT_IMAGES:
         """
         A class used to represent a Image Attribute.
         """
+        # pylint: disable=too-many-instance-arguments, too-many-positional-arguments
         def __init__(self, name: str, parent: GenericObject, value: Optional[Image] = None, value_type: Type[Image] = Image,
                      tags: Optional[Set[str]] = None) -> None:
             super().__init__(name=name, parent=parent, value=value, value_type=value_type, unit=None, tags=tags)

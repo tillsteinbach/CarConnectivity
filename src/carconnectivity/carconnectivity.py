@@ -118,6 +118,7 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         LOG.addHandler(self.log_storage)
         self.log_storage.setFormatter(formatter)
 
+        # pylint: disable=too-few-public-methods
         class NoPluginsConnectorsAPIDebug(logging.Filter):
             """
             A logging filter that excludes connector and plugin messages from the logs.
