@@ -7,6 +7,7 @@ import logging
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import StringAttribute, DateAttribute
 from carconnectivity.errors import ConfigurationError
+from carconnectivity.util import LogMemoryHandler
 
 if TYPE_CHECKING:
     from typing import Dict, Any, Optional
@@ -35,6 +36,8 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
         super().__init__(object_id=connector_id, parent=car_connectivity.connectors)
         self.car_connectivity: CarConnectivity = car_connectivity
         self.active_config: Dict[str, Any] = {}
+        self.log_storage: LogMemoryHandler = LogMemoryHandler()
+        self.api_log_storage: LogMemoryHandler = LogMemoryHandler()
         self.log_level = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'})
         self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
         self.last_update: DateAttribute = DateAttribute(name="last_update", parent=self, tags={'carconnectivity'})
@@ -56,6 +59,8 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
                 api_log.setLevel(self.active_config['api_log_level'])
             else:
                 raise ConfigurationError(f'Invalid log level: "{self.active_config["api_log_level"]}" not in {list(logging._nameToLevel.keys())}')
+        log.addHandler(self.log_storage)
+        api_log.addHandler(self.api_log_storage)
 
     def fetch_all(self) -> None:
         """
