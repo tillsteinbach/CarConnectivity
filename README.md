@@ -25,6 +25,7 @@ CarConenctivity uses a connector plugin architecture to enable access to the ser
 |----------------------------------|---------------------------------------------------------------------------------------------------------------|
 | Skoda                            | [CarConnectivity-connector-skoda](https://github.com/tillsteinbach/CarConnectivity-connector-skoda)           |
 | Volkswagen                       | [CarConnectivity-connector-volkswagen](https://github.com/tillsteinbach/CarConnectivity-connector-volkswagen) |
+| Seat/Cupra                       | [CarConnectivity-connector-seatcupra](https://github.com/tillsteinbach/CarConnectivity-connector-seatcupra)   |
 | [Troniy](https://www.tronity.io) | [CarConnectivity-connector-tronity](https://github.com/tillsteinbach/CarConnectivity-connector-tronity)       |
 
 If you know of a connector not listed here let me know and I will add it to the list.
