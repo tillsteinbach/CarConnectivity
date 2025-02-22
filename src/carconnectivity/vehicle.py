@@ -77,6 +77,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.odometer.parent = self
             self.state: EnumAttribute = origin.state
             self.state.parent = self
+            self.connection_state: EnumAttribute = origin.connection_state
+            self.connection_state.parent = self
             self.drives: Drives = origin.drives
             self.drives.parent = self
             self.doors: Doors = origin.doors
@@ -114,10 +116,11 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.manufacturer = StringAttribute("manufacturer", self, tags={'carconnectivity'})
             self.model = StringAttribute("model", self, tags={'carconnectivity'})
             self.model_year = IntegerAttribute("model_year", self, tags={'carconnectivity'})
-            self.type = EnumAttribute("type", parent=self, tags={'carconnectivity'})
+            self.type = EnumAttribute("type", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.Type)
             self.license_plate = StringAttribute("license_plate", self, tags={'carconnectivity'})
             self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=Length.UNKNOWN, tags={'carconnectivity'})
-            self.state = EnumAttribute("state", parent=self, tags={'carconnectivity'})
+            self.state = EnumAttribute("state", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.State)
+            self.connection_state = EnumAttribute("connection_state", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.ConnectionState)
             self.drives: Drives = Drives(vehicle=self)
             self.doors: Doors = Doors(vehicle=self)
             self.windows: Windows = Windows(vehicle=self)
@@ -204,6 +207,15 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
         INVALID = 'invalid'
         UNKNOWN = 'unknown vehicle state'
 
+    class ConnectionState(Enum):
+        """
+        Enum representing different states of a vehicle connection.
+        """
+        ONLINE = 'online'
+        OFFLINE = 'offline'
+        INVALID = 'invalid'
+        UNKNOWN = 'unknown vehicle state'
+
 
 class ElectricVehicle(GenericVehicle):
     """
@@ -213,9 +225,14 @@ class ElectricVehicle(GenericVehicle):
                  origin: Optional[GenericVehicle] = None) -> None:
         if origin is not None:
             super().__init__(origin=origin)
+            if isinstance(origin, ElectricVehicle):
+                self.charging: Charging = origin.charging
+                self.charging.parent = self
+            else:
+                self.charging: Charging = Charging(vehicle=self)
         else:
             super().__init__(vin=vin, garage=garage, managing_connector=managing_connector)
-        self.charging: Charging = Charging(vehicle=self)
+            self.charging: Charging = Charging(vehicle=self)
 
     def get_electric_drive(self) -> Optional[ElectricDrive]:
         """
