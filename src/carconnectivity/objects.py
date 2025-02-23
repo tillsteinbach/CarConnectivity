@@ -37,12 +37,11 @@ class GenericObject(Observable):
         if origin is not None:
             super().__init__(origin=origin)
             self.__id: str = origin.id
-            if parent is not None:
-                self.__parent = parent
-            else:
-                self.__parent: Optional[GenericObject] = origin.parent
-            self.__enabled: bool = origin.enabled
             self.__children: List[Union[GenericObject, GenericAttribute]] = origin.children
+            self.__parent: Optional[GenericObject] = origin.parent
+            if parent is not None:
+                self.parent = parent
+            self.__enabled: bool = origin.enabled
             if self.enabled:
                 self.notify(flags=Observable.ObserverEvent.UPDATED)
         else:
