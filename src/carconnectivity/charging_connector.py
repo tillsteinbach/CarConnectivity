@@ -24,7 +24,7 @@ class ChargingConnector(GenericObject):  # pylint: disable=too-many-instance-att
         self.delay_notifications = True
         self.connection_state: EnumAttribute = EnumAttribute("connection_state", parent=self, tags={'carconnectivity'})
         self.lock_state: EnumAttribute = EnumAttribute("lock_state", parent=self, tags={'carconnectivity'})
-        self.external_power: EnumAttribute = EnumAttribute("lock_state", parent=self, tags={'carconnectivity'})
+        self.external_power: EnumAttribute = EnumAttribute("external_power", parent=self, tags={'carconnectivity'})
         self.delay_notifications = False
 
     class ChargingConnectorConnectionState(Enum,):

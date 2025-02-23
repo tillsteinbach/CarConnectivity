@@ -37,7 +37,10 @@ class GenericObject(Observable):
         if origin is not None:
             super().__init__(origin=origin)
             self.__id: str = origin.id
-            self.__parent: Optional[GenericObject] = origin.parent
+            if parent is not None:
+                self.__parent = parent
+            else:
+                self.__parent: Optional[GenericObject] = origin.parent
             self.__enabled: bool = origin.enabled
             self.__children: List[Union[GenericObject, GenericAttribute]] = origin.children
             if self.enabled:
@@ -133,7 +136,8 @@ class GenericObject(Observable):
         Returns:
             None
         """
-        self.__parent.children.remove(self)
+        if self in self.__parent.children:
+            self.__parent.children.remove(self)
         self.__parent = parent
         parent.children.append(self)
 

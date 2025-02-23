@@ -41,7 +41,7 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
         """
         def __init__(self, parent: Optional[GenericObject] = None, origin: Optional[Climatization.Settings] = None) -> None:
             if origin is not None:
-                super().__init__(origin=origin)
+                super().__init__(parent=parent, origin=origin)
                 self.commands: Commands = origin.commands
                 self.commands.parent = self
                 self.target_temperature: TemperatureAttribute = origin.target_temperature
