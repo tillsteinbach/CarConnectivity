@@ -22,6 +22,7 @@ from carconnectivity.units import Length
 from carconnectivity.position import Position
 from carconnectivity.climatization import Climatization
 from carconnectivity.commands import Commands
+from carconnectivity.maintenance import Maintenance
 
 # pylint: disable=duplicate-code
 SUPPORT_IMAGES = False
@@ -98,6 +99,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.outside_temperature.parent = self
             self.specification: GenericVehicle.VehicleSpecification = origin.specification
             self.specification.parent = self
+            self.maintenance: Maintenance = origin.maintenance
+            self.maintenance.parent = self
             if SUPPORT_IMAGES:
                 self.images: Images = origin.images
             self.managing_connectors = origin.managing_connectors
@@ -130,6 +133,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.climatization: Climatization = Climatization(vehicle=self)
             self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", self, tags={'carconnectivity'})
             self.specification: GenericVehicle.VehicleSpecification = GenericVehicle.VehicleSpecification(vehicle=self)
+            self.maintenance: Maintenance = Maintenance(vehicle=self)
             if SUPPORT_IMAGES:
                 self.images: Images = Images(vehicle=self)
 
