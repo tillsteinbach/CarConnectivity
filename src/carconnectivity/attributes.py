@@ -375,7 +375,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         else:
             self.value = value
 
-    def in_locale(self, locale: str) -> Tuple[Optional[Any], Optional[U]]:
+    def in_locale(self, locale: Optional[str]) -> Tuple[Optional[Any], Optional[U]]:
         """
         Returns the value and unit of the attribute, using the provided locale.
         This is used to change e.g. Temperature in Celsius to Farenheit for users in the US.
@@ -669,7 +669,7 @@ class RangeAttribute(GenericAttribute[float, Length]):
             raise ValueError('No unit specified or value has no unit')
         return self.convert(self.value, self.unit, unit)
 
-    def in_locale(self, locale: str) -> Tuple[Optional[float], Optional[U]]:
+    def in_locale(self, locale: Optional[str]) -> Tuple[Optional[float], Optional[U]]:
         """
         Get the range in the unit the user is used to
 
@@ -738,7 +738,7 @@ class SpeedAttribute(GenericAttribute[float, Speed]):
             raise ValueError('No unit specified or value has no unit')
         return self.convert(self.value, self.unit, unit)
 
-    def in_locale(self, locale: str) -> Tuple[Optional[float], Optional[U]]:
+    def in_locale(self, locale: Optional[str]) -> Tuple[Optional[float], Optional[U]]:
         """
         Get the speed in the unit the user is used to
 
@@ -946,7 +946,7 @@ class TemperatureAttribute(GenericAttribute[float, Temperature]):
             target_unit = self.unit
         return self.convert(self.value, target_unit, unit)
 
-    def in_locale(self, locale: str) -> Tuple[Optional[T], Optional[U]]:
+    def in_locale(self, locale: Optional[str]) -> Tuple[Optional[T], Optional[U]]:
         """
         Get the temperature in the unit the user is used to
 
