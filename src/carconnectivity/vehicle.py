@@ -214,8 +214,22 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
     class ConnectionState(Enum):
         """
         Enum representing different states of a vehicle connection.
+
+        Attributes:
+        -----------
+        ONLINE : str
+            The vehicle is online.
+        REACHABLE : str
+            The vehicle is reachable but may be sleeping.
+        OFFLINE : str
+            The vehicle is offline.
+        INVALID : str
+            The vehicle connection state is invalid.
+        UNKNOWN : str
+            The vehicle connection state is unknown.
         """
         ONLINE = 'online'
+        REACHABLE = 'reachable'
         OFFLINE = 'offline'
         INVALID = 'invalid'
         UNKNOWN = 'unknown vehicle state'
