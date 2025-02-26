@@ -347,8 +347,8 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             if isinstance(value, str):
                 try:
                     return timedelta(seconds=parse(value))
-                except TypeError:
-                    raise ValueError('Not a value that can be interpreted as valid timedelta value')
+                except TypeError as err:
+                    raise ValueError('Not a value that can be interpreted as valid timedelta value') from err
             elif isinstance(value, (int, float)):
                 return timedelta(seconds=value)
             return timedelta(value)
