@@ -17,6 +17,7 @@ dependencies = [
     "argparse",
     "cryptography",
     "JSON_minify~=0.3.0",
+    "pytimeparse~=1.1.8",
 ]
 readme = "README.md"
 license = { file = "LICENSE" }

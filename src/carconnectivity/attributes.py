@@ -8,6 +8,8 @@ from enum import Enum
 
 from datetime import datetime, timezone, timedelta
 
+from pytimeparse import parse
+
 from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power, Current, Energy
 from carconnectivity.observable import Observable
 
@@ -337,10 +339,19 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
                     return False
                 return True
             return bool(value)
-
         if self.__value_type is float and value is not None and not isinstance(value, float):
             LOG.debug('Implicitly converting value to float: %s', value)
             return float(value)
+        if self.__value_type is timedelta and value is not None and not isinstance(value, timedelta):
+            LOG.debug('Implicitly converting value to timedelta: %s', value)
+            if isinstance(value, str):
+                try:
+                    return timedelta(seconds=parse(value))
+                except TypeError:
+                    raise ValueError('Not a value that can be interpreted as valid timedelta value')
+            elif isinstance(value, (int, float)):
+                return timedelta(seconds=value)
+            return timedelta(value)
         return value
 
     @staticmethod
