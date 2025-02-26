@@ -8,7 +8,7 @@ from enum import Enum
 
 from datetime import datetime, timezone, timedelta
 
-from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power, Current
+from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power, Current, Energy
 from carconnectivity.observable import Observable
 
 # pylint: disable=duplicate-code
@@ -802,6 +802,56 @@ class PowerAttribute(GenericAttribute):
 
         Returns:
             float: The power in the specified unit.
+        """
+        if unit is None or self.unit is None:
+            raise ValueError('No unit specified or value has no unit')
+        return self.convert(self.value, self.unit, unit)
+
+
+class EnergyAttribute(GenericAttribute):
+    """
+    A class used to represent a energy Attribute.
+    """
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Energy = Energy.KWH,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
+
+    @staticmethod
+    def convert(value, from_unit: U, to_unit: U) -> T:
+        """
+        Convert an energy value from one unit to another.
+
+        Parameters:
+        value (float): The power value to be converted.
+        from_unit (Energy): The unit of the input energy value. Must be an instance of the Energy enum.
+        to_unit (Energy): The unit to convert the energy value to. Must be an instance of the Energy enum.
+
+        Returns:
+        float: The converted energy value in the desired unit. If any of the parameters are None or if the units are the same,
+        the original value is returned.
+
+        Supported conversions:
+        - Watthours to Kilowatthours
+        - Kilowatthours to Watthours
+        """
+        if from_unit is None or to_unit is None or value is None or to_unit == from_unit:
+            return value
+        if from_unit == Energy.WH and to_unit == Energy.KWH:
+            return value / 1000
+        if from_unit == Energy.KWH and to_unit == Energy.WH:
+            return value * 1000
+        return value
+
+    def energy_in(self, unit: Energy) -> Optional[float]:
+        """
+        Convert the energy to a different unit.
+
+        Args:
+            unit (Energy): The unit to convert the energy to.
+
+        Returns:
+            float: The energy in the specified unit.
         """
         if unit is None or self.unit is None:
             raise ValueError('No unit specified or value has no unit')

@@ -78,6 +78,16 @@ class Power(GenericUnit,):
     UNKNOWN = 'unknown power unit'
 
 
+class Energy(GenericUnit,):
+    """
+    A class representing a unit of measurement for energy.
+    """
+    KWH = 'KWH'
+    WH = 'WH'
+    INVALID = 'invalid'
+    UNKNOWN = 'unknown energy unit'
+
+
 class Current(GenericUnit,):
     """
     A class representing a unit of measurement for current.

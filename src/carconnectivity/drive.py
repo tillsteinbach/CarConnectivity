@@ -13,6 +13,7 @@ from enum import Enum
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import RangeAttribute, LevelAttribute, EnumAttribute
 from carconnectivity.units import Length
+from carconnectivity.battery import Battery
 
 if TYPE_CHECKING:
     from typing import Dict
@@ -74,6 +75,7 @@ class ElectricDrive(GenericDrive):
     """
     def __init__(self, drive_id: str, drives: Drives) -> None:
         super().__init__(drive_id=drive_id, drives=drives)
+        self.battery: Battery = Battery(drive=self)
 
 
 class CombustionDrive(GenericDrive):
