@@ -346,7 +346,10 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             LOG.debug('Implicitly converting value to timedelta: %s', value)
             if isinstance(value, str):
                 try:
-                    return timedelta(seconds=parse(value))
+                    try:
+                        return timedelta(seconds=float(value))
+                    except ValueError:
+                        return timedelta(seconds=parse(value))
                 except TypeError as err:
                     raise ValueError('Not a value that can be interpreted as valid timedelta value') from err
             elif isinstance(value, (int, float)):
