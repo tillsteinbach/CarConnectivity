@@ -11,11 +11,21 @@ Classes:
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+import json
+
 from carconnectivity.attributes import GenericAttribute
 from carconnectivity.observable import Observable
+from carconnectivity.json_util import ExtendedWithNullEncoder
+
+SUPPORT_IMAGES = False
+try:
+    from PIL import Image
+    SUPPORT_IMAGES = True
+except ImportError:
+    pass
 
 if TYPE_CHECKING:
-    from typing import Optional, Union, Literal, Callable, Tuple, Set, List
+    from typing import Optional, Union, Literal, Callable, Tuple, Set, List, Any
 
 
 class GenericObject(Observable):
@@ -275,3 +285,42 @@ class GenericObject(Observable):
                 return child.get_by_path(rest_of_path)
         # If we reach this point, we did not find the object
         return False
+
+    def as_dict(self, filter_function: Optional[Callable[[Any], None]] = None) -> dict[Any, Any]:
+        """
+        Convert the object and its enabled children to a dictionary.
+
+        Args:
+            filter_function (Optional[Callable[[Any], None]]): A function to filter the dictionary values. Defaults to None.
+
+        Returns:
+            dict[Any, Any]: A dictionary representation of the object and its enabled children.
+        """
+        as_dict = {}
+        for child in self.children:
+            if child.enabled:
+                child_dict = child.as_dict(filter_function)
+                if child_dict is not None:
+                    as_dict[child.id] = child_dict
+        return as_dict
+
+    def as_json(self, pretty=False) -> str:
+        """
+        Convert the object to a JSON string representation.
+
+        This method serializes the object to a JSON string using the `as_dict` method
+        with a custom filter function to handle specific types of elements, such as images.
+        The JSON string is formatted with an indentation of 4 spaces for readability.
+
+        Returns:
+            str: The JSON string representation of the object.
+        """
+        def filter_dict(element):
+            if SUPPORT_IMAGES and isinstance(element, Image.Image):
+                return True
+            return False
+        if pretty:
+            indent: int = 4
+        else:
+            indent = 0
+        return json.dumps(self.as_dict(filter_function=filter_dict), cls=ExtendedWithNullEncoder, skipkeys=True, indent=indent)

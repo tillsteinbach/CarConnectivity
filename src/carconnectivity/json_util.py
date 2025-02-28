@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from enum import Enum
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 if TYPE_CHECKING:
     from typing import Any
@@ -20,13 +20,15 @@ class ExtendedEncoder(json.JSONEncoder):
         """Serialize datetime object to isodate string
 
         Args:
-            o (datetime): datetime object
+            o (Any): object to encode
 
         Returns:
             str: object represented as isoformat string
         """
         if isinstance(o, datetime):
             return o.isoformat()
+        if isinstance(o, timedelta):
+            return o.total_seconds()
         if isinstance(o, Enum):
             return o.value
         return super().default(o)
@@ -39,4 +41,4 @@ class ExtendedWithNullEncoder(ExtendedEncoder):
         try:
             return super().default(o)
         except TypeError:
-            return '(null)'
+            return None

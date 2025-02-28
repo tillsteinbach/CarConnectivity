@@ -17,9 +17,9 @@ class Position(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
     def __init__(self, parent: Optional[GenericObject] = None) -> None:
         super().__init__(object_id='position', parent=parent)
-        self.position_type: EnumAttribute = EnumAttribute("position_type", self, tags={'carconnectivity'})
-        self.latitude: FloatAttribute = FloatAttribute("latitude", self, tags={'carconnectivity'})
-        self.longitude: FloatAttribute = FloatAttribute("longitude", self, tags={'carconnectivity'})
+        self.position_type: EnumAttribute = EnumAttribute("position_type", parent=self, tags={'carconnectivity'})
+        self.latitude: FloatAttribute = FloatAttribute("latitude", parent=self, minimum=-90, maximum=90, tags={'carconnectivity'})
+        self.longitude: FloatAttribute = FloatAttribute("longitude", parent=self, minimum=-180, maximum=180, tags={'carconnectivity'})
 
     class PositionType(Enum):
         """

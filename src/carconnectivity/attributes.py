@@ -584,14 +584,15 @@ class IntegerAttribute(GenericAttribute[int, None]):
         super().__init__(name=name, parent=parent, value=value, value_type=int, unit=None, tags=tags)
 
 
-class FloatAttribute(GenericAttribute[float, GenericUnit]):
+class FloatAttribute(GenericAttribute[float, U]):
     """
     A class used to represent a float Attribute.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Optional[U] = None,
-                 tags: Optional[Set[str]] = None) -> None:
+                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
+        self.precision: Optional[float] = precision
 
 
 class EnumAttribute(Generic[T], GenericAttribute[T, None]):
@@ -634,14 +635,14 @@ class DurationAttribute(GenericAttribute[timedelta, None]):
         super().__init__(name=name, parent=parent, value=value, value_type=timedelta, unit=None, tags=tags)
 
 
-class RangeAttribute(GenericAttribute[float, Length]):
+class RangeAttribute(FloatAttribute[Length]):
     """
     A class used to represent a Range Attribute.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Length = Length.KM,
-                 tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
+                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -703,14 +704,14 @@ class RangeAttribute(GenericAttribute[float, Length]):
         return self.range_in(Length.KM), Length.KM
 
 
-class SpeedAttribute(GenericAttribute[float, Speed]):
+class SpeedAttribute(FloatAttribute[Speed]):
     """
     A class used to represent a Speed Attribute.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Speed = Speed.KMH,
-                 tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
+                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -772,14 +773,14 @@ class SpeedAttribute(GenericAttribute[float, Speed]):
         return self.speed_in(Speed.KMH), Speed.KMH
 
 
-class PowerAttribute(GenericAttribute):
+class PowerAttribute(FloatAttribute[Power]):
     """
     A class used to represent a power Attribute.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Power = Power.KW,
-                 tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
+                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -822,14 +823,14 @@ class PowerAttribute(GenericAttribute):
         return self.convert(self.value, self.unit, unit)
 
 
-class EnergyAttribute(GenericAttribute):
+class EnergyAttribute(FloatAttribute[Energy]):
     """
     A class used to represent a energy Attribute.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Energy = Energy.KWH,
-                 tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
+                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -872,33 +873,33 @@ class EnergyAttribute(GenericAttribute):
         return self.convert(self.value, self.unit, unit)
 
 
-class CurrentAttribute(GenericAttribute[float, Current]):
+class CurrentAttribute(FloatAttribute[Current]):
     """
     A class used to represent a current Attribute.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Current = Current.A,
-                 tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
+                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
 
 
-class LevelAttribute(GenericAttribute[float, Level]):
+class LevelAttribute(FloatAttribute[Level]):
     """
     A class used to represent a Level Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None,
-                 tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=Level.PERCENTAGE, tags=tags)
+                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=Level.PERCENTAGE, precision=precision, tags=tags)
 
 
-class TemperatureAttribute(GenericAttribute[float, Temperature]):
+class TemperatureAttribute(FloatAttribute[Temperature]):
     """
     A class used to represent a Temperature Attribute.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[T] = None, unit: Temperature = Temperature.C,
-                 tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
+                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:  # pylint: disable=too-many-return-statements

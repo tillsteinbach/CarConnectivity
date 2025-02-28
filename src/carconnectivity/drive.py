@@ -26,7 +26,7 @@ class Drives(GenericObject):
     """
     def __init__(self, vehicle: GenericVehicle) -> None:
         super().__init__(object_id='drives', parent=vehicle)
-        self.total_range: RangeAttribute = RangeAttribute(name="total_range", parent=self, value=None, unit=Length.UNKNOWN, tags={'carconnectivity'})
+        self.total_range: RangeAttribute = RangeAttribute(name="total_range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, tags={'carconnectivity'})
         self.drives: Dict[str, GenericDrive] = {}
 
     def add_drive(self, drive: GenericDrive) -> None:
@@ -48,8 +48,8 @@ class GenericDrive(GenericObject):
     def __init__(self, drive_id: str, drives: Drives) -> None:
         super().__init__(object_id=drive_id, parent=drives)
         self.type: EnumAttribute = EnumAttribute(name="type", parent=self, value=None, tags={'carconnectivity'})
-        self.range: RangeAttribute = RangeAttribute(name="range", parent=self, value=None, unit=Length.UNKNOWN, tags={'carconnectivity'})
-        self.level: LevelAttribute = LevelAttribute(name="level", parent=self, value=None, tags={'carconnectivity'})
+        self.range: RangeAttribute = RangeAttribute(name="range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, tags={'carconnectivity'})
+        self.level: LevelAttribute = LevelAttribute(name="level", parent=self, value=None, minimum=0, tags={'carconnectivity'})
         self.enabled = True
 
     # pylint: disable=duplicate-code
