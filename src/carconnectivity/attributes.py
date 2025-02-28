@@ -629,11 +629,11 @@ class IntegerAttribute(GenericAttribute[int, None]):
         Overwriting value setter to check for minimum/maximum limits
         """
         if self.minimum is not None and new_value is not None and new_value < self.minimum:
-            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ''} '
-                             f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ''}')
+            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
+                             f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ""}')
         if self.maximum is not None and new_value is not None and new_value > self.maximum:
-            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ''} '
-                             f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ''}')
+            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
+                             f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
         super().value(new_value)
 
 
@@ -656,11 +656,11 @@ class FloatAttribute(GenericAttribute[float, U]):
         Overwriting value setter to check for minimum/maximum limits
         """
         if self.minimum is not None and new_value is not None and new_value < self.minimum:
-            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ''} '
-                             f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ''}')
+            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
+                             f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ""}')
         if self.maximum is not None and new_value is not None and new_value > self.maximum:
-            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ''} '
-                             f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ''}')
+            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
+                             f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
         super().value(new_value)
 
 
