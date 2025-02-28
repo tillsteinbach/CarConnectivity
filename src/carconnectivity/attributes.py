@@ -36,7 +36,7 @@ U = TypeVar('U', bound=Optional[GenericUnit])
 LOG: logging.Logger = logging.getLogger("carconnectivity")
 
 
-class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-instance-attributes, too-many-lines
+class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-instance-attributes, too-many-lines, too-many-public-methods
     """
     GenericAttribute represents a generic attribute with a name, value, unit, and parent object.
 
@@ -617,7 +617,7 @@ class IntegerAttribute(GenericAttribute[int, None]):
     """
     A class used to represent a Integer Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: Optional[int] = None,
+    def __init__(self, name: str, parent: GenericObject, value: Optional[int] = None,  # pylint: disable=too-many-arguments, too-many-positional-arguments
                  maximum: Optional[int] = None, minimum: Optional[int] = None, tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=int, unit=None, tags=tags)
         self.maximum: Optional[int] = maximum
@@ -699,7 +699,7 @@ class DurationAttribute(GenericAttribute[timedelta, None]):
     """
     A class used to represent a Duration.
     """
-    def __init__(self, name: str, parent: GenericObject, value: Optional[timedelta] = None,
+    def __init__(self, name: str, parent: GenericObject, value: Optional[timedelta] = None,  # pylint: disable=too-many-arguments, too-many-positional-arguments
                  maximum: Optional[timedelta] = None, minimum: Optional[timedelta] = None, tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=timedelta, unit=None, tags=tags)
         self.maximum: Optional[timedelta] = maximum
@@ -963,7 +963,7 @@ class LevelAttribute(FloatAttribute[Level]):
     """
     A class used to represent a Level Attribute.
     """
-    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None,
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None,  # pylint: disable=too-many-arguments, too-many-positional-arguments
                  maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
                  tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, unit=Level.PERCENTAGE, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
