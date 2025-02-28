@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar, Generic, Optional
 
 import logging
+import json
 
 from enum import Enum
 
@@ -12,6 +13,7 @@ from pytimeparse import parse
 
 from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power, Current, Energy
 from carconnectivity.observable import Observable
+from carconnectivity.json_util import ExtendedWithNullEncoder
 
 # pylint: disable=duplicate-code
 SUPPORT_IMAGES = False
@@ -23,7 +25,7 @@ except ImportError:
 # pylint: enable=duplicate-code
 
 if TYPE_CHECKING:
-    from typing import Any, Union, List, Literal, Callable, Tuple, Set, Self, Type
+    from typing import Any, Union, List, Literal, Callable, Tuple, Set, Self, Type, Dict
     from carconnectivity.objects import GenericObject
 
 
@@ -34,7 +36,7 @@ U = TypeVar('U', bound=Optional[GenericUnit])
 LOG: logging.Logger = logging.getLogger("carconnectivity")
 
 
-class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-instance-attributes
+class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-instance-attributes, too-many-lines
     """
     GenericAttribute represents a generic attribute with a name, value, unit, and parent object.
 
@@ -565,6 +567,42 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         del recursive
         return [self]
 
+    def as_dict(self, filter_function: Optional[Callable[[Any], None]] = None) -> Optional[Any]:
+        """
+        Convert the attribute value to a dictionary representation if it passes the filter function.
+
+        Args:
+            filter_function (Optional[Callable[[Any], None]]): A function that takes the attribute value as input
+                and returns a boolean indicating whether the value should be included in the dictionary.
+
+        Returns:
+            Optional[Any]: The attribute value if it passes the filter function, otherwise None.
+        """
+        if filter_function is None or not filter_function(self.value):
+            return_dict: Dict[str, Any] = {"val": self.value}
+            if self.last_updated is not None:
+                return_dict["upd"] = self.last_updated.isoformat()
+            if self.unit is not None:
+                return_dict["uni"] = self.unit.value
+            return return_dict
+        return None
+
+    def as_json(self) -> Optional[str]:
+        """
+        Convert the attribute value to a JSON string.
+
+        If the attribute value is an image and image support is enabled,
+        the method returns None. Otherwise, it serializes the value to a
+        JSON string using the ExtendedWithNullEncoder class.
+
+        Returns:
+            Optional[str]: The JSON string representation of the attribute
+            value, or None if the value is an image and image support is enabled.
+        """
+        if SUPPORT_IMAGES and isinstance(self.value, Image.Image):
+            return None
+        return json.dumps(self.value, cls=ExtendedWithNullEncoder, skipkeys=True, indent=4)
+
 
 class BooleanAttribute(GenericAttribute[bool, None]):
     """
@@ -580,8 +618,23 @@ class IntegerAttribute(GenericAttribute[int, None]):
     A class used to represent a Integer Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[int] = None,
-                 tags: Optional[Set[str]] = None) -> None:
+                 maximum: Optional[int] = None, minimum: Optional[int] = None, tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=int, unit=None, tags=tags)
+        self.maximum: Optional[int] = maximum
+        self.minimum: Optional[int] = minimum
+
+    @GenericAttribute.value.setter
+    def value(self, new_value: Optional[T]) -> None:
+        """
+        Overwriting value setter to check for minimum/maximum limits
+        """
+        if self.minimum is not None and new_value is not None and new_value < self.minimum:
+            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ''} '
+                             f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ''}')
+        if self.maximum is not None and new_value is not None and new_value > self.maximum:
+            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ''} '
+                             f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ''}')
+        super().value(new_value)
 
 
 class FloatAttribute(GenericAttribute[float, U]):
@@ -590,9 +643,25 @@ class FloatAttribute(GenericAttribute[float, U]):
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Optional[U] = None,
-                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags)
         self.precision: Optional[float] = precision
+        self.maximum: Optional[float] = maximum
+        self.minimum: Optional[float] = minimum
+
+    @GenericAttribute.value.setter
+    def value(self, new_value: Optional[T]) -> None:
+        """
+        Overwriting value setter to check for minimum/maximum limits
+        """
+        if self.minimum is not None and new_value is not None and new_value < self.minimum:
+            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ''} '
+                             f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ''}')
+        if self.maximum is not None and new_value is not None and new_value > self.maximum:
+            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ''} '
+                             f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ''}')
+        super().value(new_value)
 
 
 class EnumAttribute(Generic[T], GenericAttribute[T, None]):
@@ -631,8 +700,10 @@ class DurationAttribute(GenericAttribute[timedelta, None]):
     A class used to represent a Duration.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[timedelta] = None,
-                 tags: Optional[Set[str]] = None) -> None:
+                 maximum: Optional[timedelta] = None, minimum: Optional[timedelta] = None, tags: Optional[Set[str]] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=timedelta, unit=None, tags=tags)
+        self.maximum: Optional[timedelta] = maximum
+        self.minimum: Optional[timedelta] = minimum
 
 
 class RangeAttribute(FloatAttribute[Length]):
@@ -641,8 +712,9 @@ class RangeAttribute(FloatAttribute[Length]):
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Length = Length.KM,
-                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -710,8 +782,9 @@ class SpeedAttribute(FloatAttribute[Speed]):
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Speed = Speed.KMH,
-                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -779,8 +852,9 @@ class PowerAttribute(FloatAttribute[Power]):
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Power = Power.KW,
-                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -829,8 +903,9 @@ class EnergyAttribute(FloatAttribute[Energy]):
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Energy = Energy.KWH,
-                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:
@@ -879,8 +954,9 @@ class CurrentAttribute(FloatAttribute[Current]):
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Current = Current.A,
-                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
 
 
 class LevelAttribute(FloatAttribute[Level]):
@@ -888,8 +964,9 @@ class LevelAttribute(FloatAttribute[Level]):
     A class used to represent a Level Attribute.
     """
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None,
-                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, unit=Level.PERCENTAGE, precision=precision, tags=tags)
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=Level.PERCENTAGE, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
 
 
 class TemperatureAttribute(FloatAttribute[Temperature]):
@@ -898,8 +975,9 @@ class TemperatureAttribute(FloatAttribute[Temperature]):
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[T] = None, unit: Temperature = Temperature.C,
-                 precision: Optional[float] = None, tags: Optional[Set[str]] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, unit=unit, precision=precision, tags=tags)
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
 
     @staticmethod
     def convert(value, from_unit: U, to_unit: U) -> T:  # pylint: disable=too-many-return-statements
