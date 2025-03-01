@@ -31,7 +31,7 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
         else:
             super().__init__(object_id='climatization', parent=vehicle)
             self.commands: Commands = Commands(parent=self)
-            self.state: EnumAttribute = EnumAttribute("state", self, tags={'carconnectivity'})
+            self.state: EnumAttribute = EnumAttribute("state", self, value_type=Climatization.ClimatizationState, tags={'carconnectivity'})
             self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", self, tags={'carconnectivity'})
             self.settings: Climatization.Settings = Climatization.Settings(parent=self)
 

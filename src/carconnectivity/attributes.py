@@ -232,6 +232,16 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         return self.__value
 
     @property
+    def value_type(self) -> Optional[Type[T]]:
+        """
+        Retrieve the value type of the attribute.
+
+        Returns:
+            Optional[Any]: The current value type of the attribute, or None if not set.
+        """
+        return self.__value_type
+
+    @property
     def unit(self) -> Optional[U]:
         """
         Get the si-unit of the attribute.
