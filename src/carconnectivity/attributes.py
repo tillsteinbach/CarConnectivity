@@ -162,9 +162,9 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
-        for hook, _ in self._on_set_hooks:
-            if hook == hook:
-                self._on_set_hooks.remove((hook, _))
+        for ihook, _ in self._on_set_hooks:
+            if ihook == hook:
+                self._on_set_hooks.remove((ihook, _))
 
     def _has_on_set_hook(self, hook: Callable[[Self, T], T]) -> bool:
         """
@@ -176,8 +176,8 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             bool: True if the hook is present, False otherwise.
         """
-        for hook, _ in self._on_set_hooks:
-            if hook == hook:
+        for ihook, _ in self._on_set_hooks:
+            if ihook == hook:
                 return True
         return False
 
