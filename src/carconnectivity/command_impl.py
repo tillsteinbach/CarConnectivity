@@ -36,6 +36,8 @@ class ClimatizationStartStopCommand(GenericCommand):
     # pylint: disable=duplicate-code
     @value.setter
     def value(self, new_value: Optional[Union[str, Dict]]) -> None:
+        # Execute early hooks before parsing the value
+        new_value = self._execute_on_set_hook(new_value, early_hook=True)
         if isinstance(new_value, str):
             parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
             parser.add_argument('command', help='Command to execute', type=ClimatizationStartStopCommand.Command,
@@ -70,8 +72,8 @@ class ClimatizationStartStopCommand(GenericCommand):
                     raise ValueError('Invalid value for ClimatizationStartStopCommand. '
                                      f'Command must be one of {ClimatizationStartStopCommand.Command}')
         if self._is_changeable:
-            for hook in self._on_set_hooks:
-                new_value = hook(self, new_value)
+            # Execute late hooks before setting the value
+            new_value = self._execute_on_set_hook(new_value, early_hook=False)
             self._set_value(new_value)
         else:
             raise TypeError('You cannot use this command. Command is not implemented.')
@@ -108,6 +110,8 @@ class ChargingStartStopCommand(GenericCommand):
 
     @value.setter
     def value(self, new_value: Optional[Union[str, Dict]]) -> None:
+        # Execute early hooks before parsing the value
+        new_value = self._execute_on_set_hook(new_value, early_hook=True)
         if isinstance(new_value, str):
             parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
             parser.add_argument('command', help='Command to execute', type=ChargingStartStopCommand.Command,
@@ -128,8 +132,8 @@ class ChargingStartStopCommand(GenericCommand):
                     raise ValueError('Invalid value for ChargingStartStopCommand. '
                                      f'Command must be one of {ChargingStartStopCommand.Command}')
         if self._is_changeable:
-            for hook in self._on_set_hooks:
-                new_value = hook(self, new_value)
+            # Execute late hooks before setting the value
+            new_value = self._execute_on_set_hook(new_value, early_hook=False)
             self._set_value(new_value)
         else:
             raise TypeError('You cannot set this attribute. Attribute is not mutable.')
@@ -163,6 +167,8 @@ class HonkAndFlashCommand(GenericCommand):
 
     @value.setter
     def value(self, new_value: Optional[Union[str, Dict]]) -> None:
+        # Execute early hooks before parsing the value
+        new_value = self._execute_on_set_hook(new_value, early_hook=True)
         if isinstance(new_value, str):
             parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
             parser.add_argument('command', help='Command to execute', type=HonkAndFlashCommand.Command,
@@ -187,8 +193,8 @@ class HonkAndFlashCommand(GenericCommand):
                     raise ValueError('Invalid value for HonkAndFlashCommand. '
                                      f'Command must be one of {HonkAndFlashCommand.Command}')
         if self._is_changeable:
-            for hook in self._on_set_hooks:
-                new_value = hook(self, new_value)
+            # Execute late hooks before setting the value
+            new_value = self._execute_on_set_hook(new_value, early_hook=False)
             self._set_value(new_value)
         else:
             raise TypeError('You cannot set this attribute. Attribute is not mutable.')
@@ -224,6 +230,8 @@ class LockUnlockCommand(GenericCommand):
 
     @value.setter
     def value(self, new_value: Optional[Union[str, Dict]]) -> None:
+        # Execute early hooks before parsing the value
+        new_value = self._execute_on_set_hook(new_value, early_hook=True)
         if isinstance(new_value, str):
             parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
             parser.add_argument('command', help='Command to execute', type=LockUnlockCommand.Command,
@@ -244,8 +252,8 @@ class LockUnlockCommand(GenericCommand):
                     raise ValueError('Invalid value for LockUnlockCommand. '
                                      f'Command must be one of {LockUnlockCommand.Command}')
         if self._is_changeable:
-            for hook in self._on_set_hooks:
-                new_value = hook(self, new_value)
+            # Execute late hooks before setting the value
+            new_value = self._execute_on_set_hook(new_value, early_hook=False)
             self._set_value(new_value)
         else:
             raise TypeError('You cannot set this attribute. Attribute is not mutable.')
@@ -282,6 +290,8 @@ class WakeSleepCommand(GenericCommand):
     # pylint: disable=duplicate-code
     @value.setter
     def value(self, new_value: Optional[Union[str, Dict]]) -> None:
+        # Execute early hooks before parsing the value
+        new_value = self._execute_on_set_hook(new_value, early_hook=True)
         if isinstance(new_value, str):
             parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
             parser.add_argument('command', help='Command to execute', type=WakeSleepCommand.Command,
@@ -302,8 +312,8 @@ class WakeSleepCommand(GenericCommand):
                     raise ValueError('Invalid value for WakeSleepCommand. '
                                      f'Command must be one of {WakeSleepCommand.Command}')
         if self._is_changeable:
-            for hook in self._on_set_hooks:
-                new_value = hook(self, new_value)
+            # Execute late hooks before setting the value
+            new_value = self._execute_on_set_hook(new_value, early_hook=False)
             self._set_value(new_value)
         else:
             raise TypeError('You cannot use this command. Command is not implemented.')

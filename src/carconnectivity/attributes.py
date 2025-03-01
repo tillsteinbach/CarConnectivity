@@ -76,7 +76,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         self.__unit: Optional[U] = unit
         self.__unit_type: Optional[Type[U]] = type(unit) if unit is not None else None
         self._is_changeable: bool = False
-        self._on_set_hooks: List[Callable[[Self, Optional[T]], T]] = []
+        self._on_set_hooks: List[Tuple[Callable[[Self, Optional[T]], T], bool]] = []
 
         self.__enabled = False
 
@@ -124,7 +124,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         """
         self.tags.remove(tag)
 
-    def _add_on_set_hook(self, hook: Callable[[Self, T], T]) -> None:
+    def _add_on_set_hook(self, hook: Callable[[Self, T], T], early_hook=False) -> None:
         """
         Add a hook to be called when the value is set.
 
@@ -135,7 +135,22 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             None
         """
         if hook not in self._on_set_hooks:
-            self._on_set_hooks.append(hook)
+            self._on_set_hooks.append((hook, early_hook))
+
+    def _execute_on_set_hook(self, new_value: Optional[T], early_hook=False) -> Optional[T]:
+        """
+        Execute all hooks that are called when the value is set.
+
+        Args:
+            early_hook (bool): If True, only execute hooks that are called before the value is set.
+
+        Returns:
+            None
+        """
+        for hook, early in self._on_set_hooks:
+            if early == early_hook:
+                new_value = hook(self, new_value)
+        return new_value
 
     def _remove_on_set_hook(self, hook: Callable[[Self, T], T]) -> None:
         """
@@ -147,8 +162,9 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
-        if hook in self._on_set_hooks:
-            self._on_set_hooks.remove(hook)
+        for hook, _ in self._on_set_hooks:
+            if hook == hook:
+                self._on_set_hooks.remove((hook, _))
 
     def _has_on_set_hook(self, hook: Callable[[Self, T], T]) -> bool:
         """
@@ -160,7 +176,22 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             bool: True if the hook is present, False otherwise.
         """
-        return hook in self._on_set_hooks
+        for hook, _ in self._on_set_hooks:
+            if hook == hook:
+                return True
+        return False
+
+    def get_on_set_hooks(self, early_hook=False) -> List[Callable[[Self, T], T]]:
+        """
+        Retrieve all hooks that are called when the value is set.
+
+        Args:
+            early_hook (bool): If True, only return hooks that are called before the value is set.
+
+        Returns:
+            List[Callable]: A list of hooks that are called when the value is set.
+        """
+        return [hook for hook, early in self._on_set_hooks if early == early_hook]
 
     def __del__(self) -> None:
         if self.enabled:
@@ -421,13 +452,14 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         """
         Setting the value directly is not allowed. GenericAttributes are not mutable by the user.
         """
+        # then execute all early hooks
+        new_value = self._execute_on_set_hook(new_value, early_hook=True)
         if self._is_changeable:
             # First bring the value to the correct type
             if new_value is not None:
                 new_value = self.type_conversion(new_value)
-            # then execute all hooks
-            for hook in self._on_set_hooks:
-                new_value = hook(self, new_value)
+            # then execute all late hooks
+            new_value = self._execute_on_set_hook(new_value, early_hook=False)
             # finally set the value
             self._set_value(new_value)
         else:
@@ -634,17 +666,21 @@ class IntegerAttribute(GenericAttribute[int, None]):
         self.minimum: Optional[int] = minimum
 
     @GenericAttribute.value.setter
-    def value(self, new_value: Optional[T]) -> None:
+    def value(self, new_value: int) -> None:
         """
         Overwriting value setter to check for minimum/maximum limits
         """
-        if self.minimum is not None and new_value is not None and new_value < self.minimum:
-            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
-                             f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ""}')
-        if self.maximum is not None and new_value is not None and new_value > self.maximum:
-            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
-                             f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
-        super().value(new_value)
+        if self._is_changeable:
+            # First bring the value to the correct type
+            if new_value is not None:
+                new_value = self.type_conversion(new_value)
+            if self.minimum is not None and new_value is not None and new_value < self.minimum:
+                raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
+                                 f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ""}')
+            if self.maximum is not None and new_value is not None and new_value > self.maximum:
+                raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
+                                 f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
+        GenericAttribute.value.fset(self, new_value)
 
 
 class FloatAttribute(GenericAttribute[float, U]):
@@ -661,17 +697,21 @@ class FloatAttribute(GenericAttribute[float, U]):
         self.minimum: Optional[float] = minimum
 
     @GenericAttribute.value.setter
-    def value(self, new_value: Optional[T]) -> None:
+    def value(self, new_value: float) -> None:
         """
         Overwriting value setter to check for minimum/maximum limits
         """
-        if self.minimum is not None and new_value is not None and new_value < self.minimum:
-            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
-                             f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ""}')
-        if self.maximum is not None and new_value is not None and new_value > self.maximum:
-            raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
-                             f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
-        super().value(new_value)
+        if self._is_changeable:
+            # First bring the value to the correct type
+            if new_value is not None:
+                new_value = self.type_conversion(new_value)
+            if self.minimum is not None and new_value is not None and new_value < self.minimum:
+                raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
+                                 f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ""}')
+            if self.maximum is not None and new_value is not None and new_value > self.maximum:
+                raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
+                                 f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
+        GenericAttribute.value.fset(self, new_value)
 
 
 class EnumAttribute(Generic[T], GenericAttribute[T, None]):
@@ -714,6 +754,23 @@ class DurationAttribute(GenericAttribute[timedelta, None]):
         super().__init__(name=name, parent=parent, value=value, value_type=timedelta, unit=None, tags=tags)
         self.maximum: Optional[timedelta] = maximum
         self.minimum: Optional[timedelta] = minimum
+
+    @GenericAttribute.value.setter
+    def value(self, new_value: timedelta) -> None:
+        """
+        Overwriting value setter to check for minimum/maximum limits
+        """
+        if self._is_changeable:
+            # First bring the value to the correct type
+            if new_value is not None:
+                new_value = self.type_conversion(new_value)
+            if self.minimum is not None and new_value is not None and new_value < self.minimum:
+                raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
+                                 f'is below minimum {self.minimum}{self.unit.value if self.unit is not None else ""}')
+            if self.maximum is not None and new_value is not None and new_value > self.maximum:
+                raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
+                                 f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
+        GenericAttribute.value.fset(self, new_value)
 
 
 class RangeAttribute(FloatAttribute[Length]):
