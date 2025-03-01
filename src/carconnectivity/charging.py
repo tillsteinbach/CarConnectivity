@@ -48,8 +48,10 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
             self.delay_notifications = True
             self.commands: Commands = Commands(parent=self)
             self.connector: ChargingConnector = ChargingConnector(charging=self)
-            self.state: EnumAttribute[Charging.ChargingState] = EnumAttribute("state", parent=self, tags={'carconnectivity'})
-            self.type: EnumAttribute[Charging.ChargingType] = EnumAttribute("type", parent=self, tags={'carconnectivity'})
+            self.state: EnumAttribute[Charging.ChargingState] = EnumAttribute("state", parent=self, value_type=Charging.ChargingState,
+                                                                              tags={'carconnectivity'})
+            self.type: EnumAttribute[Charging.ChargingType] = EnumAttribute("type", parent=self, value_type=Charging.ChargingType,
+                                                                            tags={'carconnectivity'})
             self.rate: SpeedAttribute = SpeedAttribute("rate", parent=self, tags={'carconnectivity'})
             self.power: PowerAttribute = PowerAttribute("power", parent=self, tags={'carconnectivity'})
             self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self, tags={'carconnectivity'})
