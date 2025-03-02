@@ -90,10 +90,10 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
 
     def is_healthy(self) -> bool:
         """
-        Returns whether the connector is healthy.
+        Returns whether the plugin is healthy.
 
         Returns:
-            bool: True if the connector is healthy, False otherwise.
+            bool: True if the plugin is healthy, False otherwise.
         """
         if self.healthy.enabled and self.healthy.value is not None:
             return self.healthy.value
@@ -105,6 +105,6 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         If not implemented by the plugin, fallback is the ID of the plugin.
 
         Returns:
-            str: The name of the connector.
+            str: The name of the plugin.
         """
         return self.id

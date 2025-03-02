@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from carconnectivity.carconnectivity import CarConnectivity
 
 
-class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
+class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
     """BaseConnector is a base class for connectors in the CarConnectivity system.
 
     Attributes:
