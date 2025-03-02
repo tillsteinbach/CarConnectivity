@@ -51,7 +51,6 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
             else:
                 raise ConfigurationError(f'Invalid log level: "{self.active_config["log_level"]}" not in {list(logging._nameToLevel.keys())}')
         log.addHandler(self.log_storage)
-        # pylint: enable=duplicate-code
 
     def startup(self) -> None:
         """
@@ -108,3 +107,4 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
             str: The name of the plugin.
         """
         return self.id
+        # pylint: enable=duplicate-code

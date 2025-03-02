@@ -64,7 +64,6 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
                 raise ConfigurationError(f'Invalid log level: "{self.active_config["api_log_level"]}" not in {list(logging._nameToLevel.keys())}')
         log.addHandler(self.log_storage)
         api_log.addHandler(self.api_log_storage)
-        # pylint: enable=duplicate-code
 
     def fetch_all(self) -> None:
         """
@@ -128,3 +127,5 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
             str: The name of the connector.
         """
         return self.id
+    # pylint: enable=duplicate-code
+
