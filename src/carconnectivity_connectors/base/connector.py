@@ -128,4 +128,3 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
         """
         return self.id
     # pylint: enable=duplicate-code
-
