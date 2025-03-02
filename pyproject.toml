@@ -37,16 +37,23 @@ classifiers = [
 connectors = [
     'carconnectivity-connector-volkswagen',
     'carconnectivity-connector-skoda',
+    'carconnectivity-connector-seatcupra',
+    'carconnectivity-connector-tronity',
 ]
 plugins = [
     'carconnectivity-plugin-mqtt',
+    'carconnectivity-plugin-mqtt_homeassistant',
     'carconnectivity-plugin-abrp',
     'carconnectivity-plugin-homekit',
+    'carconnectivity-plugin-webui',
 ]
 images = [
     'pillow~=11.1.0',
     'ascii_magic~=2.3.0'
 
+]
+all = [
+    'carconnectivity[images,connectors,plugins]'
 ]
 
 [project.urls]
