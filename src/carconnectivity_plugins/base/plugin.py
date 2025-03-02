@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import logging
 
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import StringAttribute
+from carconnectivity.attributes import StringAttribute, BooleanAttribute
 from carconnectivity.errors import ConfigurationError
 from carconnectivity.util import LogMemoryHandler
 
@@ -39,6 +39,7 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         self.log_storage: LogMemoryHandler = LogMemoryHandler()
         self.log_level = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'})
         self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
+        self.healthy: BooleanAttribute = BooleanAttribute(name="healthy", parent=self, tags={'carconnectivity'})
 
         # pylint: disable=duplicate-code
         # Configure logging
@@ -89,9 +90,21 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
 
     def is_healthy(self) -> bool:
         """
-        Returns whether the plugin is healthy.
+        Returns whether the connector is healthy.
 
         Returns:
             bool: True if the connector is healthy, False otherwise.
         """
-        return True
+        if self.healthy.enabled and self.healthy.value is not None:
+            return self.healthy.value
+        return False
+
+    def get_name(self) -> str:
+        """
+        Returns the user readable name of the plugin.
+        If not implemented by the plugin, fallback is the ID of the plugin.
+
+        Returns:
+            str: The name of the connector.
+        """
+        return self.id

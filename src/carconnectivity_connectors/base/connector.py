@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import logging
 
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import StringAttribute, DateAttribute
+from carconnectivity.attributes import StringAttribute, DateAttribute, BooleanAttribute
 from carconnectivity.errors import ConfigurationError
 from carconnectivity.util import LogMemoryHandler
 
@@ -42,6 +42,7 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
         self.log_level = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'})
         self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
         self.last_update: DateAttribute = DateAttribute(name="last_update", parent=self, tags={'carconnectivity'})
+        self.healthy: BooleanAttribute = BooleanAttribute(name="healthy", parent=self, tags={'carconnectivity'})
 
         # Configure logging
         # pylint: disable=duplicate-code
@@ -114,4 +115,16 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods
         Returns:
             bool: True if the connector is healthy, False otherwise.
         """
-        return True
+        if self.healthy.enabled and self.healthy.value is not None:
+            return self.healthy.value
+        return False
+
+    def get_name(self) -> str:
+        """
+        Returns the user readable name of the connector.
+        If not implemented by the connector, fallback is the ID of the connector.
+
+        Returns:
+            str: The name of the connector.
+        """
+        return self.id
