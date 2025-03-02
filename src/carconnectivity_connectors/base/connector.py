@@ -1,4 +1,5 @@
 """Module containing the BaseConnector class that needs to be extended to implement a new connector."""
+# pylint: disable=duplicate-code
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -45,7 +46,6 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
         self.healthy: BooleanAttribute = BooleanAttribute(name="healthy", parent=self, tags={'carconnectivity'})
 
         # Configure logging
-        # pylint: disable=duplicate-code
         if 'log_level' in config and config['log_level'] is not None:
             self.active_config['log_level'] = config['log_level'].upper()
             if self.active_config['log_level'] in logging._nameToLevel:
@@ -127,4 +127,3 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
             str: The name of the connector.
         """
         return self.id
-    # pylint: enable=duplicate-code

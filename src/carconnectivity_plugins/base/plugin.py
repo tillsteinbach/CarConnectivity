@@ -1,4 +1,5 @@
 """Module containing the BasePlugin class that needs to be extended to implement a new plugin."""
+# pylint: disable=duplicate-code
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -41,7 +42,6 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
         self.healthy: BooleanAttribute = BooleanAttribute(name="healthy", parent=self, tags={'carconnectivity'})
 
-        # pylint: disable=duplicate-code
         # Configure logging
         if 'log_level' in config and config['log_level'] is not None:
             self.active_config['log_level'] = config['log_level'].upper()
@@ -107,4 +107,3 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
             str: The name of the plugin.
         """
         return self.id
-        # pylint: enable=duplicate-code
