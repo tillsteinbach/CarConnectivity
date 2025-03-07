@@ -23,6 +23,7 @@ from carconnectivity.position import Position
 from carconnectivity.climatization import Climatization
 from carconnectivity.commands import Commands
 from carconnectivity.maintenance import Maintenance
+from carconnectivity.window_heating import WindowHeatings
 
 # pylint: disable=duplicate-code
 SUPPORT_IMAGES = False
@@ -95,6 +96,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.enabled = origin.enabled
             self.climatization: Climatization = origin.climatization
             self.climatization.parent = self
+            self.window_heatings: WindowHeatings = origin.window_heatings
+            self.window_heatings.parent = self
             self.outside_temperature: TemperatureAttribute = origin.outside_temperature
             self.outside_temperature.parent = self
             self.specification: GenericVehicle.VehicleSpecification = origin.specification
@@ -131,6 +134,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.software: Software = Software(vehicle=self)
             self.position: Position = Position(parent=self)
             self.climatization: Climatization = Climatization(vehicle=self)
+            self.window_heatings: WindowHeatings = WindowHeatings(vehicle=self)
             self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", parent=self, minimum=-40, maximum=85,
                                                                                   tags={'carconnectivity'})
             self.specification: GenericVehicle.VehicleSpecification = GenericVehicle.VehicleSpecification(vehicle=self)
