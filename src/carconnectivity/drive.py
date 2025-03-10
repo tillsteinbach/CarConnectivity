@@ -84,3 +84,14 @@ class CombustionDrive(GenericDrive):
     """
     def __init__(self, drive_id: str, drives: Drives) -> None:
         super().__init__(drive_id=drive_id, drives=drives)
+
+
+class DieselDrive(CombustionDrive):
+    """
+    Represents a diesel combustion drive.
+    """
+    def __init__(self, drive_id: str, drives: Drives) -> None:
+        super().__init__(drive_id=drive_id, drives=drives)
+        self.adblue_range: RangeAttribute = RangeAttribute(name="adblue_range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0,
+                                                           tags={'carconnectivity'})
+        self.adblue_level: LevelAttribute = LevelAttribute(name="adblue_level", parent=self, value=None, minimum=0, tags={'carconnectivity'})
