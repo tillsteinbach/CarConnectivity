@@ -138,14 +138,18 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
                 with open(file=self.__tokenstore_file, mode='r', encoding='utf8') as file:
                     tokenstore_file_dict: Dict[str, Any] = json.load(file)
                     if 'format_version' not in tokenstore_file_dict or tokenstore_file_dict['format_version'] != TOKENSTORE_FORMAT_VERSION:
-                        LOG.info('Tokenstore file has wrong format version, ignoring it')
+                        LOG.warning('Tokenstore file has wrong format version, ignoring it. Tokenstore will be regenerated when saving')
                         self.__tokenstore = {}
                     else:
-                        if 'tokenstore_encrypted' in self.config['carConnectivity'] and not self.config['carConnectivity']['tokenstore_encrypted']:
-                            self.__tokenstore = tokenstore_file_dict['tokenstore']
+                        if 'tokenstore' not in tokenstore_file_dict:
+                            LOG.info('Tokenstore file has no tokenstore content, ignoring it. Tokenstore will be regenerated when saving')
+                            self.__tokenstore = {}
                         else:
-                            fernet = Fernet(TOKENSTORE_KEY.encode('utf-8'))
-                            self.__tokenstore = json.loads(fernet.decrypt(tokenstore_file_dict['tokenstore'].encode('utf-8')).decode('utf-8'))
+                            if 'tokenstore_encrypted' in self.config['carConnectivity'] and not self.config['carConnectivity']['tokenstore_encrypted']:
+                                self.__tokenstore = tokenstore_file_dict['tokenstore']
+                            else:
+                                fernet = Fernet(TOKENSTORE_KEY.encode('utf-8'))
+                                self.__tokenstore = json.loads(fernet.decrypt(tokenstore_file_dict['tokenstore'].encode('utf-8')).decode('utf-8'))
             except json.JSONDecodeError as err:
                 LOG.info('Could not use tokenstore from file %s (%s)', tokenstore_file, err.msg)
                 self.__tokenstore = {}
