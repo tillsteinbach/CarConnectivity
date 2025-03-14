@@ -32,7 +32,10 @@ import logging
 from carconnectivity import carconnectivity
 
 if TYPE_CHECKING:
-    from typing import List
+    from typing import List, Optional
+
+    from carconnectivity.garage import Garage
+
 
 LOG_LEVELS: List[str] = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 DEFAULT_LOG_LEVEL = "ERROR"
@@ -70,8 +73,14 @@ def main() -> None:
         config_dict = json.load(config_file)
         print('#  Login')
         car_connectivity = carconnectivity.CarConnectivity(config=config_dict, tokenstore_file=args.tokenstorefile)
+        print('#  fetch data')
+        car_connectivity.fetch_all()
         print('#  getData')
-        car_connectivity.get_garage()
+        garage: Optional[Garage] = car_connectivity.get_garage()
+        if garage is not None:
+            print('#  list all vehicles')
+            for vehicle_id, vehicle in garage._vehicles.items():
+                print(f'#  {vehicle_id}: {vehicle}')
         print('#  Shutdown')
         car_connectivity.shutdown()
 
