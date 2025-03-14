@@ -15,14 +15,13 @@ from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed
 from carconnectivity.observable import Observable
 from carconnectivity.json_util import ExtendedWithNullEncoder
 
-# pylint: disable=duplicate-code
 SUPPORT_IMAGES = False
 try:
     from PIL import Image
+    from carconnectivity.image_util import image_to_ASCII_art  # pylint: disable=ungrouped-imports
     SUPPORT_IMAGES = True
 except ImportError:
     pass
-# pylint: enable=duplicate-code
 
 if TYPE_CHECKING:
     from typing import Any, Union, List, Literal, Callable, Tuple, Set, Self, Type, Dict
@@ -1137,4 +1136,4 @@ if SUPPORT_IMAGES:
             super().__init__(name=name, parent=parent, value=value, value_type=value_type, unit=None, tags=tags)
 
         def __str__(self) -> str:
-            return f"{self.value.value if self.value else None}"
+            return f"{image_to_ASCII_art(self.value) if self.value else None}"
