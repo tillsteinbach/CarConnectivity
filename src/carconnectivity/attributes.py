@@ -15,6 +15,7 @@ from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed
 from carconnectivity.observable import Observable
 from carconnectivity.json_util import ExtendedWithNullEncoder
 
+# pylint: disable=duplicate-code
 SUPPORT_IMAGES = False
 try:
     from PIL import Image
@@ -22,6 +23,7 @@ try:
     SUPPORT_IMAGES = True
 except ImportError:
     pass
+# pylint: enable=duplicate-code
 
 if TYPE_CHECKING:
     from typing import Any, Union, List, Literal, Callable, Tuple, Set, Self, Type, Dict
