@@ -10,7 +10,7 @@ import json
 import logging
 import os
 from datetime import datetime, timezone
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 
 import carconnectivity_connectors
 import carconnectivity_plugins
@@ -142,14 +142,18 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
                         self.__tokenstore = {}
                     else:
                         if 'tokenstore' not in tokenstore_file_dict:
-                            LOG.info('Tokenstore file has no tokenstore content, ignoring it. Tokenstore will be regenerated when saving')
+                            LOG.warning('Tokenstore file has no tokenstore content, ignoring it. Tokenstore will be regenerated when saving')
                             self.__tokenstore = {}
                         else:
                             if 'tokenstore_encrypted' in self.config['carConnectivity'] and not self.config['carConnectivity']['tokenstore_encrypted']:
                                 self.__tokenstore = tokenstore_file_dict['tokenstore']
                             else:
-                                fernet = Fernet(TOKENSTORE_KEY.encode('utf-8'))
-                                self.__tokenstore = json.loads(fernet.decrypt(tokenstore_file_dict['tokenstore'].encode('utf-8')).decode('utf-8'))
+                                try:
+                                    fernet = Fernet(TOKENSTORE_KEY.encode('utf-8'))
+                                    self.__tokenstore = json.loads(fernet.decrypt(tokenstore_file_dict['tokenstore'].encode('utf-8')).decode('utf-8'))
+                                except InvalidToken:
+                                    LOG.warning('Tokenstore file cannot be decrypted, ignoring it. Tokenstore will be regenerated when saving')
+                                    self.__tokenstore = {}
             except json.JSONDecodeError as err:
                 LOG.info('Could not use tokenstore from file %s (%s)', tokenstore_file, err.msg)
                 self.__tokenstore = {}
