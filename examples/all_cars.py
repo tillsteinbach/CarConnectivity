@@ -79,8 +79,8 @@ def main() -> None:
         garage: Optional[Garage] = car_connectivity.get_garage()
         if garage is not None:
             print('#  list all vehicles')
-            for vehicle_id, vehicle in garage._vehicles.items():
-                print(f'#  {vehicle_id}: {vehicle}')
+            for vehicle in garage.list_vehicles():
+                print(f'#  {vehicle}')
         print('#  Shutdown')
         car_connectivity.shutdown()
 
