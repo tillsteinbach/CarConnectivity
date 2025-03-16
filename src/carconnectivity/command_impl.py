@@ -332,3 +332,64 @@ class WakeSleepCommand(GenericCommand):
 
         def __str__(self) -> str:
             return self.value
+
+
+class WindowHeatingStartStopCommand(GenericCommand):
+    """
+    WindowHeatingStartStopCommand is a command class for starting or stopping the window heating.
+
+    Command (Enum): Enum class representing different commands for window heating.
+
+    """
+    def __init__(self, name: str = 'start-stop', parent: Optional[GenericObject] = None) -> None:
+        super().__init__(name=name, parent=parent)
+
+    @property
+    def value(self) -> Optional[Union[str, Dict]]:
+        return super().value
+
+    # pylint: disable=duplicate-code
+    @value.setter
+    def value(self, new_value: Optional[Union[str, Dict]]) -> None:
+        # Execute early hooks before parsing the value
+        new_value = self._execute_on_set_hook(new_value, early_hook=True)
+        if isinstance(new_value, str):
+            parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
+            parser.add_argument('command', help='Command to execute', type=WindowHeatingStartStopCommand.Command,
+                                choices=list(WindowHeatingStartStopCommand.Command))
+            try:
+                args = parser.parse_args(new_value.split(sep=' '))
+            except argparse.ArgumentError as e:
+                raise SetterError(f'Invalid format for WindowHeatingStartStopCommand: {e.message} {parser.format_usage()}') from e
+
+            newvalue_dict = {}
+            newvalue_dict['command'] = args.command
+            new_value = newvalue_dict
+        elif isinstance(new_value, dict):
+            if 'command' in new_value and isinstance(new_value['command'], str):
+                if new_value['command'] in WindowHeatingStartStopCommand.Command:
+                    new_value['command'] = WindowHeatingStartStopCommand.Command(new_value['command'])
+                else:
+                    raise ValueError('Invalid value for WindowHeatingStartStopCommand. '
+                                     f'Command must be one of {WindowHeatingStartStopCommand.Command}')
+        if self._is_changeable:
+            # Execute late hooks before setting the value
+            new_value = self._execute_on_set_hook(new_value, early_hook=False)
+            self._set_value(new_value)
+        else:
+            raise TypeError('You cannot use this command. Command is not implemented.')
+    # pylint: enable=duplicate-code
+
+    class Command(Enum):
+        """
+        Enum class representing different commands for window heating.
+
+        Attributes:
+            START (str): Command to start the window heating.
+            STOP (str): Command to stop the window heating.
+        """
+        START = 'start'
+        STOP = 'stop'
+
+        def __str__(self) -> str:
+            return self.value
