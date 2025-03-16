@@ -23,7 +23,7 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
     # pylint: disable=duplicate-code
     def __init__(self, vehicle: Optional[ElectricVehicle] = None,  origin: Optional[Charging] = None) -> None:
         if origin is not None:
-            super().__init__(origin=origin)
+            super().__init__(parent=vehicle, origin=origin)
             self.delay_notifications = True
             self.commands: Commands = origin.commands
             self.commands.parent = self
@@ -108,7 +108,7 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
         """
         def __init__(self, parent: Optional[GenericObject] = None, origin: Optional[Charging.Settings] = None) -> None:
             if origin is not None:
-                super().__init__(origin=origin)
+                super().__init__(parent=parent, origin=origin)
                 self.target_level: LevelAttribute = origin.target_level
                 self.target_level.parent = self
                 self.maximum_current: CurrentAttribute = origin.maximum_current

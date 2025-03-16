@@ -132,6 +132,8 @@ class GenericObject(Observable):
         Returns:
             Optional[GenericObject]: The parent object if it exists, otherwise None.
         """
+        if self.__parent is not None and self not in self.__parent.children:
+            raise ValueError('Error in structure: Parent object does not have this attribute as a child')
         return self.__parent
 
     @parent.setter
@@ -145,7 +147,7 @@ class GenericObject(Observable):
         Returns:
             None
         """
-        if self in self.__parent.children:
+        if self.__parent is not None and self in self.__parent.children:
             self.__parent.children.remove(self)
         self.__parent = parent
         parent.children.append(self)

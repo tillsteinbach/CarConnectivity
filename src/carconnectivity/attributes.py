@@ -507,6 +507,8 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             GenericObject: The parent object.
         """
+        if self.__parent is not None and self not in self.__parent.children:
+            raise ValueError('Error in structure: Parent object does not have this attribute as a child')
         return self.__parent
 
     @parent.setter
@@ -520,7 +522,10 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
+        if self.__parent is not None and self in self.__parent.children:
+            self.__parent.children.remove(self)
         self.__parent = parent
+        parent.children.append(self)
 
     def __str__(self) -> str:
         unit_str = self.__unit.value if self.__unit else ""
