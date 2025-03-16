@@ -507,7 +507,8 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             GenericObject: The parent object.
         """
         if self.__parent is not None and self not in self.__parent.children:
-            raise ValueError('Error in structure: Parent object does not have this attribute as a child')
+            raise ValueError(f'Error in structure: Parent object {self.__parent.get_absolute_path()} does not have this attribute '
+                             f'{self.get_absolute_path()} as a child')
         return self.__parent
 
     @parent.setter
