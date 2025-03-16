@@ -497,7 +497,6 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             # Disable parent only if all children are disabled
             if all(not child.enabled for child in self.__parent.children):
                 self.__parent.enabled = False
-    # pylint: enable=duplicate-code
 
     @property
     def parent(self) -> GenericObject:
@@ -526,6 +525,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             self.__parent.children.remove(self)
         self.__parent = parent
         parent.children.append(self)
+    # pylint: enable=duplicate-code
 
     def __str__(self) -> str:
         unit_str = self.__unit.value if self.__unit else ""
