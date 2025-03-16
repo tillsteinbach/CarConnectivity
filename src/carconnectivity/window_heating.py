@@ -23,7 +23,7 @@ class WindowHeatings(GenericObject):  # pylint: disable=too-many-instance-attrib
         super().__init__(object_id='window_heating', parent=vehicle)
         self.commands: Commands = Commands(parent=self)
         self.heating_state = EnumAttribute("heating_state", self, value_type=WindowHeatings.HeatingState, tags={'carconnectivity'})
-        self.doors: Dict[str, WindowHeatings.WindowHeating] = {}
+        self.windows: Dict[str, WindowHeatings.WindowHeating] = {}
 
     class HeatingState(Enum):
         """
