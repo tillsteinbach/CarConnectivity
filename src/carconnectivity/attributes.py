@@ -791,7 +791,7 @@ class RangeAttribute(FloatAttribute[Length]):
         super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
 
     @staticmethod
-    def convert(value, from_unit: U, to_unit: U) -> T:
+    def convert(value, from_unit: U, to_unit: U) -> T:  # pylint: disable=too-many-return-statements
         """
         Convert a range value from one unit to another.
 
