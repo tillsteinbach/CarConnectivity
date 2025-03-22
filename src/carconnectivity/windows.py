@@ -30,6 +30,7 @@ class Windows(GenericObject):  # pylint: disable=too-many-instance-attributes
         """
         OPEN = 'open'
         CLOSED = 'closed'
+        AJAR = 'ajar'
         UNSUPPORTED = 'unsupported'
         INVALID = 'invalid'
         UNKNOWN = 'unknown open state'

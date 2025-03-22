@@ -814,6 +814,18 @@ class RangeAttribute(FloatAttribute[Length]):
             return value * 1.609344
         if from_unit == Length.KM and to_unit == Length.MI:
             return value / 1.609344
+        if from_unit == Length.M and to_unit == Length.KM:
+            return value / 1000
+        if from_unit == Length.KM and to_unit == Length.M:
+            return value * 1000
+        if from_unit == Length.FT and to_unit == Length.M:
+            return value / 3.2808
+        if from_unit == Length.M and to_unit == Length.FT:
+            return value * 3.2808
+        if from_unit == Length.FT and to_unit == Length.MI:
+            return value / 5280
+        if from_unit == Length.MI and to_unit == Length.FT:
+            return value * 5280
         return value
 
     def range_in(self, unit: Length) -> Optional[float]:
@@ -846,7 +858,10 @@ class RangeAttribute(FloatAttribute[Length]):
             return self.value, self.unit
         miles_locales: list[str] = ['en_US', 'en_GB', 'en_LR', 'en_MM']
         if any(locale.startswith(loc) for loc in miles_locales):
-            return self.range_in(Length.MI), Length.MI
+            if self.unit == Length.KM:
+                return self.range_in(Length.MI), Length.MI
+            if self.unit == Length.M:
+                return self.range_in(Length.FT), Length.FT
         return self.range_in(Length.KM), Length.KM
 
 

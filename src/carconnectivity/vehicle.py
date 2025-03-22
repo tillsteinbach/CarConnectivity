@@ -176,7 +176,11 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
                     raise ValueError('Cannot create specification without vehicle')
                 super().__init__(object_id='specification', parent=vehicle)
                 self.delay_notifications = True
-                self.steering_wheel_position: EnumAttribute = EnumAttribute("steering_wheel_position", parent=self, tags={'carconnectivity'})
+                self.steering_wheel_position: EnumAttribute = EnumAttribute("steering_wheel_position", parent=self,
+                                                                            value_type=GenericVehicle.VehicleSpecification.SteeringPosition,
+                                                                            tags={'carconnectivity'})
+                self.gearbox: EnumAttribute = EnumAttribute("gearbox", parent=self, value_type=GenericVehicle.VehicleSpecification.GearboxType,
+                                                            tags={'carconnectivity'})
                 self.delay_notifications = False
 
         class SteeringPosition(Enum):
@@ -187,6 +191,15 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             RIGHT = 'right'
             INVALID = 'invalid'
             UNKNOWN = 'unknown steering position'
+
+        class GearboxType(Enum):
+            """
+            Enum representing the type of the gearbox.
+            """
+            MANUAL = 'manual'
+            AUTOMATIC = 'automatic'
+            INVALID = 'invalid'
+            UNKNOWN = 'unknown gearbox type'
 
     # pylint: disable=duplicate-code
     class Type(Enum):

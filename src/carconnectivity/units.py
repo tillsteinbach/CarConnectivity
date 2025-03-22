@@ -48,6 +48,8 @@ class Length(GenericUnit,):
         INVALID (str): Invalid length unit.
         UNKNOWN (str): Unknown length unit.
     """
+    M = 'm'
+    FT = 'ft'
     KM = 'km'
     MI = 'mi'
     INVALID = 'invalid'
@@ -109,12 +111,15 @@ class Speed(GenericUnit,):
 
 class LatitudeLongitude(GenericUnit,):
     """
-    A class representing a unit of measurement for levels.
-
-    Attributes:
-        PERCENTAGE (str): A string representing the percentage unit ('%').
-        INVALID (str): A string representing an invalid unit.
-        UNKNOWN (str): A string representing an unknown level unit.
+    A class representing a unit of measurement for geo positions.
     """
     DEGREE = '°'
     UNKNOWN = 'unknown level unit'
+
+
+class Heading(GenericUnit,):
+    """
+    A class representing a unit of measurement for headings.
+    """
+    DEGREE = '°'
+    UNKNOWN = 'unknown headinf unit'
