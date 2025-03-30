@@ -65,6 +65,11 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
         log.addHandler(self.log_storage)
         api_log.addHandler(self.api_log_storage)
 
+        if 'hide_vins' in config and config['hide_vins'] is not None:
+            self.active_config['hide_vins'] = config['hide_vins']
+        else:
+            self.active_config['hide_vins'] = []
+
     def fetch_all(self) -> None:
         """
         Fetches all data from the connector and updates the CarConnectivity system.
