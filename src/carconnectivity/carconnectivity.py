@@ -24,6 +24,7 @@ from carconnectivity.plugins import Plugins
 from carconnectivity.attributes import StringAttribute
 from carconnectivity._version import __version__
 from carconnectivity.util import LogMemoryHandler
+from carconnectivity.errors import RetrievalError
 
 if TYPE_CHECKING:
     from typing import Dict, Any, Optional, Iterator
@@ -230,9 +231,21 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
 
         This method iterates over all connectors in the `self.connectors` list
         and calls their `fetch_all` method to retrieve data.
+
+        Raises:
+            RetrievalError: If any connector raises a RetrievalError during data fetching.
+        If multiple connectors raise a RetrievalError, only the first one is raised.
+        If no connector raises a RetrievalError, the method completes successfully.
         """
+        first_exception: RetrievalError = None
         for connector in self.connectors.connectors.values():
-            connector.fetch_all()
+            try:
+                connector.fetch_all()
+            except RetrievalError as err:
+                if first_exception is None:
+                    first_exception = err
+        if first_exception is not None:
+            raise first_exception
 
     def persist(self) -> None:
         """
