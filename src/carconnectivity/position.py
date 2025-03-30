@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from enum import Enum
 
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import EnumAttribute, FloatAttribute
+from carconnectivity.attributes import EnumAttribute, FloatAttribute, RangeAttribute
 from carconnectivity.units import LatitudeLongitude, Length, Heading
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ class Position(GenericObject):  # pylint: disable=too-many-instance-attributes
                                                        tags={'carconnectivity'})
         self.longitude: FloatAttribute = FloatAttribute("longitude", parent=self, minimum=-180, maximum=180, unit=LatitudeLongitude.DEGREE,
                                                         tags={'carconnectivity'})
-        self.altitude: FloatAttribute = FloatAttribute("altitude", parent=self, minimum=-1000, maximum=10000, unit=Length.M,
+        self.altitude: RangeAttribute = RangeAttribute("altitude", parent=self, minimum=-1000, maximum=10000, unit=Length.M,
                                                        tags={'carconnectivity'})
         self.heading: FloatAttribute = FloatAttribute("heading", parent=self, minimum=0, maximum=360, unit=Heading.DEGREE,
                                                       tags={'carconnectivity'})
