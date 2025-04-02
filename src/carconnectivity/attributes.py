@@ -1167,5 +1167,4 @@ if SUPPORT_IMAGES:
         def __str__(self) -> str:
             if SUPPORT_ASCII_IMAGES:
                 return f"{image_to_ASCII_art(self.value) if self.value else None}"
-            else:
-                return f"{self.name}"
+            return f"{self.name}"
