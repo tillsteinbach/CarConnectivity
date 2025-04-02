@@ -19,8 +19,14 @@ from carconnectivity.json_util import ExtendedWithNullEncoder
 SUPPORT_IMAGES = False
 try:
     from PIL import Image
-    from carconnectivity.image_util import image_to_ASCII_art  # pylint: disable=ungrouped-imports
     SUPPORT_IMAGES = True
+except ImportError:
+    pass
+
+SUPPORT_ASCII_IMAGES = False
+try:
+    from carconnectivity.image_util import image_to_ASCII_art  # pylint: disable=ungrouped-imports
+    SUPPORT_ASCII_IMAGES = True
 except ImportError:
     pass
 # pylint: enable=duplicate-code
@@ -1159,4 +1165,7 @@ if SUPPORT_IMAGES:
             super().__init__(name=name, parent=parent, value=value, value_type=value_type, unit=None, tags=tags)
 
         def __str__(self) -> str:
-            return f"{image_to_ASCII_art(self.value) if self.value else None}"
+            if SUPPORT_ASCII_IMAGES:
+                return f"{image_to_ASCII_art(self.value) if self.value else None}"
+            else:
+                return f"{self.name}"
