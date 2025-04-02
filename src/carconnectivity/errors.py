@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Set
 
 
 class CarConnectivityError(Exception):
@@ -22,6 +22,16 @@ class RetrievalError(CarConnectivityError):
     """
     Exception raised for errors that occur during data retrieval.
     """
+
+
+class MultipleRetrievalError(RetrievalError):
+    """
+    Exception raised for when multiple adapters have had retrieval errors.
+    This can be changed to GroupedException in the future when support for python 3.9 and 3.10 is dropped.
+    """
+    def __init__(self, *args: object) -> None:
+        super().__init__(*args)
+        self.errors: Set[RetrievalError] = set()
 
 
 class TooManyRequestsError(RetrievalError):
