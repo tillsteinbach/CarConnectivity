@@ -24,7 +24,7 @@ from carconnectivity.plugins import Plugins
 from carconnectivity.attributes import StringAttribute
 from carconnectivity._version import __version__
 from carconnectivity.util import LogMemoryHandler
-from carconnectivity.errors import RetrievalError
+from carconnectivity.errors import RetrievalError, MultipleRetrievalError
 
 if TYPE_CHECKING:
     from typing import Dict, Any, Optional, Iterator
@@ -237,15 +237,22 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         If multiple connectors raise a RetrievalError, only the first one is raised.
         If no connector raises a RetrievalError, the method completes successfully.
         """
-        first_exception: RetrievalError = None
+        retrieval_error: RetrievalError = None
         for connector in self.connectors.connectors.values():
+            # This can be changed to GroupedException in the future when support for python 3.9 and 3.10 is dropped.
             try:
                 connector.fetch_all()
             except RetrievalError as err:
-                if first_exception is None:
-                    first_exception = err
-        if first_exception is not None:
-            raise first_exception
+                if retrieval_error is None:
+                    retrieval_error = err
+                elif isinstance(err, MultipleRetrievalError):
+                    retrieval_error.errors.add(err.errors)
+                else:
+                    new_retrieval_error = MultipleRetrievalError(err)
+                    new_retrieval_error.errors.add(retrieval_error.errors)
+                    retrieval_error = new_retrieval_error
+        if retrieval_error is not None:
+            raise retrieval_error
 
     def persist(self) -> None:
         """
