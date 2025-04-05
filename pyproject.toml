@@ -48,7 +48,7 @@ plugins = [
     'carconnectivity-plugin-webui',
 ]
 images = [
-    'pillow~=11.1.0',
+    'pillow>=11.1,<11.3',
     'ascii_magic~=2.3.0'
 
 ]
