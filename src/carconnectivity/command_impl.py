@@ -59,7 +59,7 @@ class ClimatizationStartStopCommand(GenericCommand):
             parser.add_argument('--target-temperature-unit', dest='target_temperature_unit', help='Target temperature for climatization', type=Temperature,
                                 required=False, choices=list(Temperature), default=default_temperature_unit)
             try:
-                args = parser.parse_args(new_value.split(sep=' '))
+                args = parser.parse_args(new_value.strip().split(sep=' '))
             except argparse.ArgumentError as e:
                 raise SetterError(f'Invalid format for ClimatizationStartStopCommand: {e.message} {parser.format_usage()}') from e
 
@@ -125,7 +125,7 @@ class ChargingStartStopCommand(GenericCommand):
             parser.add_argument('command', help='Command to execute', type=ChargingStartStopCommand.Command,
                                 choices=list(ChargingStartStopCommand.Command))
             try:
-                args = parser.parse_args(new_value.split(sep=' '))
+                args = parser.parse_args(new_value.strip().split(sep=' '))
             except argparse.ArgumentError as e:
                 raise SetterError(f'Invalid format for ChargingStartStopCommand: {e.message} {parser.format_usage()}') from e
 
@@ -188,7 +188,7 @@ class HonkAndFlashCommand(GenericCommand):
             if self.with_duration:
                 parser.add_argument('--duration', dest='duration', help='Duration for honking and flashing in seconds', type=int, required=False)
             try:
-                args = parser.parse_args(new_value.split(sep=' '))
+                args = parser.parse_args(new_value.strip().split(sep=' '))
             except argparse.ArgumentError as e:
                 raise SetterError(f'Invalid format for HonkAndFlashCommand: {e.message} {parser.format_usage()}') from e
 
@@ -253,7 +253,7 @@ class LockUnlockCommand(GenericCommand):
             parser.add_argument('command', help='Command to execute', type=LockUnlockCommand.Command,
                                 choices=list(LockUnlockCommand.Command))
             try:
-                args = parser.parse_args(new_value.split(sep=' '))
+                args = parser.parse_args(new_value.strip().split(sep=' '))
             except argparse.ArgumentError as e:
                 raise SetterError(f'Invalid format for LockUnlockCommand: {e.message} {parser.format_usage()}') from e
 
@@ -317,7 +317,7 @@ class WakeSleepCommand(GenericCommand):
             parser.add_argument('command', help='Command to execute', type=WakeSleepCommand.Command,
                                 choices=list(WakeSleepCommand.Command))
             try:
-                args = parser.parse_args(new_value.split(sep=' '))
+                args = parser.parse_args(new_value.strip().split(sep=' '))
             except argparse.ArgumentError as e:
                 raise SetterError(f'Invalid format for WakeSleepCommand: {e.message} {parser.format_usage()}') from e
 
@@ -382,7 +382,7 @@ class WindowHeatingStartStopCommand(GenericCommand):
             parser.add_argument('command', help='Command to execute', type=WindowHeatingStartStopCommand.Command,
                                 choices=list(WindowHeatingStartStopCommand.Command))
             try:
-                args = parser.parse_args(new_value.split(sep=' '))
+                args = parser.parse_args(new_value.strip().split(sep=' '))
             except argparse.ArgumentError as e:
                 raise SetterError(f'Invalid format for WindowHeatingStartStopCommand: {e.message} {parser.format_usage()}') from e
 
