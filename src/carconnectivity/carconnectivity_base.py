@@ -4,11 +4,12 @@ from typing import TYPE_CHECKING
 
 import sys
 import os
+import signal
 import argparse
 import logging
 import tempfile
-import time
 import json
+import threading
 
 from json_minify import json_minify
 
@@ -30,6 +31,7 @@ class CLI():  # pylint: disable=too-few-public-methods
     """
 
     def __init__(self, logger: logging.Logger, name: str, description: str, subversion: Optional[str] = None) -> None:
+        self._stop_event = threading.Event()
         self.logger = logger
 
         self.parser = argparse.ArgumentParser(
@@ -56,6 +58,21 @@ class CLI():  # pylint: disable=too-few-public-methods
                                    '(default: %%Y-%%m-%%dT%%H:%%M:%%S%%z)', default='%Y-%m-%dT%H:%M:%S%z')
         logging_group.add_argument('--hide-repeated-log', dest='hide_repeated_log', help='Hide repeated log messages from the same module', action='store_true')
 
+    def handler(self, signum, frame):
+        """
+        Signal handler for interrupt signals.
+
+        This method is triggered when an interrupt signal (e.g., SIGINT) is received.
+        It logs the interrupt event and sets the internal stop event to initiate a shutdown process.
+
+        Args:
+            signum (int): The signal number received.
+            frame (FrameType): The current stack frame (unused).
+        """
+        del signum, frame  # unused
+        self.logger.info('Interrupt received, shutting down...')
+        self._stop_event.set()
+
     # pylint: disable-next=too-many-statements,too-many-branches,too-many-locals
     def main(self) -> None:  # noqa: C901
         """
@@ -78,17 +95,17 @@ class CLI():  # pylint: disable=too-few-public-methods
                         config_dict = json.loads(json_minify(config_file.read(), strip_space=False))
                         car_connectivity = carconnectivity.CarConnectivity(config=config_dict, tokenstore_file=args.tokenfile, cache_file=args.cachefile)
                         car_connectivity.startup()
-                        try:
-                            while True:
-                                if args.healthcheckfile is not None:
-                                    with open(file=args.healthcheckfile, mode='w', encoding='utf-8') as healthcheck_file:
-                                        if car_connectivity.is_healthy():
-                                            healthcheck_file.write('healthy')
-                                        else:
-                                            healthcheck_file.write('unhealthy')
-                                time.sleep(60)
-                        except KeyboardInterrupt:
-                            self.logger.info('Keyboard interrupt received, shutting down...')
+
+                        signal.signal(signal.SIGINT, self.handler)
+                        signal.signal(signal.SIGTERM, self.handler)
+                        while not self._stop_event.is_set():
+                            if args.healthcheckfile is not None:
+                                with open(file=args.healthcheckfile, mode='w', encoding='utf-8') as healthcheck_file:
+                                    if car_connectivity.is_healthy():
+                                        healthcheck_file.write('healthy')
+                                    else:
+                                        healthcheck_file.write('unhealthy')
+                            self._stop_event.wait(60)
 
                             car_connectivity.shutdown()
                     except json.JSONDecodeError as e:
@@ -110,8 +127,6 @@ class CLI():  # pylint: disable=too-few-public-methods
         except errors.ConfigurationError as e:
             self.logger.critical('There was a problem with the configuration: %s', e)
             sys.exit('There was a problem with the configuration')
-        except KeyboardInterrupt:
-            sys.exit("killed")
 
 
 def main() -> None:
