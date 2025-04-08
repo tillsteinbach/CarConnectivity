@@ -70,7 +70,6 @@ class CLI():  # pylint: disable=too-few-public-methods
             frame (FrameType): The current stack frame (unused).
         """
         del signum, frame  # unused
-        self.logger.info('Interrupt received, shutting down...')
         self._stop_event.set()
 
     # pylint: disable-next=too-many-statements,too-many-branches,too-many-locals
@@ -106,8 +105,8 @@ class CLI():  # pylint: disable=too-few-public-methods
                                     else:
                                         healthcheck_file.write('unhealthy')
                             self._stop_event.wait(60)
-
-                            car_connectivity.shutdown()
+                        self.logger.info('Interrupt received, shutting down...')
+                        car_connectivity.shutdown()
                     except json.JSONDecodeError as e:
                         self.logger.critical('Could not load configuration file %s (%s)', args.config, e)
                         sys.exit('Could not load configuration file')
