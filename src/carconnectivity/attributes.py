@@ -642,7 +642,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             return return_dict
         return None
 
-    def as_json(self) -> Optional[str]:
+    def as_json(self, pretty=False) -> Optional[str]:
         """
         Convert the attribute value to a JSON string.
 
@@ -656,7 +656,11 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         """
         if SUPPORT_IMAGES and isinstance(self.value, Image.Image):
             return None
-        return json.dumps(self.value, cls=ExtendedWithNullEncoder, skipkeys=True, indent=4)
+        if pretty:
+            indent: int = 4
+        else:
+            indent = 0
+        return json.dumps(self.value, cls=ExtendedWithNullEncoder, skipkeys=True, indent=indent)
 
 
 class BooleanAttribute(GenericAttribute[bool, None]):
