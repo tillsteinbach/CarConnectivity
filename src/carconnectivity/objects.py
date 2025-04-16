@@ -49,6 +49,7 @@ class GenericObject(Observable):
             self.__id: str = origin.id
             self.__children: List[Union[GenericObject, GenericAttribute]] = origin.children
             self.__parent: Optional[GenericObject] = origin.parent
+            origin.parent = None
             if parent is not None:
                 self.parent = parent
             self.__enabled: bool = origin.enabled
@@ -151,7 +152,8 @@ class GenericObject(Observable):
         if self.__parent is not None and self in self.__parent.children:
             self.__parent.children.remove(self)
         self.__parent = parent
-        parent.children.append(self)
+        if parent is not None:
+            parent.children.append(self)
 
     @property
     def children(self) -> List[Union[GenericObject, GenericAttribute]]:
