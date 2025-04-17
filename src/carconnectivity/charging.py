@@ -52,8 +52,8 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
                                                                               tags={'carconnectivity'})
             self.type: EnumAttribute[Charging.ChargingType] = EnumAttribute("type", parent=self, value_type=Charging.ChargingType,
                                                                             tags={'carconnectivity'})
-            self.rate: SpeedAttribute = SpeedAttribute("rate", parent=self, tags={'carconnectivity'})
-            self.power: PowerAttribute = PowerAttribute("power", parent=self, tags={'carconnectivity'})
+            self.rate: SpeedAttribute = SpeedAttribute("rate", parent=self, precision=0.1, tags={'carconnectivity'})
+            self.power: PowerAttribute = PowerAttribute("power", parent=self, precision=0.1, tags={'carconnectivity'})
             self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self, tags={'carconnectivity'})
             self.settings: Charging.Settings = Charging.Settings(parent=self)
         self.delay_notifications = False
@@ -117,6 +117,6 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
                 self.auto_unlock.parent = self
             else:
                 super().__init__(object_id="settings", parent=parent)
-                self.target_level: LevelAttribute = LevelAttribute("target_level", parent=self, tags={'carconnectivity'})
-                self.maximum_current: CurrentAttribute = CurrentAttribute("maximum_current", parent=self, tags={'carconnectivity'})
+                self.target_level: LevelAttribute = LevelAttribute("target_level", parent=self, precision=0.1, tags={'carconnectivity'})
+                self.maximum_current: CurrentAttribute = CurrentAttribute("maximum_current", parent=self, precision=0.1, tags={'carconnectivity'})
                 self.auto_unlock: BooleanAttribute = BooleanAttribute("auto_unlock", parent=self, tags={'carconnectivity'})

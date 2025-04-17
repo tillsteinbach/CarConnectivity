@@ -48,8 +48,9 @@ class GenericDrive(GenericObject):
     def __init__(self, drive_id: str, drives: Drives) -> None:
         super().__init__(object_id=drive_id, parent=drives)
         self.type: EnumAttribute = EnumAttribute(name="type", parent=self, value=None, tags={'carconnectivity'})
-        self.range: RangeAttribute = RangeAttribute(name="range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, tags={'carconnectivity'})
-        self.level: LevelAttribute = LevelAttribute(name="level", parent=self, value=None, minimum=0, tags={'carconnectivity'})
+        self.range: RangeAttribute = RangeAttribute(name="range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
+                                                    tags={'carconnectivity'})
+        self.level: LevelAttribute = LevelAttribute(name="level", parent=self, value=None, minimum=0, precision=0.1, tags={'carconnectivity'})
         self.enabled = True
 
     # pylint: disable=duplicate-code
@@ -92,6 +93,7 @@ class DieselDrive(CombustionDrive):
     """
     def __init__(self, drive_id: str, drives: Drives) -> None:
         super().__init__(drive_id=drive_id, drives=drives)
-        self.adblue_range: RangeAttribute = RangeAttribute(name="adblue_range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0,
+        self.adblue_range: RangeAttribute = RangeAttribute(name="adblue_range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
                                                            tags={'carconnectivity'})
-        self.adblue_level: LevelAttribute = LevelAttribute(name="adblue_level", parent=self, value=None, minimum=0, tags={'carconnectivity'})
+        self.adblue_level: LevelAttribute = LevelAttribute(name="adblue_level", parent=self, value=None, minimum=0, precision=0.1,
+                                                           tags={'carconnectivity'})

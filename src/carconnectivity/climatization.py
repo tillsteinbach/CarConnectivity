@@ -59,7 +59,7 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
             else:
                 super().__init__(object_id="settings", parent=parent)
                 self.commands: Commands = Commands(parent=self)
-                self.target_temperature: TemperatureAttribute = TemperatureAttribute("target_temperature", parent=self, tags={'carconnectivity'})
+                self.target_temperature: TemperatureAttribute = TemperatureAttribute("target_temperature", parent=self, precision=0.1, tags={'carconnectivity'})
                 self.window_heating: BooleanAttribute = BooleanAttribute("window_heating", parent=self, tags={'carconnectivity'})
                 self.seat_heating: BooleanAttribute = BooleanAttribute("seat_heating", parent=self, tags={'carconnectivity'})
                 self.climatization_at_unlock: BooleanAttribute = BooleanAttribute("climatization_at_unlock", parent=self, tags={'carconnectivity'})

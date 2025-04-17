@@ -20,6 +20,6 @@ class Maintenance(GenericObject):
     def __init__(self, vehicle: GenericVehicle) -> None:
         super().__init__(object_id='maintenance', parent=vehicle)
         self.inspection_due_at = DateAttribute('inspection_due_at', parent=self, tags={'carconnectivity'})
-        self.inspection_due_after = RangeAttribute('inspection_due_after', parent=self, tags={'carconnectivity'}, unit=Length.KM)
+        self.inspection_due_after = RangeAttribute('inspection_due_after', parent=self, tags={'carconnectivity'}, unit=Length.KM, precision=0.1)
         self.oil_service_due_at = DateAttribute('oil_service_due_at', parent=self, tags={'carconnectivity'})
-        self.oil_service_due_after = RangeAttribute('oil_service_due_after', parent=self, tags={'carconnectivity'}, unit=Length.KM)
+        self.oil_service_due_after = RangeAttribute('oil_service_due_after', parent=self, tags={'carconnectivity'}, unit=Length.KM, precision=0.1)

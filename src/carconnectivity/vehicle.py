@@ -124,7 +124,8 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.model_year = IntegerAttribute("model_year", self, tags={'carconnectivity'})
             self.type = EnumAttribute("type", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.Type)
             self.license_plate = StringAttribute("license_plate", self, tags={'carconnectivity'})
-            self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, tags={'carconnectivity'})
+            self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
+                                                           tags={'carconnectivity'})
             self.state = EnumAttribute("state", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.State)
             self.connection_state = EnumAttribute("connection_state", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.ConnectionState)
             self.drives: Drives = Drives(vehicle=self)
@@ -135,7 +136,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.position: Position = Position(parent=self)
             self.climatization: Climatization = Climatization(vehicle=self)
             self.window_heatings: WindowHeatings = WindowHeatings(vehicle=self)
-            self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", parent=self, minimum=-40, maximum=85,
+            self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", parent=self, minimum=-40, maximum=85,precision=0.1,
                                                                                   tags={'carconnectivity'})
             self.specification: GenericVehicle.VehicleSpecification = GenericVehicle.VehicleSpecification(vehicle=self)
             self.maintenance: Maintenance = Maintenance(vehicle=self)
