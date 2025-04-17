@@ -136,7 +136,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.position: Position = Position(parent=self)
             self.climatization: Climatization = Climatization(vehicle=self)
             self.window_heatings: WindowHeatings = WindowHeatings(vehicle=self)
-            self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", parent=self, minimum=-40, maximum=85,precision=0.1,
+            self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", parent=self, minimum=-40, maximum=85, precision=0.1,
                                                                                   tags={'carconnectivity'})
             self.specification: GenericVehicle.VehicleSpecification = GenericVehicle.VehicleSpecification(vehicle=self)
             self.maintenance: Maintenance = Maintenance(vehicle=self)
