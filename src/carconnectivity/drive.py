@@ -26,7 +26,8 @@ class Drives(GenericObject):
     """
     def __init__(self, vehicle: GenericVehicle) -> None:
         super().__init__(object_id='drives', parent=vehicle)
-        self.total_range: RangeAttribute = RangeAttribute(name="total_range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, tags={'carconnectivity'})
+        self.total_range: RangeAttribute = RangeAttribute(name="total_range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
+                                                          tags={'carconnectivity'})
         self.drives: Dict[str, GenericDrive] = {}
 
     def add_drive(self, drive: GenericDrive) -> None:
