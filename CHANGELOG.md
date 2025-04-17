@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.7] - 2025-04-17
+### Added
+- Support for pretty printing json
+- All float attributes now support precision (with default)
+
+### Changed
+- Updated some dependencies
+- Improved signal handling when terminating with SIGTERM and SIGINT
+
 ## [0.6] - 2025-04-02
 ### Fixed
 - Bug when pillow was installed but ascii_magic not
@@ -59,7 +68,8 @@ All notable changes to this project will be documented in this file.
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.6...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.7...HEAD
+[0.7]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.7
 [0.6]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.6
 [0.5]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.5
 [0.4]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.4
