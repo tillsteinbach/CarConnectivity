@@ -34,12 +34,13 @@ If you are a python developer and willing to implement a connector for a brand n
 ## Supported Plugins
 CarConenctivity uses a plugin architecture to enable connectivity to other services and protocols. Currently known plugins are:
 
-| Service or Protocol              | Connector                                                                                         |
-|----------------------------------|---------------------------------------------------------------------------------------------------|
-| WebUI (easy to use webinterface) | [CarConnectivity-plugin-webui](https://github.com/tillsteinbach/CarConnectivity-plugin-webui)     |
-| MQTT                             | [CarConnectivity-plugin-mqtt](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt)       |
-| A Better Routeplanner (ABRP)     | [CarConnectivity-plugin-abrp](https://github.com/tillsteinbach/CarConnectivity-plugin-abrp)       |
-| Apple Homekit                    | [CarConnectivity-plugin-homekit](https://github.com/tillsteinbach/CarConnectivity-plugin-homekit) |
+| Service or Protocol              | Connector                                                                                                               |
+|----------------------------------|-------------------------------------------------------------------------------------------------------------------------|
+| WebUI (easy to use webinterface) | [CarConnectivity-plugin-webui](https://github.com/tillsteinbach/CarConnectivity-plugin-webui)                           |
+| MQTT                             | [CarConnectivity-plugin-mqtt](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt)                             |
+| Home Assistant MQTT              | [CarConnectivity-plugin-mqtt_homeassistant](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant) |
+| A Better Routeplanner (ABRP)     | [CarConnectivity-plugin-abrp](https://github.com/tillsteinbach/CarConnectivity-plugin-abrp)                             |
+| Apple Homekit                    | [CarConnectivity-plugin-homekit](https://github.com/tillsteinbach/CarConnectivity-plugin-homekit)                       |
 
 If you know of a plugin not listed here let me know and I will add it to the list.
 If you are a python developer and willing to implement a plugin for a service not listed here, let me know and I try to support you as good as possible
