@@ -18,16 +18,18 @@ import carconnectivity_plugins
 from carconnectivity.objects import GenericObject
 from carconnectivity.garage import Garage
 from carconnectivity.json_util import ExtendedEncoder
-from carconnectivity.errors import ConfigurationError
+from carconnectivity.errors import ConfigurationError, CommandError
 from carconnectivity.connectors import Connectors
 from carconnectivity.plugins import Plugins
 from carconnectivity.attributes import StringAttribute
 from carconnectivity._version import __version__
 from carconnectivity.util import LogMemoryHandler
 from carconnectivity.errors import RetrievalError, MultipleRetrievalError
+from carconnectivity.commands import Commands
+from carconnectivity.command_impl import UpdateCommand
 
 if TYPE_CHECKING:
-    from typing import Dict, Any, Optional, Iterator
+    from typing import Dict, Any, Optional, Iterator, Union
 
     from types import ModuleType
 
@@ -95,6 +97,7 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         self.log_storage: LogMemoryHandler = LogMemoryHandler()
 
         self.version: StringAttribute = StringAttribute(name="version", parent=self, value=__version__, tags={'carconnectivity'})
+        self.commands: Commands = Commands(parent=self)
 
         if 'carConnectivity' not in config:
             raise ConfigurationError("Invalid configuration: 'carConnectivity' is missing")
@@ -237,7 +240,7 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         If multiple connectors raise a RetrievalError, only the first one is raised.
         If no connector raises a RetrievalError, the method completes successfully.
         """
-        retrieval_error: RetrievalError = None
+        retrieval_error: Optional[RetrievalError] = None
         for connector in self.connectors.connectors.values():
             # This can be changed to GroupedException in the future when support for python 3.9 and 3.10 is dropped.
             try:
@@ -245,11 +248,11 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
             except RetrievalError as err:
                 if retrieval_error is None:
                     retrieval_error = err
-                elif isinstance(err, MultipleRetrievalError):
-                    retrieval_error.errors.add(err.errors)
+                elif isinstance(retrieval_error, MultipleRetrievalError):
+                    retrieval_error.errors.add(err)
                 else:
-                    new_retrieval_error = MultipleRetrievalError(err)
-                    new_retrieval_error.errors.add(retrieval_error.errors)
+                    new_retrieval_error = MultipleRetrievalError(retrieval_error)
+                    new_retrieval_error.errors.add(err)
                     retrieval_error = new_retrieval_error
         if retrieval_error is not None:
             raise retrieval_error
@@ -303,6 +306,11 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
             connector.startup()
         for plugin in self.plugins.plugins.values():
             plugin.startup()
+        if self.commands is not None and not self.commands.contains_command('update'):
+            update_command = UpdateCommand(parent=self.commands)
+            update_command._add_on_set_hook(self.__on_update_command)  # pylint: disable=protected-access
+            update_command.enabled = True
+            self.commands.add_command(update_command)
 
     def shutdown(self) -> None:
         """
@@ -359,3 +367,21 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
             if not plugin.is_healthy():
                 return False
         return True
+
+    def __on_update_command(self, update_command: UpdateCommand, command_arguments: Union[str, Dict[str, Any]]) \
+            -> Union[str, Dict[str, Any]]:
+        del update_command
+        if not isinstance(command_arguments, dict):
+            raise CommandError('Command arguments are not a dictionary')
+        if 'command' not in command_arguments:
+            raise CommandError('Command argument missing')
+
+        if command_arguments['command'] == UpdateCommand.Command.UPDATE:
+            try:
+                self.fetch_all()
+            except RetrievalError as err:
+                LOG.warning('Could not update: %s', err)
+                raise CommandError(f'Could not update: {err}') from err
+        else:
+            raise CommandError(f'Unknown command {command_arguments["command"]}')
+        return command_arguments

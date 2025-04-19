@@ -19,6 +19,68 @@ if TYPE_CHECKING:
 LOG: logging.Logger = logging.getLogger("carconnectivity")
 
 
+class UpdateCommand(GenericCommand):
+    """
+    UpdateCommand is a command class for triggering an update.
+
+    Command (Enum): Enum class representing different commands for triggering updates
+
+    """
+    def __init__(self, name: str = 'update', parent: Optional[GenericObject] = None) -> None:
+        super().__init__(name=name, parent=parent)
+
+    @property
+    def value(self) -> Optional[Union[str, Dict]]:
+        return super().value
+
+    # pylint: disable=duplicate-code
+    @value.setter
+    def value(self, new_value: Optional[Union[str, Dict]]) -> None:
+        # Execute early hooks before parsing the value
+        new_value = self._execute_on_set_hook(new_value, early_hook=True)
+        if isinstance(new_value, UpdateCommand.Command):
+            newvalue_dict = {}
+            newvalue_dict['command'] = new_value
+            new_value = newvalue_dict
+        elif isinstance(new_value, str):
+            parser = ThrowingArgumentParser(prog='', add_help=False, exit_on_error=False)
+            parser.add_argument('command', help='Command to execute', type=UpdateCommand.Command,
+                                choices=list(UpdateCommand.Command))
+            try:
+                args = parser.parse_args(new_value.strip().split(sep=' '))
+            except argparse.ArgumentError as e:
+                raise SetterError(f'Invalid format for UpdateCommand: {e.message} {parser.format_usage()}') from e
+
+            newvalue_dict = {}
+            newvalue_dict['command'] = args.command
+            new_value = newvalue_dict
+        elif isinstance(new_value, dict):
+            if 'command' in new_value and isinstance(new_value['command'], str):
+                if new_value['command'] in UpdateCommand.Command:
+                    new_value['command'] = UpdateCommand.Command(new_value['command'])
+                else:
+                    raise ValueError('Invalid value for UPDATE. Command must be one of {UpdateCommand.Command}')
+        if self._is_changeable:
+            # Execute late hooks before setting the value
+            new_value = self._execute_on_set_hook(new_value, early_hook=False)
+            self._set_value(new_value)
+        else:
+            raise TypeError('You cannot use this command. Command is not implemented.')
+    # pylint: enable=duplicate-code
+
+    class Command(Enum):
+        """
+        Enum class representing different commands for forcing updates.
+
+        Attributes:
+            UPDATE (str): Command to trigger an update.
+        """
+        UPDATE = 'update'
+
+        def __str__(self) -> str:
+            return self.value
+
+
 class ClimatizationStartStopCommand(GenericCommand):
     """
     ClimatizationStartStopCommand is a command class for starting or stopping the climatization system.
