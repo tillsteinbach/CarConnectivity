@@ -106,6 +106,7 @@ class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attrib
             self.maintenance.parent = self
             if SUPPORT_IMAGES:
                 self.images: Images = origin.images
+                self.images.parent = self
             self.managing_connectors = origin.managing_connectors
         else:
             if vin is None:
