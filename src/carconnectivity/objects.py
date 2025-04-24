@@ -48,6 +48,8 @@ class GenericObject(Observable):
             super().__init__(origin=origin)
             self.__id: str = origin.id
             self.__children: List[Union[GenericObject, GenericAttribute]] = origin.children
+            for child in self.__children:
+                child.parent = self
             self.__parent: Optional[GenericObject] = origin.parent
             origin.parent = None
             if parent is not None:
