@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING
 from enum import Enum
 
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import RangeAttribute, LevelAttribute, EnumAttribute
-from carconnectivity.units import Length
+from carconnectivity.attributes import RangeAttribute, LevelAttribute, EnumAttribute, EnergyAttribute, SpeedAttribute, MinutesAttribute
+from carconnectivity.units import Length, Speed, FuelConsumption, ElectricConsumption, Minutes
 from carconnectivity.battery import Battery
 
 if TYPE_CHECKING:
@@ -28,6 +28,9 @@ class Drives(GenericObject):
         super().__init__(object_id='drives', parent=vehicle)
         self.total_range: RangeAttribute = RangeAttribute(name="total_range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
                                                           tags={'carconnectivity'})
+        self.last_trip_distance: RangeAttribute = RangeAttribute(name="last_trip_distance", parent=self, value=None, unit=Length.KM, minimum=0, tags={'carconnectivity'}) 
+        self.last_trip_average_speed: SpeedAttribute = SpeedAttribute(name="last_trip_averageSpeed", parent=self, value=None, unit=Speed.KMH, minimum=0, tags={'carconnectivity'}) 
+        self.last_trip_duration: MinutesAttribute = MinutesAttribute(name="last_trip_duration", parent=self, value=None, unit=Minutes.MIN, minimum=0, tags={'carconnectivity'}) 
         self.drives: Dict[str, GenericDrive] = {}
 
     def add_drive(self, drive: GenericDrive) -> None:
@@ -78,6 +81,7 @@ class ElectricDrive(GenericDrive):
     def __init__(self, drive_id: str, drives: Drives) -> None:
         super().__init__(drive_id=drive_id, drives=drives)
         self.battery: Battery = Battery(drive=self)
+        self.last_trip_electric_consumption: EnergyAttribute = EnergyAttribute(name="last_trip_electricConsumption", parent=self, value=None, unit=ElectricConsumption.KWH, tags={'carconnectivity'}) 
 
 
 class CombustionDrive(GenericDrive):
@@ -86,6 +90,7 @@ class CombustionDrive(GenericDrive):
     """
     def __init__(self, drive_id: str, drives: Drives) -> None:
         super().__init__(drive_id=drive_id, drives=drives)
+        self.last_trip_fuel_consumption: EnergyAttribute = EnergyAttribute(name="last_trip_fuelConsumption", parent=self, value=None, unit=FuelConsumption.L, minimum=0, tags={'carconnectivity'}) 
 
 
 class DieselDrive(CombustionDrive):
