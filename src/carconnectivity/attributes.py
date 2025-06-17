@@ -141,7 +141,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
-        if hook not in self._on_set_hooks:
+        if (hook, early_hook) not in self._on_set_hooks:
             self._on_set_hooks.append((hook, early_hook))
 
     def _execute_on_set_hook(self, new_value: Optional[T], early_hook=False) -> Optional[T]:
