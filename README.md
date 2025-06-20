@@ -54,14 +54,14 @@ In your carconnectivity.json configuration add a section for the connectors you 
             {
                 "type": "volkswagen",
                 "config": {
-                    "username": "test@test.de"
+                    "username": "test@test.de",
                     "password": "testpassword123"
                 }
             },
             {
                 "type": "skoda",
                 "config": {
-                    "username": "test@test.de"
+                    "username": "test@test.de",
                     "password": "testpassword123"
                 }
             }
