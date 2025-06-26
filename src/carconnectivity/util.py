@@ -36,7 +36,7 @@ def robust_time_parse(time_string: str) -> datetime:
     match: re.Match[str] | None = re.search(
         r'^(?P<start>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.)(?P<fractions>\d+)(?P<end>\+\d{2}:\d{2})$', time_string)
     if match:
-        time_string = match.group('start') + match.group('fractions').ljust(6, "0") + match.group('end')
+        time_string = match.group('start') + match.group('fractions').ljust(6, "0")[:6] + match.group('end')  # Ensure exactly 6 digits for fractions
     return datetime.fromisoformat(time_string)
 
 
