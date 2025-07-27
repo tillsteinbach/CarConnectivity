@@ -17,7 +17,7 @@ from carconnectivity.lights import Lights
 from carconnectivity.software import Software
 from carconnectivity.drive import Drives
 from carconnectivity.charging import Charging
-from carconnectivity.drive import ElectricDrive
+from carconnectivity.drive import ElectricDrive, CombustionDrive
 from carconnectivity.units import Length
 from carconnectivity.position import Position
 from carconnectivity.climatization import Climatization
@@ -296,6 +296,19 @@ class CombustionVehicle(GenericVehicle):
             super().__init__(garage=garage, origin=origin)
         else:
             super().__init__(vin=vin, garage=garage, managing_connector=managing_connector)
+
+    def get_combustion_drive(self) -> Optional[CombustionDrive]:
+        """
+        Returns the combustion drive of the vehicle.
+
+        Returns:
+            Drives.CombustionDrive: The electric drive of the vehicle.
+        """
+        if self.drives is not None and self.drives.drives is not None and len(self.drives.drives) > 0:
+            for drive in self.drives.drives.values():
+                if isinstance(drive, CombustionDrive) and drive.enabled:
+                    return drive
+        return None
 
 
 class HybridVehicle(ElectricVehicle, CombustionVehicle):
