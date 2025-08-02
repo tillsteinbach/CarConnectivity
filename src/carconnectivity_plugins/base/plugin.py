@@ -51,6 +51,8 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
             else:
                 raise ConfigurationError(f'Invalid log level: "{self.active_config["log_level"]}" not in {list(logging._nameToLevel.keys())}')
         log.addHandler(self.log_storage)
+        if 'self_check_only' in config and config['self_check_only'] is not None:
+            self.active_config['self_check_only'] = config['self_check_only']
 
     def startup(self) -> None:
         """
@@ -59,6 +61,8 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         This method should be overridden by subclasses to implement any necessary
         startup procedures for the plugin. If threads are needed they should be started here.
         """
+        if 'self_check_only' in self.active_config and self.active_config['self_check_only']:
+            self.shutdown()
 
     def shutdown(self) -> None:
         """
