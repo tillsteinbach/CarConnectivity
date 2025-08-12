@@ -1,5 +1,5 @@
 flake8~=7.3.0
-pylint~=3.3.7
+pylint~=3.3.8
 bandit~=1.8.5
 
 # For UI only
