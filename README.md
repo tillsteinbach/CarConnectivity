@@ -21,13 +21,13 @@ Python API to connect to various car services. If you are not a developer and en
 ## Supported Car Brands
 CarConenctivity uses a connector plugin architecture to enable access to the services of various brands. Currently known connector plugins are:
 
-| Brand                            | Connector                                                                                                     | Maintainer     |
-|----------------------------------|---------------------------------------------------------------------------------------------------------------|-----------------
-| Skoda                            | [CarConnectivity-connector-skoda](https://github.com/tillsteinbach/CarConnectivity-connector-skoda)           | @tillsteinbach |
-| Volkswagen                       | [CarConnectivity-connector-volkswagen](https://github.com/tillsteinbach/CarConnectivity-connector-volkswagen) | @tillsteinbach |
-| Seat/Cupra                       | [CarConnectivity-connector-seatcupra](https://github.com/tillsteinbach/CarConnectivity-connector-seatcupra)   | @tillsteinbach |
-| Audi                             | [CarConnectivity-connector-audi](https://github.com/acfischer42/CarConnectivity-connector-audi)               | @acfischer42   |
-| [Tronity](https://www.tronity.io) | [CarConnectivity-connector-tronity](https://github.com/tillsteinbach/CarConnectivity-connector-tronity)      | @tillsteinbach |
+| Brand                            | Connector                                                                                                     | Maintainer                                        |
+|----------------------------------|---------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
+| Skoda                            | [CarConnectivity-connector-skoda](https://github.com/tillsteinbach/CarConnectivity-connector-skoda)           | [tillsteinbach](https://github.com/tillsteinbach) |
+| Volkswagen                       | [CarConnectivity-connector-volkswagen](https://github.com/tillsteinbach/CarConnectivity-connector-volkswagen) | [tillsteinbach](https://github.com/tillsteinbach) |
+| Seat/Cupra                       | [CarConnectivity-connector-seatcupra](https://github.com/tillsteinbach/CarConnectivity-connector-seatcupra)   | [tillsteinbach](https://github.com/tillsteinbach) |
+| Audi                             | [CarConnectivity-connector-audi](https://github.com/acfischer42/CarConnectivity-connector-audi)               | [acfischer42](https://github.com/acfischer42)     |
+| [Tronity](https://www.tronity.io) | [CarConnectivity-connector-tronity](https://github.com/tillsteinbach/CarConnectivity-connector-tronity)      | [tillsteinbach](https://github.com/tillsteinbach) |
 
 If you know of a connector not listed here let me know and I will add it to the list.
 If you are a python developer and willing to implement a connector for a brand not listed here, let me know and I try to support you as good as possible
@@ -35,13 +35,13 @@ If you are a python developer and willing to implement a connector for a brand n
 ## Supported Plugins
 CarConenctivity uses a plugin architecture to enable connectivity to other services and protocols. Currently known plugins are:
 
-| Service or Protocol              | Connector                                                                                                               | Maintainer      |
-|----------------------------------|-------------------------------------------------------------------------------------------------------------------------|-----------------|
-| WebUI (easy to use webinterface) | [CarConnectivity-plugin-webui](https://github.com/tillsteinbach/CarConnectivity-plugin-webui)                           | @tillsteinbach  |
-| MQTT                             | [CarConnectivity-plugin-mqtt](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt)                             | @tillsteinbach  |
-| Home Assistant MQTT              | [CarConnectivity-plugin-mqtt_homeassistant](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant) | @tillsteinbach  |
-| A Better Routeplanner (ABRP)     | [CarConnectivity-plugin-abrp](https://github.com/tillsteinbach/CarConnectivity-plugin-abrp)                             | @tillsteinbach  |
-| Apple Homekit                    | [CarConnectivity-plugin-homekit](https://github.com/tillsteinbach/CarConnectivity-plugin-homekit)                       | @tillsteinbach  |
+| Service or Protocol              | Connector                                                                                                               | Maintainer                                         |
+|----------------------------------|-------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------|
+| WebUI (easy to use webinterface) | [CarConnectivity-plugin-webui](https://github.com/tillsteinbach/CarConnectivity-plugin-webui)                           | [tillsteinbach](https://github.com/tillsteinbach)  |
+| MQTT                             | [CarConnectivity-plugin-mqtt](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt)                             | [tillsteinbach](https://github.com/tillsteinbach)  |
+| Home Assistant MQTT              | [CarConnectivity-plugin-mqtt_homeassistant](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant) | [tillsteinbach](https://github.com/tillsteinbach)  |
+| A Better Routeplanner (ABRP)     | [CarConnectivity-plugin-abrp](https://github.com/tillsteinbach/CarConnectivity-plugin-abrp)                             | [tillsteinbach](https://github.com/tillsteinbach)  |
+| Apple Homekit                    | [CarConnectivity-plugin-homekit](https://github.com/tillsteinbach/CarConnectivity-plugin-homekit)                       | [tillsteinbach](https://github.com/tillsteinbach)  |
 
 If you know of a plugin not listed here let me know and I will add it to the list.
 If you are a python developer and willing to implement a plugin for a service not listed here, let me know and I try to support you as good as possible
