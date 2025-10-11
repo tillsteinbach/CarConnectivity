@@ -123,3 +123,27 @@ class Heading(GenericUnit,):
     """
     DEGREE = '°'
     UNKNOWN = 'unknown headinf unit'
+
+class FuelConsumption(GenericUnit,):
+    """
+    A class representing a unit of measurement for fuel consumption.
+    """
+    L = 'L/100km'
+    INVALID = 'invalid'
+    UNKNOWN = 'unknown fuel consumption unit'
+
+class ElectricConsumption(GenericUnit,):
+    """
+    A class representing a unit of measurement for electric energy consumption.
+    """
+    KWH = 'kWh/100km'
+    INVALID = 'invalid'
+    UNKNOWN = 'unknown electric energy consumption unit'
+
+class Minutes(GenericUnit,):
+    """
+    A class representing a unit of measurement for duration in minutes.
+    """
+    MIN = 'min'
+    INVALID = 'invalid'
+    UNKNOWN = 'unknown duration unit'
