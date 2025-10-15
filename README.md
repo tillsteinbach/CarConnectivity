@@ -21,13 +21,14 @@ Python API to connect to various car services. If you are not a developer and en
 ## Supported Car Brands
 CarConenctivity uses a connector plugin architecture to enable access to the services of various brands. Currently known connector plugins are:
 
-| Brand                            | Connector                                                                                                     | Maintainer                                        |
-|----------------------------------|---------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
-| Skoda                            | [CarConnectivity-connector-skoda](https://github.com/tillsteinbach/CarConnectivity-connector-skoda)           | [tillsteinbach](https://github.com/tillsteinbach) |
-| Volkswagen                       | [CarConnectivity-connector-volkswagen](https://github.com/tillsteinbach/CarConnectivity-connector-volkswagen) | [tillsteinbach](https://github.com/tillsteinbach) |
-| Seat/Cupra                       | [CarConnectivity-connector-seatcupra](https://github.com/tillsteinbach/CarConnectivity-connector-seatcupra)   | [tillsteinbach](https://github.com/tillsteinbach) |
-| Audi                             | [CarConnectivity-connector-audi](https://github.com/acfischer42/CarConnectivity-connector-audi)               | [acfischer42](https://github.com/acfischer42)     |
-| [Tronity](https://www.tronity.io) | [CarConnectivity-connector-tronity](https://github.com/tillsteinbach/CarConnectivity-connector-tronity)      | [tillsteinbach](https://github.com/tillsteinbach) |
+| Brand                            | Connector                                                                                                          | Maintainer                                        |
+|----------------------------------|--------------------------------------------------------------------------------------------------------------------|---------------------------------------------------|
+| Skoda                            | [CarConnectivity-connector-skoda](https://github.com/tillsteinbach/CarConnectivity-connector-skoda)                | [tillsteinbach](https://github.com/tillsteinbach) |
+| Volkswagen                       | [CarConnectivity-connector-volkswagen](https://github.com/tillsteinbach/CarConnectivity-connector-volkswagen)      | [tillsteinbach](https://github.com/tillsteinbach) |
+| Volkswagen (North America only)  | [CarConnectivity-connector-volkswagen-na](https://github.com/zackcornelius/CarConnectivity-connector-volkswagen-na)| [zackcornelius](https://github.com/zackcornelius) |
+| Seat/Cupra                       | [CarConnectivity-connector-seatcupra](https://github.com/tillsteinbach/CarConnectivity-connector-seatcupra)        | [tillsteinbach](https://github.com/tillsteinbach) |
+| Audi                             | [CarConnectivity-connector-audi](https://github.com/acfischer42/CarConnectivity-connector-audi)                    | [acfischer42](https://github.com/acfischer42)     |
+| [Tronity](https://www.tronity.io) | [CarConnectivity-connector-tronity](https://github.com/tillsteinbach/CarConnectivity-connector-tronity)           | [tillsteinbach](https://github.com/tillsteinbach) |
 
 If you know of a connector not listed here let me know and I will add it to the list.
 If you are a python developer and willing to implement a connector for a brand not listed here, let me know and I try to support you as good as possible
