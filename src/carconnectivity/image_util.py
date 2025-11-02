@@ -5,18 +5,18 @@ from typing import TYPE_CHECKING
 from enum import Enum
 
 # pylint: disable=duplicate-code
-SUPPORT_IMAGES = False
+SUPPORT_IMAGES = False  # pylint: disable=invalid-name
 try:
     from PIL import Image
-    SUPPORT_IMAGES = True
+    SUPPORT_IMAGES = True  # pylint: disable=invalid-name
 except ImportError:
     pass
 
-SUPPORT_ASCII_IMAGES = False
+SUPPORT_ASCII_IMAGES = False  # pylint: disable=invalid-name
 try:
     import ascii_magic
     import shutil
-    SUPPORT_ASCII_IMAGES = True
+    SUPPORT_ASCII_IMAGES = True  # pylint: disable=invalid-name
 except ImportError:
     pass
 # pylint: enable=duplicate-code

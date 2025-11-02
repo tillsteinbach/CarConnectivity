@@ -26,11 +26,11 @@ from carconnectivity.maintenance import Maintenance
 from carconnectivity.window_heating import WindowHeatings
 
 # pylint: disable=duplicate-code
-SUPPORT_IMAGES = False
+SUPPORT_IMAGES = False  # pylint: disable=invalid-name
 try:
     from PIL import Image  # pylint: disable=unused-import # noqa: F401
     from carconnectivity.images import Images  # pylint: disable=ungrouped-imports
-    SUPPORT_IMAGES = True
+    SUPPORT_IMAGES = True  # pylint: disable=invalid-name
 except ImportError:
     pass
 # pylint: enable=duplicate-code

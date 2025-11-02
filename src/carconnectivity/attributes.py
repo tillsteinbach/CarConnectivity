@@ -16,17 +16,17 @@ from carconnectivity.observable import Observable
 from carconnectivity.json_util import ExtendedWithNullEncoder
 
 # pylint: disable=duplicate-code
-SUPPORT_IMAGES = False
+SUPPORT_IMAGES = False  # pylint: disable=invalid-name
 try:
     from PIL import Image
-    SUPPORT_IMAGES = True
+    SUPPORT_IMAGES = True  # pylint: disable=invalid-name
 except ImportError:
     pass
 
-SUPPORT_ASCII_IMAGES = False
+SUPPORT_ASCII_IMAGES = False  # pylint: disable=invalid-name
 try:
     from carconnectivity.image_util import image_to_ASCII_art  # pylint: disable=ungrouped-imports
-    SUPPORT_ASCII_IMAGES = True
+    SUPPORT_ASCII_IMAGES = True  # pylint: disable=invalid-name
 except ImportError:
     pass
 # pylint: enable=duplicate-code
@@ -697,7 +697,7 @@ class IntegerAttribute(GenericAttribute[int, None]):
             if self.maximum is not None and new_value is not None and new_value > self.maximum:
                 raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
                                  f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
-        GenericAttribute.value.fset(self, new_value)
+        GenericAttribute.value.fset(self, new_value)  #pylint: disable=no-member
 
 
 class FloatAttribute(GenericAttribute[float, U]):
@@ -728,7 +728,7 @@ class FloatAttribute(GenericAttribute[float, U]):
             if self.maximum is not None and new_value is not None and new_value > self.maximum:
                 raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
                                  f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
-        GenericAttribute.value.fset(self, new_value)
+        GenericAttribute.value.fset(self, new_value)  #pylint: disable=no-member
 
 
 class EnumAttribute(Generic[T], GenericAttribute[T, None]):
@@ -787,7 +787,7 @@ class DurationAttribute(GenericAttribute[timedelta, None]):
             if self.maximum is not None and new_value is not None and new_value > self.maximum:
                 raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
                                  f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
-        GenericAttribute.value.fset(self, new_value)
+        GenericAttribute.value.fset(self, new_value)  #pylint: disable=no-member
 
 
 class RangeAttribute(FloatAttribute[Length]):

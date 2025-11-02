@@ -17,10 +17,10 @@ from carconnectivity.attributes import GenericAttribute
 from carconnectivity.observable import Observable
 from carconnectivity.json_util import ExtendedWithNullEncoder
 
-SUPPORT_IMAGES = False
+SUPPORT_IMAGES = False  # pylint: disable=invalid-name
 try:
     from PIL import Image
-    SUPPORT_IMAGES = True
+    SUPPORT_IMAGES = True  # pylint: disable=invalid-name
 except ImportError:
     pass
 
