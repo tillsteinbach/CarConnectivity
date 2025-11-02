@@ -1,7 +1,7 @@
 flake8~=7.3.0
-pylint~=3.3.7
-bandit~=1.8.5
+pylint~=4.0.2
+bandit~=1.8.6
 
 # For UI only
-Flask~=3.1.1
+Flask~=3.1.2
 flask-login~=0.6.3
