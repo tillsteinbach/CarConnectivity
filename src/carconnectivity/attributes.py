@@ -697,7 +697,7 @@ class IntegerAttribute(GenericAttribute[int, None]):
             if self.maximum is not None and new_value is not None and new_value > self.maximum:
                 raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
                                  f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
-        GenericAttribute.value.fset(self, new_value)  #pylint: disable=no-member
+        GenericAttribute.value.fset(self, new_value)  # pylint: disable=no-member
 
 
 class FloatAttribute(GenericAttribute[float, U]):
@@ -728,7 +728,7 @@ class FloatAttribute(GenericAttribute[float, U]):
             if self.maximum is not None and new_value is not None and new_value > self.maximum:
                 raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
                                  f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
-        GenericAttribute.value.fset(self, new_value)  #pylint: disable=no-member
+        GenericAttribute.value.fset(self, new_value)  # pylint: disable=no-member
 
 
 class EnumAttribute(Generic[T], GenericAttribute[T, None]):
@@ -787,7 +787,7 @@ class DurationAttribute(GenericAttribute[timedelta, None]):
             if self.maximum is not None and new_value is not None and new_value > self.maximum:
                 raise ValueError(f'Value {new_value}{self.unit.value if self.unit is not None else ""} '
                                  f'is above maximum {self.maximum}{self.unit.value if self.unit is not None else ""}')
-        GenericAttribute.value.fset(self, new_value)  #pylint: disable=no-member
+        GenericAttribute.value.fset(self, new_value)  # pylint: disable=no-member
 
 
 class RangeAttribute(FloatAttribute[Length]):
