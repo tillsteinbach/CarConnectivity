@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.8.1] - 2025-11-02
+### Changed
+- Updated some dependencies
+
 ## [0.8] - 2025-07-27
 ### Added
 - Adds convencience method to get combustion engine for combustion vehicles
@@ -80,7 +84,8 @@ All notable changes to this project will be documented in this file.
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.8...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.8.1
 [0.8]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.8
 [0.7.2]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.7.2
 [0.7.1]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.7.1
