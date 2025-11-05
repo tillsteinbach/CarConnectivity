@@ -36,6 +36,25 @@ if TYPE_CHECKING:
     from carconnectivity_connectors.base.connector import BaseConnector
     from carconnectivity_plugins.base.plugin import BasePlugin
 
+# pylint: disable=duplicate-code
+SUPPORT_IMAGES: bool = False  # pylint: disable=invalid-name
+SUPPORT_IMAGES_STR: str = ""  # pylint: disable=invalid-name
+try:
+    from PIL import Image  # pylint: disable=unused-import # noqa_F401
+    SUPPORT_IMAGES = True  # pylint: disable=invalid-name
+except ImportError as exc:
+    SUPPORT_IMAGES_STR = str(exc)  # pylint: disable=invalid-name
+
+SUPPORT_ASCII_IMAGES = False  # pylint: disable=invalid-name
+SUPPORT_ASCII_IMAGES_STR: str = ""  # pylint: disable=invalid-name
+try:
+    import ascii_magic  # pylint: disable=unused-import # noqa_F401
+    import shutil  # pylint: disable=unused-import # noqa_F401
+    SUPPORT_ASCII_IMAGES = True  # pylint: disable=invalid-name
+except ImportError as exc:
+    SUPPORT_ASCII_IMAGES_STR = str(exc)  # pylint: disable=invalid-name
+# pylint: enable=duplicate-code
+
 LOG: logging.Logger = logging.getLogger("carconnectivity")
 
 TOKENSTORE_FORMAT_VERSION: str = '1.0'
@@ -385,3 +404,25 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         else:
             raise CommandError(f'Unknown command {command_arguments["command"]}')
         return command_arguments
+
+    def get_version(self) -> str:
+        """
+        Returns the version of carconnectivity.
+
+        Returns:
+            str: The version of carconnectivity.
+        """
+        return self.version
+
+    def get_features(self) -> dict[str, tuple[bool, str]]:
+        """
+        Returns all available optional features as a tuple with a reason for features not available
+
+        Returns:
+            dict[str, tuple[bool, str]]: dict of all supported features of carconnectivity as pairs of true (available)
+            or false (not available) with a string of the reason why not available (or empty string if available)
+        """
+        features: dict[str, tuple[bool, str]] = {}
+        features['Images'] = (SUPPORT_IMAGES, SUPPORT_IMAGES_STR)
+        features['ASCII Images'] = (SUPPORT_ASCII_IMAGES, SUPPORT_ASCII_IMAGES_STR)
+        return features

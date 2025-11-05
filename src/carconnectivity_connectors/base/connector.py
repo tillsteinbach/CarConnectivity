@@ -103,6 +103,16 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
         """
         raise NotImplementedError("Method get_version() must be implemented by connector")
 
+    def get_features(self) -> dict[str, tuple[bool, str]]:
+        """
+        Returns all available optional features as a tuple with a reason for features not available
+
+        Returns:
+            dict[str, tuple[bool, str]]: dict of all supported features of the connector as pairs of true (available)
+            or false (not available) with a string of the reason why not available (or empty string if available)
+        """
+        return {}
+
     def get_type(self) -> str:
         """
         Returns the type of the connector.
