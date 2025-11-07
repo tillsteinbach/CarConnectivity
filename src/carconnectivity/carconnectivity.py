@@ -233,7 +233,7 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
                     if feature_status[0]:
                         features_string += 'enabled'
                     else:
-                        features_string += 'disabled (' + feature_status[0] + ')'
+                        features_string += 'disabled (' + feature_status[1] + ')'
                     features_string += ', '
                 if len(features_string) > 0:
                     features_string = " with optional features " + features_string
@@ -262,7 +262,7 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
                     if feature_status[0]:
                         features_string += 'enabled'
                     else:
-                        features_string += 'disabled (' + feature_status[0] + ')'
+                        features_string += 'disabled (' + feature_status[1] + ')'
                     features_string += ', '
                 if len(features_string) > 0:
                     features_string = " with optional features " + features_string
@@ -274,7 +274,7 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
             if feature_status[0]:
                 features_string += 'enabled'
             else:
-                features_string += 'disabled (' + feature_status[0] + ')'
+                features_string += 'disabled (' + feature_status[1] + ')'
             features_string += ', '
         if len(features_string) > 0:
             features_string = " with optional features " + features_string
