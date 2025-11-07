@@ -20,7 +20,9 @@ dependencies = [
     "pytimeparse~=1.1.8",
 ]
 readme = "README.md"
-license = { file = "LICENSE" }
+license-files = [
+    "LICENSE",
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "License :: OSI Approved :: MIT License",
