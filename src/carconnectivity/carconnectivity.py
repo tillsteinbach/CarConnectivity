@@ -227,6 +227,17 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
                     raise ConfigurationError(f"Invalid configuration: connector '{connector_id}' is not unique, set a 'connector_id' in configuration")
                 connector: BaseConnector = connector_class(connector_id=connector_id, car_connectivity=self, config=connector_config['config'])
                 self.connectors.connectors[connector_id] = connector
+                features_string: str = ""
+                for feature_name, feature_status in connector.get_features().items():
+                    features_string += feature_name + ": "
+                    if feature_status[0]:
+                        features_string += 'enabled'
+                    else:
+                        features_string += 'disabled (' + feature_status[0] + ')'
+                    features_string += ', '
+                if len(features_string) > 0:
+                    features_string = " with optional features " + features_string
+                LOG.info('Connector %s (Version %s) loaded%s', connector.get_name(), connector.get_version(), features_string)
         if 'plugins' in config['carConnectivity']:
             for plugin_config in config['carConnectivity']['plugins']:
                 if 'type' not in plugin_config:
@@ -245,6 +256,17 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
                     raise ConfigurationError(f"Invalid configuration: connector '{plugin_id}' is not unique, set a 'connector_id' in configuration")
                 plugin: BasePlugin = plugin_class(plugin_id=plugin_id, car_connectivity=self, config=plugin_config['config'])
                 self.plugins.plugins[plugin_id] = plugin
+                features_string: str = ""
+                for feature_name, feature_status in plugin.get_features().items():
+                    features_string += feature_name + ": "
+                    if feature_status[0]:
+                        features_string += 'enabled'
+                    else:
+                        features_string += 'disabled (' + feature_status[0] + ')'
+                    features_string += ', '
+                if len(features_string) > 0:
+                    features_string = " with optional features " + features_string
+                LOG.info('Plugin %s (Version %s) loaded%s', plugin.get_name(), plugin.get_version(), features_string)
         self.delay_notifications = False
 
     def fetch_all(self) -> None:
