@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.9.1] - 2025-07-11
+### Fixed
+- Fixes a bug where optional features status messages were not shown correctly
+
 ## [0.9] - 2025-07-11
 ### Added
 - Support for managing optional features in connectors and plugins
