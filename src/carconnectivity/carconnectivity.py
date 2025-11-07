@@ -268,6 +268,17 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
                     features_string = " with optional features " + features_string
                 LOG.info('Plugin %s (Version %s) loaded%s', plugin.get_name(), plugin.get_version(), features_string)
         self.delay_notifications = False
+        features_string: str = ""
+        for feature_name, feature_status in self.get_features().items():
+            features_string += feature_name + ": "
+            if feature_status[0]:
+                features_string += 'enabled'
+            else:
+                features_string += 'disabled (' + feature_status[0] + ')'
+            features_string += ', '
+        if len(features_string) > 0:
+            features_string = " with optional features " + features_string
+        LOG.info('CarConnectivity (Version %s) loaded%s', self.get_version(), features_string)
 
     def fetch_all(self) -> None:
         """
