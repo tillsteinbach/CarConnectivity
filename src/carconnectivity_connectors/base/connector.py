@@ -48,20 +48,30 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
         # Configure logging
         if 'log_level' in config and config['log_level'] is not None:
             self.active_config['log_level'] = config['log_level'].upper()
-            if self.active_config['log_level'] in logging._nameToLevel:
-                log.setLevel(self.active_config['log_level'])
-                self.log_level._set_value(self.active_config['log_level'])  # pylint: disable=protected-access
-                logging.getLogger('requests').setLevel(self.active_config['log_level'])
-                logging.getLogger('urllib3').setLevel(self.active_config['log_level'])
-                logging.getLogger('oauthlib').setLevel(self.active_config['log_level'])
-            else:
-                raise ConfigurationError(f'Invalid log level: "{self.active_config["log_level"]}" not in {list(logging._nameToLevel.keys())}')
+        elif 'carConnectivity' in self.car_connectivity.config and \
+                'log_level' in self.car_connectivity.config['carConnectivity'] \
+                and self.car_connectivity.config['carConnectivity']['log_level'] is not None:  # use carconnectivity loglevel
+            self.active_config['log_level'] = self.car_connectivity.config['carConnectivity']['log_level']
+        else:  # default log level
+            self.active_config['log_level'] = 'ERROR'
+        if self.active_config['log_level'] in logging._nameToLevel:
+            log.setLevel(self.active_config['log_level'])
+            self.log_level._set_value(self.active_config['log_level'])  # pylint: disable=protected-access
+            logging.getLogger('requests').setLevel(self.active_config['log_level'])
+            logging.getLogger('urllib3').setLevel(self.active_config['log_level'])
+            logging.getLogger('oauthlib').setLevel(self.active_config['log_level'])
+        else:
+            raise ConfigurationError(f'Invalid log level: "{self.active_config["log_level"]}" not in {list(logging._nameToLevel.keys())}')
+
         if api_log is not None and 'api_log_level' in config and config['api_log_level'] is not None:
             self.active_config['api_log_level'] = config['api_log_level'].upper()
-            if self.active_config['api_log_level'] in logging._nameToLevel:
-                api_log.setLevel(self.active_config['api_log_level'])
-            else:
-                raise ConfigurationError(f'Invalid log level: "{self.active_config["api_log_level"]}" not in {list(logging._nameToLevel.keys())}')
+        else:  # default api log level
+            self.active_config['api_log_level'] = 'ERROR'
+        if self.active_config['api_log_level'] in logging._nameToLevel:
+            api_log.setLevel(self.active_config['api_log_level'])
+        else:
+            raise ConfigurationError(f'Invalid log level: "{self.active_config["api_log_level"]}" not in {list(logging._nameToLevel.keys())}')
+
         log.addHandler(self.log_storage)
         api_log.addHandler(self.api_log_storage)
 
