@@ -10,6 +10,13 @@ assignees: tillsteinbach
 **Describe the bug**
 A clear and concise description of what the bug is.
 
+IMPORTANT! CarConnectivity consists of several modules, try to check what module could be the source of the problem and post the issue there.
+
+Examples:
+- If you have a problem getting data from your car, it is likely the connector. Please open the bug in the connector repository
+- If you have a problem with the webinterface post the bug in the webui-plugin repository
+- If you have a problem with MQTT, post the bug in the mqtt-plugin repository
+
 **To Reproduce**
 Steps to reproduce the behavior:
 1. Go to '...'
