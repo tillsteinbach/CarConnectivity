@@ -13,6 +13,8 @@ import re
 import collections
 from datetime import datetime, timezone
 
+from ntplib import NTPClient, NTPException
+
 if TYPE_CHECKING:
     from typing import Dict, Tuple, Any, MutableSequence, Optional
 
@@ -84,6 +86,21 @@ def config_remove_credentials(config: Dict[str, Any]) -> Dict[str, Any]:
     config_copy: dict[str, Any] = config.copy()
     __recursive_remove_credentials(config_copy)
     return config_copy
+
+
+def ntp_time_delta(server: str = 'pool.ntp.org') -> Optional[float]:
+    """
+    Retrieves the time difference between the local system time and the NTP server time.
+
+    Returns:
+        Optional[float]: The time difference in seconds, or None if the NTP server could not be reached.
+    """
+    try:
+        ntp_client = NTPClient()
+        response = ntp_client.request(server, version=3)
+        return response.offset
+    except NTPException:
+        return None
 
 
 # pylint: disable=too-few-public-methods

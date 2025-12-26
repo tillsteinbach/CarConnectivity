@@ -23,7 +23,7 @@ from carconnectivity.connectors import Connectors
 from carconnectivity.plugins import Plugins
 from carconnectivity.attributes import StringAttribute
 from carconnectivity._version import __version__
-from carconnectivity.util import LogMemoryHandler
+from carconnectivity.util import LogMemoryHandler, ntp_time_delta
 from carconnectivity.errors import RetrievalError, MultipleRetrievalError
 from carconnectivity.commands import Commands
 from carconnectivity.command_impl import UpdateCommand
@@ -278,6 +278,13 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
             features_string += ', '
         if len(features_string) > 0:
             features_string = " with optional features " + features_string
+
+        time_delta: float = ntp_time_delta()
+        if time_delta is not None and abs(time_delta) > 3500:
+            LOG.warning('System time differs from NTP server time by %.2f seconds. Is your timezone configured correctly?', time_delta)
+        elif time_delta is not None and abs(time_delta) > 5:
+            LOG.warning('System time differs from NTP server time by %.2f seconds. This may lead to problems with authentication.', time_delta)
+
         LOG.info('CarConnectivity (Version %s) loaded%s', self.get_version(), features_string)
 
     def fetch_all(self) -> None:
