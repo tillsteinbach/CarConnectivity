@@ -41,6 +41,7 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         self.log_level = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'})
         self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
         self.healthy: BooleanAttribute = BooleanAttribute(name="healthy", parent=self, tags={'carconnectivity'})
+        self.log: logging.Logger = log
 
         # Configure logging
         if 'log_level' in config and config['log_level'] is not None:
@@ -70,6 +71,7 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         startup procedures for the plugin. If threads are needed they should be started here.
         """
         if 'self_check_only' in self.active_config and self.active_config['self_check_only']:
+            self.log.info('Plugin %s is in self check mode (config option self_check_only) and will shutdown right after startup.', self.get_name())
             self.shutdown()
 
     def shutdown(self) -> None:
