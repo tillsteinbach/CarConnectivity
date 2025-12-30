@@ -90,6 +90,16 @@ class Energy(GenericUnit,):
     UNKNOWN = 'unknown energy unit'
 
 
+class Volume(GenericUnit,):
+    """
+    A class representing a unit of measurement for a volume.
+    """
+    L = 'l'
+    GAL = 'gal'
+    INVALID = 'invalid'
+    UNKNOWN = 'unknown volume unit'
+
+
 class Current(GenericUnit,):
     """
     A class representing a unit of measurement for current.
@@ -123,3 +133,25 @@ class Heading(GenericUnit,):
     """
     DEGREE = '°'
     UNKNOWN = 'unknown headinf unit'
+
+
+class EnergyConsumption(GenericUnit,):
+    """
+    A class representing a unit of measurement for energy consumption.
+    """
+    KWH100KM = 'kWh/100km'
+    KWH100MI = 'kWh/100mi'
+    WHKM = 'Wh/km'
+    WHMI = 'Wh/mi'
+    INVALID = 'invalid'
+    UNKNOWN = 'unknown energy consumption unit'
+
+
+class FuelConsumption(GenericUnit,):
+    """
+    A class representing a unit of measurement for fuel consumption.
+    """
+    L100KM = 'L/100km'
+    MPG = 'MPG'
+    INVALID = 'invalid'
+    UNKNOWN = 'unknown fuel consumption unit'

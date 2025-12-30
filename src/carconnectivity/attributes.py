@@ -11,7 +11,7 @@ from datetime import datetime, timezone, timedelta
 
 from pytimeparse import parse
 
-from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power, Current, Energy
+from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power, Current, Energy, EnergyConsumption, FuelConsumption, Volume
 from carconnectivity.observable import Observable
 from carconnectivity.json_util import ExtendedWithNullEncoder
 
@@ -1172,3 +1172,225 @@ if SUPPORT_IMAGES:
             if SUPPORT_ASCII_IMAGES:
                 return f"{image_to_ASCII_art(self.value) if self.value else None}"
             return f"{self.name}"
+
+
+class EnergyConsumptionAttribute(FloatAttribute[EnergyConsumption]):
+    """
+    A class used to represent a Energy Consumption Attribute.
+    """
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: EnergyConsumption = EnergyConsumption.KWH100KM,
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
+
+    @staticmethod
+    def convert(value, from_unit: U, to_unit: U) -> T:  # pylint: disable=too-many-return-statements
+        """
+        Convert a range value from one unit to another.
+
+        Parameters:
+        value (float): The range value to be converted.
+        from_unit (EnergyConsumption): The unit of the input range value. Must be an instance of the EnergyConsumption enum.
+        to_unit (EnergyConsumption): The unit to convert the range value to. Must be an instance of the EnergyConsumption enum.
+
+        Returns:
+        float: The converted range value in the desired unit. If any of the parameters are None or if the units are the same,
+        the original value is returned.
+        """
+        if from_unit is None or to_unit is None or value is None or from_unit == to_unit:
+            return value
+        if from_unit == EnergyConsumption.KWH100MI and to_unit == EnergyConsumption.KWH100KM:
+            return value * 1.609344
+        if from_unit == EnergyConsumption.KWH100MI and to_unit == EnergyConsumption.WHKM:
+            return value * 1.609344 * 10
+        if from_unit == EnergyConsumption.KWH100MI and to_unit == EnergyConsumption.WHMI:
+            return value * 10
+        if from_unit == EnergyConsumption.KWH100KM and to_unit == EnergyConsumption.KWH100MI:
+            return value / 1.609344
+        if from_unit == EnergyConsumption.KWH100KM and to_unit == EnergyConsumption.WHMI:
+            return value / 1.609344 * 10
+        if from_unit == EnergyConsumption.KWH100KM and to_unit == EnergyConsumption.WHKM:
+            return value * 10
+        if from_unit == EnergyConsumption.WHKM and to_unit == EnergyConsumption.KWH100KM:
+            return value / 10
+        if from_unit == EnergyConsumption.WHKM and to_unit == EnergyConsumption.KWH100MI:
+            return value / 1.609344 / 10
+        if from_unit == EnergyConsumption.WHKM and to_unit == EnergyConsumption.WHMI:
+            return value / 1.609344
+        if from_unit == EnergyConsumption.WHMI and to_unit == EnergyConsumption.KWH100MI:
+            return value / 10
+        if from_unit == EnergyConsumption.WHMI and to_unit == EnergyConsumption.KWH100KM:
+            return value / 10 * 1.609344
+        if from_unit == EnergyConsumption.WHMI and to_unit == EnergyConsumption.WHKM:
+            return value * 1.609344
+        return value
+
+    def consumption_in(self, unit: EnergyConsumption) -> Optional[float]:
+        """
+        Convert the consumption to a different unit.
+
+        Args:
+            unit (Length): The unit to convert the range to.
+
+        Returns:
+            float: The range in the specified unit.
+        """
+        if unit is None or self.unit is None:
+            raise ValueError('No unit specified or value has no unit')
+        return self.convert(self.value, self.unit, unit)
+
+    def in_locale(self, locale: Optional[str]) -> Tuple[Optional[float], Optional[U]]:
+        """
+        Get the energy consumption in the unit the user is used to
+
+        Args:
+            locale (str): The locale to get the energy consumption in.
+
+        Returns:
+            str: The energy consumption in the locale.
+
+        Converts the energy consumption to miles if the locale is 'en_US', 'en_GB', 'en_LR', 'en_MM', otherwise converts to kilometers.
+        """
+        if locale is None:
+            return self.value, self.unit
+        miles_locales: list[str] = ['en_US', 'en_GB', 'en_LR', 'en_MM']
+        if any(locale.startswith(loc) for loc in miles_locales):
+            if self.unit == EnergyConsumption.KWH100KM:
+                return self.consumption_in(EnergyConsumption.KWH100MI), EnergyConsumption.KWH100MI
+            if self.unit == EnergyConsumption.WHKM:
+                return self.consumption_in(EnergyConsumption.WHMI), EnergyConsumption.WHMI
+        return self.consumption_in(EnergyConsumption.KWH100KM), EnergyConsumption.KWH100KM
+
+
+class FuelConsumptionAttribute(FloatAttribute[FuelConsumption]):
+    """
+    A class used to represent a energy Attribute.
+    """
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: FuelConsumption = FuelConsumption.L100KM,
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
+
+    @staticmethod
+    def convert(value, from_unit: U, to_unit: U) -> T:
+        """
+        Convert a fuel consumotion value from one unit to another.
+
+        Parameters:
+        value (float): The power value to be converted.
+        from_unit (FuelConsumption): The unit of the input energy value. Must be an instance of the Energy enum.
+        to_unit (FuelConsumption): The unit to convert the energy value to. Must be an instance of the Energy enum.
+
+        Returns:
+        float: The converted fuel consumption value in the desired unit. If any of the parameters are None or if the units are the same,
+        the original value is returned.
+        """
+        if from_unit is None or to_unit is None or value is None or to_unit == from_unit:
+            return value
+        if from_unit == FuelConsumption.L100KM and to_unit == FuelConsumption.MPG:
+            return value * 235.15
+        if from_unit == FuelConsumption.MPG and to_unit == FuelConsumption.L100KM:
+            return value / 235.15
+        return value
+
+    def consumption_in(self, unit: FuelConsumption) -> Optional[float]:
+        """
+        Convert the energy to a different unit.
+
+        Args:
+            unit (FuelConsumption): The unit to convert the fuel consumption to.
+
+        Returns:
+            float: The fuel consumption in the specified unit.
+        """
+        if unit is None or self.unit is None:
+            raise ValueError('No unit specified or value has no unit')
+        return self.convert(self.value, self.unit, unit)
+
+    def in_locale(self, locale: Optional[str]) -> Tuple[Optional[float], Optional[U]]:
+        """
+        Get the uel consumption in the unit the user is used to
+
+        Args:
+            locale (str): The locale to get the fuel consumption in.
+
+        Returns:
+            str: The uel consumption in the locale.
+
+        Converts the fuel consumption to miles if the locale is 'en_US', 'en_GB', 'en_LR', 'en_MM', otherwise converts to kilometers.
+        """
+        if locale is None:
+            return self.value, self.unit
+        miles_locales: list[str] = ['en_US', 'en_GB', 'en_LR', 'en_MM']
+        if any(locale.startswith(loc) for loc in miles_locales):
+            if self.unit == FuelConsumption.L100KM:
+                return self.consumption_in(FuelConsumption.MPG), FuelConsumption.MPG
+        return self.consumption_in(FuelConsumption.L100KM), FuelConsumption.L100KM
+
+
+class VolumeAttribute(FloatAttribute[Volume]):
+    """
+    A class used to represent a Speed Attribute.
+    """
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Volume = Volume.L,
+                 maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
+                 tags: Optional[Set[str]] = None) -> None:
+        super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
+
+    @staticmethod
+    def convert(value, from_unit: U, to_unit: U) -> T:
+        """
+        Convert a volume value from one unit to another.
+
+        Parameters:
+        value (float): The volume value to be converted.
+        from_unit (Volume): The unit of the input volume value. Must be an instance of the Volume enum.
+        to_unit (Volume): The unit to convert the volume value to. Must be an instance of the Volume enum.
+
+        Returns:
+        float: The converted volume value in the desired unit. If any of the parameters are None or if the units are the same,
+        the original value is returned.
+        """
+        if from_unit is None or to_unit is None or value is None or to_unit == from_unit:
+            return value
+        if from_unit == Volume.L and to_unit == Volume.GAL:
+            return value * 0.264172
+        if from_unit == Volume.GAL and to_unit == Volume.L:
+            return value * 3.78541
+        return value
+
+    def volume_in(self, unit: Volume) -> Optional[float]:
+        """
+        Convert the volume to a different unit.
+
+        Args:
+            unit (Volume): The unit to convert the speed to.
+
+        Returns:
+            float: The volume in the specified unit.
+        """
+        if unit is None or self.unit is None:
+            raise ValueError('No unit specified or value has no unit')
+        return self.convert(self.value, self.unit, unit)
+
+    def in_locale(self, locale: Optional[str]) -> Tuple[Optional[float], Optional[U]]:
+        """
+        Get the volume in the unit the user is used to
+
+        Args:
+            locale (str): The locale to get the range in.
+
+        Returns:
+            str: The speed in the locale.
+
+        Converts the speed to miles per hour if the locale is 'en_US', 'en_GB', 'en_LR', 'en_MM', otherwise converts to kilometers per hour.
+        """
+        if locale is None:
+            return self.value, self.unit
+        gal_locales: list[str] = ['en_US', 'en_GB', 'en_LR', 'en_MM']
+        if any(locale.startswith(loc) for loc in gal_locales):
+            return self.volume_in(Volume.GAL), Volume.GAL
+        return self.volume_in(Volume.L), Volume.L
