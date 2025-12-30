@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 
 from enum import Enum
 
+from carconnectivity.observable import Observable
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import RangeAttribute, LevelAttribute, EnumAttribute
 from carconnectivity.units import Length
@@ -17,6 +18,7 @@ from carconnectivity.battery import Battery
 
 if TYPE_CHECKING:
     from typing import Dict
+    from datetime import datetime
     from carconnectivity.vehicle import GenericVehicle
 
 
@@ -51,8 +53,25 @@ class GenericDrive(GenericObject):
         self.type: EnumAttribute = EnumAttribute(name="type", parent=self, value=None, tags={'carconnectivity'})
         self.range: RangeAttribute = RangeAttribute(name="range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
                                                     tags={'carconnectivity'})
+        self.range_estimated_full: RangeAttribute = RangeAttribute(name="range_estimated_full", parent=self, value=None, unit=Length.UNKNOWN, minimum=0,
+                                                                   precision=0.1, tags={'carconnectivity'})
+        self.range_wltp: RangeAttribute = RangeAttribute(name="range_wltp", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
+                                                         tags={'carconnectivity'})
         self.level: LevelAttribute = LevelAttribute(name="level", parent=self, value=None, minimum=0, precision=0.1, tags={'carconnectivity'})
         self.enabled = True
+
+        self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
+        self.level.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
+
+    def __on_range_or_level_change(self, element: EnumAttribute, flags: Observable.ObserverEvent) -> None:
+        del element
+        del flags
+        if self.range.enabled and self.level.enabled and self.range.value is not None and self.level.value is not None and self.level.value > 0:
+            new_range_estimated_full: float = self.range.value / self.level.value * 100
+            if self.range_estimated_full.value != new_range_estimated_full:
+                measurement_time: datetime = max(self.range.last_updated or 0, self.level.last_updated or 0)
+                self.range_estimated_full._set_value(value=new_range_estimated_full, measured=measurement_time,  # pylint: disable=protected-access
+                                                     unit=self.range.unit)
 
     # pylint: disable=duplicate-code
     class Type(Enum):
@@ -98,3 +117,21 @@ class DieselDrive(CombustionDrive):
                                                            tags={'carconnectivity'})
         self.adblue_level: LevelAttribute = LevelAttribute(name="adblue_level", parent=self, value=None, minimum=0, precision=0.1,
                                                            tags={'carconnectivity'})
+        self.adblue_range_estimated_full: RangeAttribute = RangeAttribute(name="adblue_range_estimated_full", parent=self, value=None,
+                                                                          unit=Length.UNKNOWN, minimum=0, precision=0.1,
+                                                                          tags={'carconnectivity'})
+
+        self.adblue_range.add_observer(self.__on_adblue_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
+        self.adblue_level.add_observer(self.__on_adblue_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
+
+    def __on_adblue_range_or_level_change(self, element: EnumAttribute, flags: Observable.ObserverEvent) -> None:
+        del element
+        del flags
+        if self.adblue_range.enabled and self.adblue_level.enabled and self.adblue_range.value is not None and self.adblue_level.value is not None \
+                and self.adblue_level.value > 0:
+            new_range_estimated_full: float = self.adblue_range.value / self.adblue_level.value * 100
+            if self.adblue_range_estimated_full.value != new_range_estimated_full:
+                measurement_time: datetime = max(self.adblue_range.last_updated or 0, self.adblue_level.last_updated or 0)
+                self.adblue_range_estimated_full._set_value(value=new_range_estimated_full, measured=measurement_time,  # pylint: disable=protected-access
+                                                            unit=self.adblue_range.unit)
+    
