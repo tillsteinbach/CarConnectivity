@@ -15,6 +15,7 @@ from cryptography.fernet import Fernet, InvalidToken
 import carconnectivity_connectors
 import carconnectivity_plugins
 
+from carconnectivity.interfaces import ICarConnectivity
 from carconnectivity.objects import GenericObject
 from carconnectivity.garage import Garage
 from carconnectivity.json_util import ExtendedEncoder
@@ -27,6 +28,8 @@ from carconnectivity.util import LogMemoryHandler, ntp_time_delta
 from carconnectivity.errors import RetrievalError, MultipleRetrievalError
 from carconnectivity.commands import Commands
 from carconnectivity.command_impl import UpdateCommand
+from carconnectivity_services.base.service import BaseService, ServiceType
+from carconnectivity_services.location.osm_location_service import OSMLocationService
 
 if TYPE_CHECKING:
     from typing import Dict, Any, Optional, Iterator, Union
@@ -80,7 +83,7 @@ discovered_plugins: Dict[str, ModuleType] = {
 }
 
 
-class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attributes
+class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-many-instance-attributes
     """
     CarConnectivity class is the main class to interact with the carconnectivity library.
 
@@ -117,6 +120,8 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
 
         self.version: StringAttribute = StringAttribute(name="version", parent=self, value=__version__, tags={'carconnectivity'})
         self.commands: Commands = Commands(parent=self)
+
+        self.services: Dict[ServiceType, list[BaseService]] = {}
 
         if 'carConnectivity' not in config:
             raise ConfigurationError("Invalid configuration: 'carConnectivity' is missing")
@@ -279,11 +284,18 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         if len(features_string) > 0:
             features_string = " with optional features " + features_string
 
-        time_delta: float = ntp_time_delta()
+        time_delta: Optional[float] = ntp_time_delta()
         if time_delta is not None and abs(time_delta) > 3500:
             LOG.warning('System time differs from NTP server time by %.2f seconds. Is your timezone configured correctly?', time_delta)
         elif time_delta is not None and abs(time_delta) > 5:
             LOG.warning('System time differs from NTP server time by %.2f seconds. This may lead to problems with authentication.', time_delta)
+
+        # Add own services:
+        osm_location_service: OSMLocationService = OSMLocationService(service_id='car_connectivity:OSMLocationService', car_connectivity=self, log=LOG)
+        for service_type in osm_location_service.get_types():
+            if service_type not in self.services:
+                self.services[service_type] = []
+            self.services[service_type].append(osm_location_service)
 
         LOG.info('CarConnectivity (Version %s) loaded%s', self.get_version(), features_string)
 
@@ -452,7 +464,7 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         Returns:
             str: The version of carconnectivity.
         """
-        return self.version
+        return self.version.value or 'unknown'
 
     def get_features(self) -> dict[str, tuple[bool, str]]:
         """
@@ -466,3 +478,16 @@ class CarConnectivity(GenericObject):  # pylint: disable=too-many-instance-attri
         features['Images'] = (SUPPORT_IMAGES, SUPPORT_IMAGES_STR)
         features['ASCII Images'] = (SUPPORT_ASCII_IMAGES, SUPPORT_ASCII_IMAGES_STR)
         return features
+
+    def get_service_for(self, service_type: ServiceType) -> Optional[BaseService]:
+        """
+        Returns the service for the given service type.
+
+        Args:
+            service_type (str): The type of the service.
+        Returns:
+            Optional[BaseService]: The service instance if found, None otherwise.
+        """
+        for service in self.services.get(service_type, []):
+            return service
+        return None

@@ -19,6 +19,7 @@ dependencies = [
     "JSON_minify~=0.3.0",
     "pytimeparse~=1.1.8",
     "ntplib~=0.4.0",
+    "haversine~=2.9.0"
 ]
 readme = "README.md"
 license = "MIT"

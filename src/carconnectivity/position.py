@@ -3,13 +3,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from enum import Enum
+import logging
 
+from carconnectivity.observable import Observable
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import EnumAttribute, FloatAttribute, RangeAttribute
 from carconnectivity.units import LatitudeLongitude, Length, Heading
+from carconnectivity.location import Location
+from carconnectivity.interfaces import ICarConnectivity
+from carconnectivity_services.base.service import BaseService
+from carconnectivity_services.base.service import ServiceType
+from carconnectivity_services.location.location_service import LocationService
 
 if TYPE_CHECKING:
     from typing import Optional
+
+LOG: logging.Logger = logging.getLogger("carconnectivity")
 
 
 class Position(GenericObject):  # pylint: disable=too-many-instance-attributes
@@ -28,6 +37,36 @@ class Position(GenericObject):  # pylint: disable=too-many-instance-attributes
                                                        tags={'carconnectivity'})
         self.heading: FloatAttribute = FloatAttribute("heading", parent=self, minimum=0, maximum=360, unit=Heading.DEGREE, precision=0.1,
                                                       tags={'carconnectivity'})
+        self.location: Location = Location(name="position_location", parent=self)
+
+        self.longitude.add_observer(self._on_position_changed, flag=(Observable.ObserverEvent.VALUE_CHANGED
+                                                                     | Observable.ObserverEvent.ENABLED
+                                                                     | Observable.ObserverEvent.DISABLED))
+
+    def _on_position_changed(self, element: FloatAttribute, flags) -> None:
+        """
+        Callback when position attributes change.
+        """
+        del flags
+        del element
+        if self.latitude.enabled and self.latitude.value is not None and self.longitude.enabled and self.longitude.value is not None:
+            if self.parent is not None and self.parent.parent is not None \
+                    and isinstance(self.parent.parent.parent, ICarConnectivity):
+                location_service: Optional[BaseService] = self.parent.parent.parent.get_service_for(ServiceType.LOCATION_REVERSE)
+                if location_service is not None and isinstance(location_service, LocationService):
+                    result: Optional[Location] = location_service.location_from_lat_lon(
+                        latitude=self.latitude.value,
+                        longitude=self.longitude.value,
+                        location=self.location
+                    )
+                    if result is not None:
+                        LOG.debug('Resolved location from position (%s, %s)', self.latitude.value, self.longitude.value)
+                else:
+                    LOG.warning('No LocationService available to resolve location from position')
+            else:
+                LOG.warning('Position not in correct context of CarConnectivity, cannot resolve location')
+        else:
+            self.location.clear()
 
     class PositionType(Enum):
         """
