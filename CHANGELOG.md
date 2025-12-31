@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.10] - 2025-12-31 Happy New Year!
+### Added
+- Check against NTP server for time synchronization
+- Attributes for WLTP range, estimated range at 100% charge and estimated consumption
+- Add fuel tank to combustion vehicles and adblue tank to diesel vehicles
+- Add location object to vehicle position
+- Infrastructure for managing services to fetch additional data (like location, etc.)
+- Add service for fetching location data based on coordinates from OpenStreetMap Nominatim API
+
 ## [0.9.2] - 2025-11-10
 ### Fixed
 - Set default log levels correctly
@@ -96,7 +105,8 @@ All notable changes to this project will be documented in this file.
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.9.2...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.10...HEAD
+[0.10]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.10
 [0.9.2]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.9.2
 [0.9.1]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.9.1
 [0.9]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.9
