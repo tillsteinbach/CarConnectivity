@@ -11,8 +11,10 @@ All notable changes to this project will be documented in this file.
 - Attributes for WLTP range, estimated range at 100% charge and estimated consumption
 - Add fuel tank to combustion vehicles and adblue tank to diesel vehicles
 - Add location object to vehicle position
+- Add charging station object to charging information
 - Infrastructure for managing services to fetch additional data (like location, etc.)
-- Add service for fetching location data based on coordinates from OpenStreetMap Nominatim API
+- Add service for fetching location data based on coordinates from OpenStreetMap
+- Add service for fetching charging station data based on coordinates from OpenChargeMap 
 
 ## [0.9.2] - 2025-11-10
 ### Fixed
