@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from carconnectivity_services.base.service import BaseService, ServiceType
 
 
-class ICarConnectivity:
+class ICarConnectivity:  # pylint: disable=too-few-public-methods
     """
     Interface for CarConnectivity implementation.
 
