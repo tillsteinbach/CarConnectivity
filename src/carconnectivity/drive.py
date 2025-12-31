@@ -61,8 +61,8 @@ class GenericDrive(GenericObject):
         self.level: LevelAttribute = LevelAttribute(name="level", parent=self, value=None, minimum=0, precision=0.1, tags={'carconnectivity'})
         self.enabled = True
 
-        self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
-        self.level.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
+        self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
+        self.level.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
 
     def __on_range_or_level_change(self, element: EnumAttribute, flags: Observable.ObserverEvent) -> None:
         del element
@@ -106,8 +106,8 @@ class ElectricDrive(GenericDrive):
                                                                                   unit=EnergyConsumption.UNKNOWN,
                                                                                   minimum=0, precision=0.01, tags={'carconnectivity'})
 
-        self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
-        self.level.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
+        self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
+        self.level.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
 
     def __on_range_or_level_change(self, element: EnumAttribute, flags: Observable.ObserverEvent) -> None:
         del element
@@ -141,8 +141,8 @@ class CombustionDrive(GenericDrive):
                                                                               unit=FuelConsumption.UNKNOWN,
                                                                               minimum=0, precision=0.1, tags={'carconnectivity'})
 
-        self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
-        self.level.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
+        self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
+        self.level.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
 
     def __on_range_or_level_change(self, element: EnumAttribute, flags: Observable.ObserverEvent) -> None:
         del element
@@ -183,8 +183,8 @@ class DieselDrive(CombustionDrive):
                                                                                      unit=FuelConsumption.UNKNOWN,
                                                                                      minimum=0, precision=0.01, tags={'carconnectivity'})
 
-        self.adblue_range.add_observer(self.__on_adblue_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
-        self.adblue_level.add_observer(self.__on_adblue_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
+        self.adblue_range.add_observer(self.__on_adblue_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
+        self.adblue_level.add_observer(self.__on_adblue_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
 
     def __on_adblue_range_or_level_change(self, element: EnumAttribute, flags: Observable.ObserverEvent) -> None:
         del element
