@@ -179,6 +179,9 @@ class DieselDrive(CombustionDrive):
         self.adblue_range_estimated_full: RangeAttribute = RangeAttribute(name="adblue_range_estimated_full", parent=self, value=None,
                                                                           unit=Length.UNKNOWN, minimum=0, precision=0.1,
                                                                           tags={'carconnectivity'})
+        self.adblue_consumption: FuelConsumptionAttribute = FuelConsumptionAttribute(name="consumption", parent=self, value=None,
+                                                                                     unit=FuelConsumption.UNKNOWN,
+                                                                                     minimum=0, precision=0.01, tags={'carconnectivity'})
 
         self.adblue_range.add_observer(self.__on_adblue_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
         self.adblue_level.add_observer(self.__on_adblue_range_or_level_change, Observable.ObserverEvent.VALUE_CHANGED, on_transaction_end=True)
@@ -204,7 +207,7 @@ class DieselDrive(CombustionDrive):
                 and self.adblue_tank.enabled and self.adblue_tank is not None and self.adblue_tank.available_capacity.enabled \
                 and self.adblue_tank.available_capacity.value is not None and self.adblue_tank.available_capacity.value > 0:
             new_estimated_consuption: float = self.adblue_tank.available_capacity.value / (self.adblue_range.value / self.adblue_level.value * 100) * 100
-            if self.consumption.value != new_estimated_consuption:
+            if self.adblue_consumption.value != new_estimated_consuption:
                 measurement_time: Optional[datetime] = self.adblue_range.last_updated
                 if measurement_time is None and self.adblue_level.last_updated is not None:
                     measurement_time = self.adblue_level.last_updated
@@ -214,4 +217,4 @@ class DieselDrive(CombustionDrive):
                     unit: FuelConsumption = FuelConsumption.L100KM
                 else:
                     unit = FuelConsumption.MPG
-                self.consumption._set_value(value=new_estimated_consuption, measured=measurement_time, unit=unit)  # pylint: disable=protected-access
+                self.adblue_consumption._set_value(value=new_estimated_consuption, measured=measurement_time, unit=unit)  # pylint: disable=protected-access
