@@ -86,6 +86,7 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
                                                  Charging.ChargingState.CONSERVATION,
                                                  Charging.ChargingState.DISCHARGING]:
             # Get cars location
+            # pylint: disable-next=too-many-boolean-expressions
             if self.parent is not None and isinstance(self.parent, IGenericVehicle) and self.parent.position is not None \
                     and self.parent.position.latitude.enabled and self.parent.position.latitude.value is not None \
                     and self.parent.position.longitude.enabled and self.parent.position.longitude.value is not None:

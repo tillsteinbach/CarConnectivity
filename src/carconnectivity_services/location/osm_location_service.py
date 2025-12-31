@@ -99,7 +99,7 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
 
         return self.amenity_from_lat_lon(latitude=latitude, longitude=longitude, radius=radius, amenity='fuel', location=location)
 
-    def charging_station_from_lat_lon(self, latitude: float, longitude: float, radius: int,
+    def charging_station_from_lat_lon(self, latitude: float, longitude: float, radius: int,  # pylint: disable=too-many-branches,too-many-statements
                                       charging_station: Optional[ChargingStation] = None) -> Optional[ChargingStation]:
         """
         Retrieve charging station information from OpenStreetMap based on coordinates.
@@ -114,7 +114,7 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
                 None otherwise.
         """
         amenity_dict: Optional[dict] = self._amenity_json_from_lat_lon(latitude, longitude, radius, 'charging_station')
-        if amenity_dict is not None:
+        if amenity_dict is not None:  # pylint: disable=too-many-nested-blocks
             if 'osm_id' in amenity_dict and amenity_dict['osm_id'] is not None:
                 if charging_station is None:
                     charging_station = ChargingStation(name=str(amenity_dict['osm_id']), parent=None)
@@ -153,8 +153,7 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
                         if key.startswith('socket:') and key.endswith(':output'):
                             for splitted_value in value.split(';'):
                                 power: float = float(''.join(filter(str.isdigit, splitted_value)))
-                                if power > maximum_power:
-                                    maximum_power = power
+                                maximum_power = max(maximum_power, power)
                     if maximum_power == 0 and 'amperage' in amenity_dict['extratags'] and amenity_dict['extratags']['amperage'] is not None:
                         try:
                             amperage: float = float(amenity_dict['extratags']['amperage'])
@@ -181,7 +180,7 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
                     charging_station.operator_id._set_value(None)  # pylint: disable=protected-access
                 charging_station.raw._set_value(value=json.dumps(amenity_dict))  # pylint: disable=protected-access
                 return charging_station
-            elif charging_station is not None:
+            if charging_station is not None:
                 charging_station.clear()
         return None
 
