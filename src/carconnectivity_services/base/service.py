@@ -50,6 +50,6 @@ class ServiceType(Enum):
         LOCATION_GAS_STATION: Service for locating nearby gas/fuel stations.
         LOCATION_CHARGING_STATION: Service for locating nearby electric vehicle charging stations.
     """
-    LOCATION_REVERSE = "reverse_location",
-    LOCATION_GAS_STATION = "gas_station",
-    LOCATION_CHARGING_STATION = "charging_station",
+    LOCATION_REVERSE = "reverse_location"
+    LOCATION_GAS_STATION = "gas_station"
+    LOCATION_CHARGING_STATION = "charging_station"
