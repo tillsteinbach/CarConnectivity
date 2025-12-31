@@ -112,6 +112,7 @@ class ElectricDrive(GenericDrive):
     def __on_range_or_level_change(self, element: EnumAttribute, flags: Observable.ObserverEvent) -> None:
         del element
         del flags
+        # pylint: disable=too-many-boolean-expressions
         if self.range.enabled and self.level.enabled and self.range.value is not None and self.level.value is not None and self.level.value > 0 \
                 and self.battery.enabled and self.battery is not None and self.battery.available_capacity.enabled \
                 and self.battery.available_capacity.value is not None and self.battery.available_capacity.value > 0:
@@ -146,6 +147,7 @@ class CombustionDrive(GenericDrive):
     def __on_range_or_level_change(self, element: EnumAttribute, flags: Observable.ObserverEvent) -> None:
         del element
         del flags
+        # pylint: disable-next=too-many-boolean-expressions
         if self.range.enabled and self.level.enabled and self.range.value is not None and self.level.value is not None and self.level.value > 0 \
                 and self.fuel_tank.enabled and self.fuel_tank is not None and self.fuel_tank.available_capacity.enabled \
                 and self.fuel_tank.available_capacity.value is not None and self.fuel_tank.available_capacity.value > 0:
@@ -196,6 +198,7 @@ class DieselDrive(CombustionDrive):
                 self.adblue_range_estimated_full._set_value(value=new_range_estimated_full, measured=measurement_time,  # pylint: disable=protected-access
                                                             unit=self.adblue_range.unit)
 
+        # pylint: disable-next=too-many-boolean-expressions
         if self.adblue_range.enabled and self.adblue_level.enabled and self.adblue_range.value is not None and self.adblue_level.value is not None \
                 and self.adblue_level.value > 0 \
                 and self.adblue_tank.enabled and self.adblue_tank is not None and self.adblue_tank.available_capacity.enabled \

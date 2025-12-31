@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from typing import Optional
 
 
-class Location(GenericObject):  # pylint: disable=too-few-public-methods
+class Location(GenericObject):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
     """
     Represents a geographical location with various address components.
     This class stores location data including coordinates, address details, and

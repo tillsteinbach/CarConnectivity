@@ -1185,7 +1185,7 @@ class EnergyConsumptionAttribute(FloatAttribute[EnergyConsumption]):
         super().__init__(name=name, parent=parent, value=value, unit=unit, maximum=maximum, minimum=minimum, precision=precision, tags=tags)
 
     @staticmethod
-    def convert(value, from_unit: U, to_unit: U) -> T:  # pylint: disable=too-many-return-statements
+    def convert(value, from_unit: U, to_unit: U) -> T:  # pylint: disable=too-many-return-statements,too-many-branches
         """
         Convert a range value from one unit to another.
 

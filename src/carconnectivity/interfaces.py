@@ -1,3 +1,4 @@
+""" Module to define interfaces for CarConnectivity components."""
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
@@ -7,5 +8,22 @@ if TYPE_CHECKING:
 
 
 class ICarConnectivity:
+    """
+    Interface for CarConnectivity implementation.
+
+    This interface defines the contract that all CarConnectivity implementations must follow.
+    """
     def get_service_for(self, service_type: ServiceType) -> Optional[BaseService]:
+        """
+        Retrieve a service instance for the specified service type.
+        This method must be implemented by CarConnectivity to provide
+        access to specific service implementations based on the requested service type.
+        Args:
+            service_type (ServiceType): The type of service to retrieve.
+        Returns:
+            Optional[BaseService]: The service instance if available, None otherwise.
+        Raises:
+            NotImplementedError: This method must be implemented by subclasses.
+        """
+
         raise NotImplementedError("Method get_service_for() must be implemented by CarConnectivity")

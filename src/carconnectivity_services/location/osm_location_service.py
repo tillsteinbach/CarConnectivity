@@ -30,6 +30,27 @@ REQUEST_HEADERS: dict[str, str] = {
 
 
 class OSMLocationService(LocationService):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
+    """
+    OpenStreetMap (OSM) based location service implementation.
+    This service provides location-related functionality using the OpenStreetMap Nominatim API,
+    including reverse geocoding, gas station lookup, and charging station lookup.
+    The service implements rate limiting to comply with Nominatim's usage policy of maximum
+    1 request per second.
+    Attributes:
+        osm_session (requests.Session): HTTP session for making requests to OSM Nominatim API.
+        _last_request (datetime): Timestamp of the last API request to enforce rate limiting.
+    Methods:
+        get_types: Returns list of service types provided by this service.
+        location_from_lat_lon: Performs reverse geocoding to get location details from coordinates.
+        gas_station_from_lat_lon: Finds the nearest gas station within specified radius.
+        charging_station_from_lat_lon: Finds the nearest charging station within specified radius.
+        amenity_from_lat_lon: Generic method to find nearest amenity of specified type.
+        _response_to_location: Converts OSM Nominatim JSON response to Location object.
+    Note:
+        This service respects OpenStreetMap's Nominatim usage policy by enforcing a minimum
+        1-second delay between consecutive requests.
+    """
+
     def __init__(self, service_id: str, car_connectivity: CarConnectivity, log: logging.Logger) -> None:
         super().__init__(service_id, car_connectivity, log)
 
@@ -64,13 +85,62 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
         return None
 
     def gas_station_from_lat_lon(self, latitude: float, longitude: float, radius: int, location: Optional[Location] = None) -> Optional[Location]:
+        """
+        Find the nearest gas station from given coordinates.
+        Args:
+            latitude (float): The latitude coordinate to search from.
+            longitude (float): The longitude coordinate to search from.
+            radius (int): The search radius in meters.
+            location (Optional[Location], optional): An existing Location object to update. Defaults to None.
+        Returns:
+            Optional[Location]: A Location object containing gas station information if found, None otherwise.
+        """
+
         return self.amenity_from_lat_lon(latitude=latitude, longitude=longitude, radius=radius, amenity='fuel', location=location)
 
     def charging_station_from_lat_lon(self, latitude: float, longitude: float, radius: int, location: Optional[Location] = None) -> Optional[Location]:
+        """
+        Retrieve charging station information from OpenStreetMap based on coordinates.
+        Args:
+            latitude (float): The latitude coordinate of the location to search.
+            longitude (float): The longitude coordinate of the location to search.
+            radius (int): The search radius in meters around the specified coordinates.
+            location (Optional[Location], optional): An existing Location object to populate with
+                charging station data. If None, a new Location object will be created. Defaults to None.
+        Returns:
+            Optional[Location]: A Location object containing charging station information if found,
+                None otherwise.
+        """
+
         return self.amenity_from_lat_lon(latitude=latitude, longitude=longitude, radius=radius, amenity='charging_station', location=location)
 
+    # pylint: disable-next=too-many-locals,too-many-arguments,too-many-positional-arguments
     def amenity_from_lat_lon(self, latitude: float, longitude: float, radius: int, amenity: str, with_fallback: bool = False,
                              location: Optional[Location] = None) -> Optional[Location]:
+        """
+        Find the nearest amenity of a specific type within a given radius from coordinates.
+        This method searches for amenities (e.g., charging stations, parking, etc.) within a specified
+        radius from the given latitude and longitude coordinates using OpenStreetMap's Nominatim API.
+        It respects Nominatim's usage policy by ensuring at least 1 second between requests.
+        Args:
+            latitude (float): The latitude coordinate of the center point.
+            longitude (float): The longitude coordinate of the center point.
+            radius (int): The search radius in meters from the center point.
+            amenity (str): The type of amenity to search for (e.g., 'charging_station', 'parking').
+            with_fallback (bool, optional): If True, falls back to general location lookup when no
+                amenity is found within the radius. Defaults to False.
+            location (Optional[Location], optional): An existing Location object to update with the
+                amenity information. Defaults to None.
+        Returns:
+            Optional[Location]: A Location object representing the nearest amenity within the radius,
+                or None if no amenity is found. If with_fallback is True and no amenity is found,
+                returns the general location information for the coordinates.
+        Raises:
+            requests.exceptions.RetryError: Logged as an error if the API request fails after retries.
+        Note:
+            This method automatically enforces a minimum 1-second delay between consecutive requests
+            to comply with Nominatim's usage policy.
+        """
         north_west: tuple[float, float] = inverse_haversine((latitude, longitude), radius, Direction.NORTHWEST, unit=Unit.METERS)
         south_east: tuple[float, float] = inverse_haversine((latitude, longitude), radius, Direction.SOUTHEAST, unit=Unit.METERS)
         query: dict[str, float | int | str] = {
@@ -105,6 +175,7 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
             self.log.error('Could not retrieve location: %s', retry_error)
         return None
 
+    # pylint: disable-next=too-many-statements
     def _response_to_location(self, json_dict: dict, location: Optional[Location] = None) -> Optional[Location]:  # pylint: disable=too-many-branches
         """Convert a JSON response to a Location object."""
         if json_dict is not None:
