@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
     from carconnectivity_services.base.service import ServiceType
     from carconnectivity.location import Location
+    from carconnectivity.charging_station import ChargingStation
 
 
 class LocationService(BaseService):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
@@ -73,17 +74,19 @@ class LocationService(BaseService):  # pylint: disable=too-few-public-methods, t
 
         raise NotImplementedError("Method gas_station_from_lat_lon() must be implemented by service")
 
-    def charging_station_from_lat_lon(self, latitude: float, longitude: float, radius: int, location: Optional[Location]) -> Optional[Location]:
+    def charging_station_from_lat_lon(self, latitude: float, longitude: float, radius: int,
+                                      charging_station: Optional[ChargingStation]) -> Optional[ChargingStation]:
         """
         Find the nearest charging station based on latitude and longitude coordinates.
         Args:
             latitude (float): The latitude coordinate to search from.
             longitude (float): The longitude coordinate to search from.
             radius (int): The search radius in meters within which to find charging stations.
-            location (Optional[Location]): An optional Location object that may contain additional context or be updated with the found charging station
-                                           information.
+            charging_station (Optional[ChargingStation]): An optional ChargingStation object that may contain additional
+                                                          context or be updated with the found charging station information.
         Returns:
-            Optional[Location]: A Location object representing the found charging station, or None if no charging station is found within the specified radius.
+            Optional[ChargingStation]: A ChargingStation object representing the found charging station, or None if no charging
+                                       station is found within the specified radius.
         Raises:
             NotImplementedError: This method must be implemented by a subclass providing the actual service implementation.
         """

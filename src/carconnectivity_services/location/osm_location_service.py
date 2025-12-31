@@ -15,6 +15,7 @@ from haversine import haversine, Unit, inverse_haversine, Direction
 from carconnectivity_services.base.service import ServiceType
 from carconnectivity_services.location.location_service import LocationService
 from carconnectivity.location import Location
+from carconnectivity.charging_station import ChargingStation
 from carconnectivity.units import LatitudeLongitude
 
 if TYPE_CHECKING:
@@ -98,7 +99,8 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
 
         return self.amenity_from_lat_lon(latitude=latitude, longitude=longitude, radius=radius, amenity='fuel', location=location)
 
-    def charging_station_from_lat_lon(self, latitude: float, longitude: float, radius: int, location: Optional[Location] = None) -> Optional[Location]:
+    def charging_station_from_lat_lon(self, latitude: float, longitude: float, radius: int,
+                                      charging_station: Optional[ChargingStation] = None) -> Optional[ChargingStation]:
         """
         Retrieve charging station information from OpenStreetMap based on coordinates.
         Args:
@@ -111,12 +113,113 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
             Optional[Location]: A Location object containing charging station information if found,
                 None otherwise.
         """
-
-        return self.amenity_from_lat_lon(latitude=latitude, longitude=longitude, radius=radius, amenity='charging_station', location=location)
+        amenity_dict: Optional[dict] = self._amenity_json_from_lat_lon(latitude, longitude, radius, 'charging_station')
+        if amenity_dict is not None:
+            if 'osm_id' in amenity_dict and amenity_dict['osm_id'] is not None:
+                if charging_station is None:
+                    charging_station = ChargingStation(name=str(amenity_dict['osm_id']), parent=None)
+                charging_station.uid._set_value(value=str(amenity_dict['osm_id']))  # pylint: disable=protected-access
+                charging_station.source._set_value(value='OpenStreetMap')  # pylint: disable=protected-access
+                if 'osm_type' in amenity_dict and amenity_dict['osm_type'] is not None:
+                    pass  # Currently not used, but could be stored if needed
+                if 'name' in amenity_dict and amenity_dict['name'] is not None and amenity_dict['name'] != '':
+                    charging_station.name._set_value(value=amenity_dict['name'])  # pylint: disable=protected-access
+                elif 'display_name' in amenity_dict and amenity_dict['display_name'] is not None and amenity_dict['display_name'] != '':
+                    charging_station.name._set_value(value=amenity_dict['display_name'])  # pylint: disable=protected-access
+                else:
+                    charging_station.name._set_value(None)  # pylint: disable=protected-access
+                if 'lat' in amenity_dict and amenity_dict['lat'] is not None:
+                    charging_station.latitude._set_value(value=amenity_dict['lat'], unit=LatitudeLongitude.DEGREE)  # pylint: disable=protected-access
+                else:
+                    charging_station.latitude._set_value(None)  # pylint: disable=protected-access
+                if 'lon' in amenity_dict and amenity_dict['lon'] is not None:
+                    charging_station.longitude._set_value(value=amenity_dict['lon'], unit=LatitudeLongitude.DEGREE)  # pylint: disable=protected-access
+                else:
+                    charging_station.longitude._set_value(None)  # pylint: disable=protected-access
+                if 'display_name' in amenity_dict and amenity_dict['display_name'] is not None and amenity_dict['display_name'] != '':
+                    charging_station.address._set_value(value=amenity_dict['display_name'])  # pylint: disable=protected-access
+                else:
+                    charging_station.address._set_value(None)  # pylint: disable=protected-access
+                if 'extratags' in amenity_dict and amenity_dict['extratags'] is not None:
+                    if 'capacity' in amenity_dict['extratags'] and amenity_dict['extratags']['capacity'] is not None:
+                        try:
+                            charging_station.num_spots._set_value(value=int(amenity_dict['extratags']['capacity']))  # pylint: disable=protected-access
+                        except ValueError:
+                            charging_station.num_spots._set_value(None)  # pylint: disable=protected-access
+                    else:
+                        charging_station.num_spots._set_value(None)  # pylint: disable=protected-access
+                    maximum_power: float = 0
+                    for key, value in amenity_dict['extratags'].items():
+                        if key.startswith('socket:') and key.endswith(':output'):
+                            for splitted_value in value.split(';'):
+                                power: float = float(''.join(filter(str.isdigit, splitted_value)))
+                                if power > maximum_power:
+                                    maximum_power = power
+                    if maximum_power == 0 and 'amperage' in amenity_dict['extratags'] and amenity_dict['extratags']['amperage'] is not None:
+                        try:
+                            amperage: float = float(amenity_dict['extratags']['amperage'])
+                            voltage: float = 230.0  # Default voltage
+                            maximum_power: float = (amperage * voltage * 3) / 1000.0
+                            charging_station.max_power._set_value(value=maximum_power)  # pylint: disable=protected-access
+                        except ValueError:
+                            maximum_power = 0
+                    if maximum_power != 0:
+                        charging_station.max_power._set_value(value=maximum_power)  # pylint: disable=protected-access
+                    else:
+                        charging_station.max_power._set_value(None)  # pylint: disable=protected-access
+                    if 'operator' in amenity_dict['extratags'] and amenity_dict['extratags']['operator'] is not None \
+                            and amenity_dict['extratags']['operator'] != '':
+                        charging_station.operator_name._set_value(value=amenity_dict['extratags']['operator'])  # pylint: disable=protected-access
+                        charging_station.operator_id._set_value(value=amenity_dict['extratags']['operator'])  # pylint: disable=protected-access
+                    else:
+                        charging_station.operator_name._set_value(None)  # pylint: disable=protected-access
+                        charging_station.operator_id._set_value(None)  # pylint: disable=protected-access
+                else:
+                    charging_station.num_spots._set_value(None)  # pylint: disable=protected-access
+                    charging_station.max_power._set_value(None)  # pylint: disable=protected-access
+                    charging_station.operator_name._set_value(None)  # pylint: disable=protected-access
+                    charging_station.operator_id._set_value(None)  # pylint: disable=protected-access
+                charging_station.raw._set_value(value=json.dumps(amenity_dict))  # pylint: disable=protected-access
+                return charging_station
+            elif charging_station is not None:
+                charging_station.clear()
+        return None
 
     # pylint: disable-next=too-many-locals,too-many-arguments,too-many-positional-arguments
     def amenity_from_lat_lon(self, latitude: float, longitude: float, radius: int, amenity: str, with_fallback: bool = False,
                              location: Optional[Location] = None) -> Optional[Location]:
+        """
+        Find the nearest amenity of a specific type within a given radius from coordinates.
+        This method searches for amenities (e.g., charging stations, parking, etc.) within a specified
+        radius from the given latitude and longitude coordinates using OpenStreetMap's Nominatim API.
+        It respects Nominatim's usage policy by ensuring at least 1 second between requests.
+        Args:
+            latitude (float): The latitude coordinate of the center point.
+            longitude (float): The longitude coordinate of the center point.
+            radius (int): The search radius in meters from the center point.
+            amenity (str): The type of amenity to search for (e.g., 'charging_station', 'parking').
+            with_fallback (bool, optional): If True, falls back to general location lookup when no
+                amenity is found within the radius. Defaults to False.
+            location (Optional[Location], optional): An existing Location object to update with the
+                amenity information. Defaults to None.
+        Returns:
+            Optional[Location]: A Location object representing the nearest amenity within the radius,
+                or None if no amenity is found. If with_fallback is True and no amenity is found,
+                returns the general location information for the coordinates.
+        Raises:
+            requests.exceptions.RetryError: Logged as an error if the API request fails after retries.
+        Note:
+            This method automatically enforces a minimum 1-second delay between consecutive requests
+            to comply with Nominatim's usage policy.
+        """
+        amenity_json: Optional[dict] = self._amenity_json_from_lat_lon(latitude, longitude, radius, amenity)
+        if amenity_json is not None:
+            return self._response_to_location(json_dict=amenity_json, location=location)
+        if with_fallback:
+            return self.location_from_lat_lon(latitude, longitude, location)
+        return None
+
+    def _amenity_json_from_lat_lon(self, latitude: float, longitude: float, radius: int, amenity: str) -> Optional[dict]:
         """
         Find the nearest amenity of a specific type within a given radius from coordinates.
         This method searches for amenities (e.g., charging stations, parking, etc.) within a specified
@@ -149,6 +252,7 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
             'bounded': 1,
             'namedetails': 1,
             'addressdetails': 1,
+            'extratags': 1,
             'format': 'json'
         }
 
@@ -168,9 +272,7 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
                 places_distance = sorted(places_distance, key=lambda geofence: geofence[0])
                 for distance, place in places_distance:
                     if distance < radius:
-                        return self._response_to_location(json_dict=place, location=location)
-            if with_fallback:
-                return self.location_from_lat_lon(latitude, longitude, location)
+                        return place
         except requests.exceptions.RetryError as retry_error:
             self.log.error('Could not retrieve location: %s', retry_error)
         return None
@@ -194,7 +296,7 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
                     location.longitude._set_value(value=json_dict['lon'], unit=LatitudeLongitude.DEGREE)  # pylint: disable=protected-access
                 else:
                     location.longitude._set_value(None)  # pylint: disable=protected-access
-                if 'display_name' in json_dict and json_dict['display_name'] is not None:
+                if 'display_name' in json_dict and json_dict['display_name'] is not None and json_dict['display_name'] != '':
                     location.display_name._set_value(value=json_dict['display_name'])  # pylint: disable=protected-access
                 else:
                     location.display_name._set_value(None)  # pylint: disable=protected-access

@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 
 from enum import Enum
 
+from carconnectivity.interfaces import IGenericVehicle
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import StringAttribute, EnumAttribute, RangeAttribute, TemperatureAttribute, IntegerAttribute
 from carconnectivity.doors import Doors
@@ -42,7 +43,7 @@ if TYPE_CHECKING:
     from carconnectivity_connectors.base.connector import BaseConnector
 
 
-class GenericVehicle(GenericObject):  # pylint: disable=too-many-instance-attributes
+class GenericVehicle(GenericObject, IGenericVehicle):  # pylint: disable=too-many-instance-attributes
     """
     A class to represent a generic vehicle.
 

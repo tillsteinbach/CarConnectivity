@@ -27,3 +27,12 @@ class ICarConnectivity:  # pylint: disable=too-few-public-methods
         """
 
         raise NotImplementedError("Method get_service_for() must be implemented by CarConnectivity")
+
+class IGenericVehicle:  # pylint: disable=too-few-public-methods
+    """
+    Interface for Generic Vehicle implementation.
+
+    This interface defines the contract that all Generic Vehicle implementations must follow.
+    """
+    pass
+

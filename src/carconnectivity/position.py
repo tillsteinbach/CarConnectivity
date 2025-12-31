@@ -63,8 +63,10 @@ class Position(GenericObject):  # pylint: disable=too-many-instance-attributes
                         LOG.debug('Resolved location from position (%s, %s)', self.latitude.value, self.longitude.value)
                 else:
                     LOG.warning('No LocationService available to resolve location from position')
+                    self.location.clear()
             else:
                 LOG.warning('Position not in correct context of CarConnectivity, cannot resolve location')
+                self.location.clear()
         else:
             self.location.clear()
 

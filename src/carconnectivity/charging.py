@@ -4,16 +4,25 @@ Module for charging.
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+import logging
 from enum import Enum
 
+from carconnectivity.interfaces import ICarConnectivity, IGenericVehicle
+from carconnectivity.observable import Observable
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import DateAttribute, EnumAttribute, SpeedAttribute, PowerAttribute, LevelAttribute, CurrentAttribute, BooleanAttribute
 from carconnectivity.charging_connector import ChargingConnector
 from carconnectivity.commands import Commands
+from carconnectivity.charging_station import ChargingStation
+
+from carconnectivity_services.base.service import BaseService, ServiceType
+from carconnectivity_services.location.location_service import LocationService
 
 if TYPE_CHECKING:
     from typing import Optional
     from carconnectivity.vehicle import ElectricVehicle
+
+LOG: logging.Logger = logging.getLogger("carconnectivity")
 
 
 class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
@@ -38,9 +47,11 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
             self.power: PowerAttribute = origin.power
             self.power.parent = self
             self.estimated_date_reached: DateAttribute = origin.estimated_date_reached
+            self.estimated_date_reached.parent = self
             self.settings: Charging.Settings = origin.settings
             self.settings.parent = self
-            self.estimated_date_reached.parent = self
+            self.charging_station: ChargingStation = origin.charging_station
+            self.charging_station.parent = self
         else:
             if vehicle is None:
                 raise ValueError('Cannot create charging without vehicle')
@@ -56,9 +67,53 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
             self.power: PowerAttribute = PowerAttribute("power", parent=self, precision=0.1, tags={'carconnectivity'})
             self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self, tags={'carconnectivity'})
             self.settings: Charging.Settings = Charging.Settings(parent=self)
+            self.charging_station: ChargingStation = ChargingStation(name="charging_station", parent=self)
         self.delay_notifications = False
 
     # pylint: enable=duplicate-code
+
+        self.state.add_observer(self._on_state_changed, flag=(Observable.ObserverEvent.VALUE_CHANGED
+                                                              | Observable.ObserverEvent.ENABLED
+                                                              | Observable.ObserverEvent.DISABLED))
+
+    def _on_state_changed(self, element: EnumAttribute[Charging.ChargingState], flags) -> None:
+        """
+        Callback when position attributes change.
+        """
+        del flags
+        if element.enabled and element.value in [Charging.ChargingState.CHARGING,
+                                                 Charging.ChargingState.READY_FOR_CHARGING,
+                                                 Charging.ChargingState.CONSERVATION,
+                                                 Charging.ChargingState.DISCHARGING]:
+            # Get cars location
+            if self.parent is not None and isinstance(self.parent, IGenericVehicle) and self.parent.position is not None \
+                    and self.parent.position.latitude.enabled and self.parent.position.latitude.value is not None \
+                    and self.parent.position.longitude.enabled and self.parent.position.longitude.value is not None:
+                latitude: float = self.parent.position.latitude.value
+                longitude: float = self.parent.position.longitude.value
+
+                if self.parent.parent is not None and isinstance(self.parent.parent.parent, ICarConnectivity):
+                    location_service: Optional[BaseService] = self.parent.parent.parent.get_service_for(ServiceType.LOCATION_CHARGING_STATION)
+                    if location_service is not None and isinstance(location_service, LocationService):
+                        result: Optional[ChargingStation] = location_service.charging_station_from_lat_lon(
+                            latitude=latitude,
+                            longitude=longitude,
+                            radius=100,
+                            charging_station=self.charging_station
+                        )
+                        if result is not None:
+                            LOG.debug('Resolved charging station from position (%s, %s)', latitude, longitude)
+                    else:
+                        LOG.warning('No LocationService available to resolve charging station from position')
+                        self.charging_station.clear()
+                else:
+                    LOG.warning('Charging not in correct context of CarConnectivity, cannot resolve charging station')
+                    self.charging_station.clear()
+            else:
+                LOG.debug('Cannot resolve charging station, position not available')
+                self.charging_station.clear()
+        else:
+            self.charging_station.clear()
 
     class ChargingState(Enum,):
         """

@@ -64,7 +64,7 @@ class Location(GenericObject):  # pylint: disable=too-few-public-methods, too-ma
         """
         Clears all location data attributes.
         """
-
+        self.source._set_value(None)  # pylint: disable=protected-access
         self.uid._set_value(None)  # pylint: disable=protected-access
         self.latitude._set_value(None)  # pylint: disable=protected-access
         self.longitude._set_value(None)  # pylint: disable=protected-access
