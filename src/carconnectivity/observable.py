@@ -7,6 +7,8 @@ Observers can register to be notified of specific events, and the Observable cla
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+import threading
+
 from enum import IntEnum, Flag, auto
 
 if TYPE_CHECKING:
@@ -21,12 +23,14 @@ class Observable:
         if origin is not None:
             self.__observers: Set[Tuple[Callable[[Any, Observable.ObserverEvent], None],
                                         Observable.ObserverEvent, Observable.ObserverPriority, bool]] = origin.__observers  # pylint: disable=protected-access
+            self.__observers_lock: threading.RLock = origin.__observers_lock  # pylint: disable=protected-access
             self.flags_to_notify_on_transaction_end: Observable.ObserverEvent = origin.flags_to_notify_on_transaction_end
             self.__delay_notifications: bool = origin.__delay_notifications  # pylint: disable=protected-access
             self.__delayed_flags: Observable.ObserverEvent = origin.__delayed_flags  # pylint: disable=protected-access
         else:
             self.__observers: Set[Tuple[Callable[[Any, Observable.ObserverEvent], None],
                                         Observable.ObserverEvent, Observable.ObserverPriority, bool]] = set()
+            self.__observers_lock: threading.RLock = threading.RLock()
             self.flags_to_notify_on_transaction_end: Observable.ObserverEvent = Observable.ObserverEvent.NONE
             self.__delay_notifications: bool = False
             self.__delayed_flags: Observable.ObserverEvent = Observable.ObserverEvent.NONE
@@ -66,9 +70,10 @@ class Observable:
         Returns:
             None
         """
-        if priority is None:
-            priority = Observable.ObserverPriority.USER_MID  # pyright: ignore[reportAssignmentType]
-        self.__observers.add((observer, flag, priority, on_transaction_end))
+        with self.__observers_lock:
+            if priority is None:
+                priority = Observable.ObserverPriority.USER_MID  # pyright: ignore[reportAssignmentType]
+            self.__observers.add((observer, flag, priority, on_transaction_end))
 
     def remove_observer(self, observer: Callable[[Any, Observable.ObserverEvent], None], flag: Optional[Observable.ObserverEvent] = None) -> None:
         """
@@ -82,8 +87,9 @@ class Observable:
         Returns:
             None
         """
-        self.__observers = set(filter(lambda observerEntry: observerEntry[0] == observer
-                                      or (flag is not None and observerEntry[1] == flag), self.__observers))  # pyright: ignore [reportAttributeAccessIssue]
+        with self.__observers_lock:
+            self.__observers = set(filter(lambda observerEntry: observerEntry[0] == observer
+                                          or (flag is not None and observerEntry[1] == flag), self.__observers))  # pyright: ignore [reportAttributeAccessIssue]
 
     def get_observers(self, flags, on_transaction_end: bool = False) -> List[Callable[[Any, Observable.ObserverEvent], None]]:
         """
@@ -112,18 +118,19 @@ class Observable:
         Returns:
             List[Any]: A sorted list of observer entries that match the specified criteria.
         """
-        observers: Set[Tuple[Callable[[Any, Observable.ObserverEvent], None], Observable.ObserverEvent, Observable.ObserverPriority, bool]] = set()
-        for observer_entry in self.__observers:
-            observer, observerflags, priority, observer_on_transaction_complete = observer_entry
-            del observer
-            del priority
-            if (flags & observerflags) and observer_on_transaction_complete == on_transaction_end:
-                observers.add(observer_entry)
-        if entries_sorted:
-            def get_priority(entry) -> int:
-                return int(entry[2])
-            return sorted(observers, key=get_priority)
-        return list(observers)
+        with self.__observers_lock:
+            observers: Set[Tuple[Callable[[Any, Observable.ObserverEvent], None], Observable.ObserverEvent, Observable.ObserverPriority, bool]] = set()
+            for observer_entry in self.__observers:
+                observer, observerflags, priority, observer_on_transaction_complete = observer_entry
+                del observer
+                del priority
+                if (flags & observerflags) and observer_on_transaction_complete == on_transaction_end:
+                    observers.add(observer_entry)
+            if entries_sorted:
+                def get_priority(entry) -> int:
+                    return int(entry[2])
+                return sorted(observers, key=get_priority)
+            return list(observers)
     # pylint: enable=duplicate-code
 
     def notify(self, flags: Observable.ObserverEvent) -> None:

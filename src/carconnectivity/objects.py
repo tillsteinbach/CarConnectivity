@@ -11,6 +11,8 @@ Classes:
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+import threading
+
 import json
 
 from carconnectivity.attributes import GenericAttribute
@@ -55,6 +57,7 @@ class GenericObject(Observable):
             if parent is not None:
                 self.parent = parent
             self.__enabled: bool = origin.enabled
+            self.__enabled_lock: threading.RLock = origin.__enabled_lock
             if self.enabled:
                 self.notify(flags=Observable.ObserverEvent.UPDATED)
         else:
@@ -66,6 +69,7 @@ class GenericObject(Observable):
             self.__id: str = object_id
             self.__parent: Optional[GenericObject] = parent
             self.__enabled: bool = False
+            self.__enabled_lock: threading.RLock = threading.RLock()
             if parent is not None:
                 parent.children.append(self)
             self.__children: List[Union[GenericObject, GenericAttribute]] = []
@@ -227,35 +231,36 @@ class GenericObject(Observable):
         Returns:
             bool: True if the object is enabled, False otherwise.
         """
-        return self.__enabled
+        with self.__enabled_lock:
+            return self.__enabled
 
     # pylint: disable=duplicate-code
     @enabled.setter
     def enabled(self, set_enabled: bool) -> None:
+        with self.__enabled_lock:
+            if set_enabled:
+                # if the object is being enabled, we need to enable the parent first
+                if self.__parent is not None:
+                    self.__parent.enabled = True
+                # only notify if the object was not enabled before
+                if not self.__enabled:
+                    self.__enabled = True
+                    self.notify(Observable.ObserverEvent.ENABLED)
+            else:
+                # Propagate the disabled state down to the children first to have right order of notifications
+                for child in self.__children:
+                    if child.enabled:
+                        child.enabled = False
 
-        if set_enabled:
-            # if the object is being enabled, we need to enable the parent first
-            if self.__parent is not None:
-                self.__parent.enabled = True
-            # only notify if the object was not enabled before
-            if not self.__enabled:
-                self.__enabled = True
-                self.notify(Observable.ObserverEvent.ENABLED)
-        else:
-            # Propagate the disabled state down to the children first to have right order of notifications
-            for child in self.__children:
-                if child.enabled:
-                    child.enabled = False
+                # only notify if the object was enabled before
+                if self.__enabled:
+                    self.__enabled = False
+                    self.notify(Observable.ObserverEvent.DISABLED)
 
-            # only notify if the object was enabled before
-            if self.__enabled:
-                self.__enabled = False
-                self.notify(Observable.ObserverEvent.DISABLED)
-
-            # Disable parent only if all children are disabled
-            if self.__parent is not None and \
-                    all(not child.enabled for child in self.__parent.children):
-                self.__parent.enabled = False
+                # Disable parent only if all children are disabled
+                if self.__parent is not None and \
+                        all(not child.enabled for child in self.__parent.children):
+                    self.__parent.enabled = False
     # pylint: enable=duplicate-code
 
     def get_by_path(self, address_string: str) -> Union[GenericObject, GenericAttribute, Literal[False]]:

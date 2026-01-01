@@ -2,6 +2,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar, Generic, Optional
 
+import threading
+
 import logging
 import json
 
@@ -92,6 +94,10 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         self.last_updated: Optional[datetime] = None
         self.last_updated_local: Optional[datetime] = None
 
+        self.value_lock: threading.RLock = threading.RLock()
+        self.tags_lock: threading.RLock = threading.RLock()
+        self.hooks_lock: threading.RLock = threading.RLock()
+
         if value is not None:
             self._set_value(value)
 
@@ -105,7 +111,8 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             bool: True if the attribute has the tag, False otherwise.
         """
-        return tag in self.tags
+        with self.tags_lock:
+            return tag in self.tags
 
     def tag(self, tag: str) -> None:
         """
@@ -117,7 +124,8 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
-        self.tags.add(tag)
+        with self.tags_lock:
+            self.tags.add(tag)
 
     def untag(self, tag: str) -> None:
         """
@@ -129,7 +137,8 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
-        self.tags.remove(tag)
+        with self.tags_lock:
+            self.tags.remove(tag)
 
     def _add_on_set_hook(self, hook: Callable[[Self, T], T], early_hook=False) -> None:
         """
@@ -141,8 +150,9 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
-        if (hook, early_hook) not in self._on_set_hooks:
-            self._on_set_hooks.append((hook, early_hook))
+        with self.hooks_lock:
+            if (hook, early_hook) not in self._on_set_hooks:
+                self._on_set_hooks.append((hook, early_hook))
 
     def _execute_on_set_hook(self, new_value: Optional[T], early_hook=False) -> Optional[T]:
         """
@@ -154,10 +164,11 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
-        for hook, early in self._on_set_hooks:
-            if early == early_hook:
-                new_value = hook(self, new_value)
-        return new_value
+        with self.hooks_lock:
+            for hook, early in self._on_set_hooks:
+                if early == early_hook:
+                    new_value = hook(self, new_value)
+            return new_value
 
     def _remove_on_set_hook(self, hook: Callable[[Self, T], T]) -> None:
         """
@@ -169,9 +180,10 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
-        for ihook, _ in self._on_set_hooks:
-            if ihook == hook:
-                self._on_set_hooks.remove((ihook, _))
+        with self.hooks_lock:
+            for ihook, _ in self._on_set_hooks:
+                if ihook == hook:
+                    self._on_set_hooks.remove((ihook, _))
 
     def _has_on_set_hook(self, hook: Callable[[Self, T], T]) -> bool:
         """
@@ -183,10 +195,11 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             bool: True if the hook is present, False otherwise.
         """
-        for ihook, _ in self._on_set_hooks:
-            if ihook == hook:
-                return True
-        return False
+        with self.hooks_lock:
+            for ihook, _ in self._on_set_hooks:
+                if ihook == hook:
+                    return True
+            return False
 
     def get_on_set_hooks(self, early_hook=False) -> List[Callable[[Self, T], T]]:
         """
@@ -198,7 +211,8 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             List[Callable]: A list of hooks that are called when the value is set.
         """
-        return [hook for hook, early in self._on_set_hooks if early == early_hook]
+        with self.hooks_lock:
+            return [hook for hook, early in self._on_set_hooks if early == early_hook]
 
     def __del__(self) -> None:
         if self.enabled:
@@ -328,43 +342,44 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
-        flags: Observable.ObserverEvent = Observable.ObserverEvent.NONE
-        now: datetime = datetime.now(tz=timezone.utc)
-
-        if value is not None:
-            value = self.type_conversion(value)
-
-        # Value from the past
-        if self.last_updated is not None and measured is not None and self.last_updated > measured:
-            LOG.debug('Value from the past: %s: %s > %s', self.name, self.last_updated, measured)
-            return
-
-        # Value was updated
-        if self.last_updated_local != now:
-            flags |= Observable.ObserverEvent.UPDATED
-            self.last_updated_local = now
-        # Value was measured
-        if measured and self.last_updated != measured:
-            flags |= Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT
-            self.last_updated = measured or now
-        else:
-            self.last_updated = now
-        # Value was changed
-        if self.__value != value:
-            flags |= Observable.ObserverEvent.VALUE_CHANGED
-            self.__value = value
-            self.last_changed_local = now
-            self.last_changed = measured or now
+        with self.value_lock:
+            flags: Observable.ObserverEvent = Observable.ObserverEvent.NONE
+            now: datetime = datetime.now(tz=timezone.utc)
 
             if value is not None:
-                self.enabled = True
+                value = self.type_conversion(value)
+
+            # Value from the past
+            if self.last_updated is not None and measured is not None and self.last_updated > measured:
+                LOG.debug('Value from the past: %s: %s > %s', self.name, self.last_updated, measured)
+                return
+
+            # Value was updated
+            if self.last_updated_local != now:
+                flags |= Observable.ObserverEvent.UPDATED
+                self.last_updated_local = now
+            # Value was measured
+            if measured and self.last_updated != measured:
+                flags |= Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT
+                self.last_updated = measured or now
             else:
-                self.enabled = False
-        # Unit was changed
-        if unit is not None and self.__unit != unit:
-            flags |= Observable.ObserverEvent.VALUE_CHANGED
-            self.__unit = unit
-        self.notify(flags)
+                self.last_updated = now
+            # Value was changed
+            if self.__value != value:
+                flags |= Observable.ObserverEvent.VALUE_CHANGED
+                self.__value = value
+                self.last_changed_local = now
+                self.last_changed = measured or now
+
+                if value is not None:
+                    self.enabled = True
+                else:
+                    self.enabled = False
+            # Unit was changed
+            if unit is not None and self.__unit != unit:
+                flags |= Observable.ObserverEvent.VALUE_CHANGED
+                self.__unit = unit
+            self.notify(flags)
 
     def type_conversion(self, value: T) -> Any:  # pylint: disable=too-many-return-statements
         """
@@ -434,10 +449,11 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             None
         """
-        if unit is not None and self.__unit is not None:
-            self.value = self.convert(value=value, from_unit=unit, to_unit=self.__unit)
-        else:
-            self.value = value
+        with self.value_lock:
+            if unit is not None and self.__unit is not None:
+                self.value = self.convert(value=value, from_unit=unit, to_unit=self.__unit)
+            else:
+                self.value = value
 
     def in_locale(self, locale: Optional[str]) -> Tuple[Optional[Any], Optional[U]]:
         """
@@ -459,18 +475,19 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         """
         Setting the value directly is not allowed. GenericAttributes are not mutable by the user.
         """
-        # then execute all early hooks
-        new_value = self._execute_on_set_hook(new_value, early_hook=True)
-        if self._is_changeable:
-            # First bring the value to the correct type
-            if new_value is not None:
-                new_value = self.type_conversion(new_value)
-            # then execute all late hooks
-            new_value = self._execute_on_set_hook(new_value, early_hook=False)
-            # finally set the value
-            self._set_value(new_value)
-        else:
-            raise TypeError('You cannot set this attribute. Attribute is not mutable.')
+        with self.value_lock:
+            # then execute all early hooks
+            new_value = self._execute_on_set_hook(new_value, early_hook=True)
+            if self._is_changeable:
+                # First bring the value to the correct type
+                if new_value is not None:
+                    new_value = self.type_conversion(new_value)
+                # then execute all late hooks
+                new_value = self._execute_on_set_hook(new_value, early_hook=False)
+                # finally set the value
+                self._set_value(new_value)
+            else:
+                raise TypeError('You cannot set this attribute. Attribute is not mutable.')
     # pylint: enable=duplicate-code
 
     @property
