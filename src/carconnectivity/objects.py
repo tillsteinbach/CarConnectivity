@@ -57,7 +57,7 @@ class GenericObject(Observable):
             if parent is not None:
                 self.parent = parent
             self.__enabled: bool = origin.enabled
-            self.__enabled_lock: threading.RLock = origin.__enabled_lock
+            self.__enabled_lock: threading.RLock = origin.__enabled_lock  # pylint:disable=protected-access
             if self.enabled:
                 self.notify(flags=Observable.ObserverEvent.UPDATED)
         else:
