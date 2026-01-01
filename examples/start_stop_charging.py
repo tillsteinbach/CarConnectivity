@@ -78,6 +78,7 @@ def main() -> None:
         config_dict = json.load(config_file)
         print('#  Login')
         car_connectivity = carconnectivity.CarConnectivity(config=config_dict, tokenstore_file=args.tokenstorefile)
+        car_connectivity.startup()
         print('#  fetch data')
         car_connectivity.fetch_all()
         print('#  getData')
