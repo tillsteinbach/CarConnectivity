@@ -77,6 +77,7 @@ class GenericDrive(GenericObject):
                     measurement_time = datetime.now(tz=timezone.utc)
                 self.range_estimated_full._set_value(value=new_range_estimated_full, measured=measurement_time,  # pylint: disable=protected-access
                                                      unit=self.range.unit)
+                self.range_estimated_full.precision = self.range.precision
 
     # pylint: disable=duplicate-code
     class Type(Enum):
