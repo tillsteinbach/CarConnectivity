@@ -213,6 +213,10 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
                 self.__cache = {}
             except FileNotFoundError:
                 self.__cache = {}
+            except InvalidToken:
+                LOG.error('Cachefile %s cannot be decrypted will delete it and try to create a new one.', self.__cache_file)
+                os.remove(self.__cache_file)
+                self.__cache = {}
 
         if 'connectors' in config['carConnectivity']:
             for connector_config in config['carConnectivity']['connectors']:
