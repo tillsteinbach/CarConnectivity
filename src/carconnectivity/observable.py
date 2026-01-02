@@ -9,10 +9,14 @@ from typing import TYPE_CHECKING
 
 import threading
 
+import logging
+
 from enum import IntEnum, Flag, auto
 
 if TYPE_CHECKING:
     from typing import Optional, Set, Tuple, Callable, Any, List
+
+LOG: logging.Logger = logging.getLogger("carconnectivity")
 
 
 class Observable:
@@ -152,7 +156,10 @@ class Observable:
         if not self.delay_notifications:
             observers: List[Callable[[Any, Observable.ObserverEvent], None]] = self.get_observers(flags=flags, on_transaction_end=False)
             for observer in observers:
-                observer(element=self, flags=flags)
+                try:
+                    observer(element=self, flags=flags)
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    LOG.exception(e, stack_info=True)
         else:
             self.__delayed_flags |= flags
         # Remove disabled if was enabled and not yet notified, only last state to be reported
@@ -180,7 +187,10 @@ class Observable:
             observers: List[Callable[[Any, Observable.ObserverEvent], None]] = \
                 self.get_observers(flags=self.flags_to_notify_on_transaction_end, on_transaction_end=True)
             for observer in observers:
-                observer(element=self, flags=self.flags_to_notify_on_transaction_end)
+                try:
+                    observer(element=self, flags=self.flags_to_notify_on_transaction_end)
+                except Exception as e:  # pylint: disable=broad-exception-caught
+                    LOG.exception(e, stack_info=True)
             self.flags_to_notify_on_transaction_end = Observable.ObserverEvent.NONE
 
     class ObserverEvent(Flag):
