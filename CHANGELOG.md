@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.11] - 2026-01-04
+### Added
+- Support for initializing attributes on startup form static entries in the configuration
+- This version is adding experimental support for a [VWSFriend](http://github.com/tillsteinbach/vwsfriend) like user experience using [carconnectivity-plugin-database](http://github.com/tillsteinbach/carconnectivity-plugin-database) and [carconnectivity-grafana](http://github.com/tillsteinbach/carconnectivity-grafana)
+
+Warning: This is a breaking change for all connectors and plugins. Only update to this version if you use a connector that has been updated to support this feature.
+
 ## [0.10] - 2025-12-31 Happy New Year!
 ### Added
 - Check against NTP server for time synchronization
@@ -107,7 +114,8 @@ All notable changes to this project will be documented in this file.
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.10...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11...HEAD
+[0.11]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11
 [0.10]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.10
 [0.9.2]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.9.2
 [0.9.1]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.9.1
