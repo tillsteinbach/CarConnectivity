@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from typing import Optional, Union, Literal, Callable, Tuple, Set, List, Any, Dict
 
 
-class GenericObject(Observable):
+class GenericObject(Observable):  # pylint: disable=too-many-instance-attributes
     """
     A class to represent a generic object in a hierarchical structure.
 
