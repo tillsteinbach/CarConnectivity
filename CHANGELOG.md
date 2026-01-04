@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
-##[0.11.1] - 2026-01-04
+## [0.11.1] - 2026-01-04
 ### Fixed
 - Updated version requirements for all connectors and plugins
 
