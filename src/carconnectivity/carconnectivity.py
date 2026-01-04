@@ -161,6 +161,9 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
         #  Disable logging for plugins and connectors
         self.log_storage.addFilter(NoPluginsConnectorsAPIDebug())
 
+        if 'initialization' in config['carConnectivity']:
+            self.initialize(config['carConnectivity']['initialization'])
+
         if self.__tokenstore_file is not None:
             try:
                 with open(file=self.__tokenstore_file, mode='r', encoding='utf8') as file:
@@ -234,7 +237,8 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
                     connector_id = connector_config['type']
                 if connector_id in self.connectors.connectors:
                     raise ConfigurationError(f"Invalid configuration: connector '{connector_id}' is not unique, set a 'connector_id' in configuration")
-                connector: BaseConnector = connector_class(connector_id=connector_id, car_connectivity=self, config=connector_config['config'])
+                connector: BaseConnector = connector_class(connector_id=connector_id, car_connectivity=self, config=connector_config['config'],
+                                                           initialization=self.connectors.get_initialization(connector_id))
                 self.connectors.connectors[connector_id] = connector
                 features_string: str = ""
                 for feature_name, feature_status in connector.get_features().items():
@@ -263,7 +267,8 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
                     plugin_id: str = plugin_config['type']
                 if plugin_id in self.plugins.plugins:
                     raise ConfigurationError(f"Invalid configuration: connector '{plugin_id}' is not unique, set a 'connector_id' in configuration")
-                plugin: BasePlugin = plugin_class(plugin_id=plugin_id, car_connectivity=self, config=plugin_config['config'])
+                plugin: BasePlugin = plugin_class(plugin_id=plugin_id, car_connectivity=self, config=plugin_config['config'],
+                                                  initialization=self.plugins.get_initialization(plugin_id))
                 self.plugins.plugins[plugin_id] = plugin
                 features_string: str = ""
                 for feature_name, feature_status in plugin.get_features().items():
@@ -300,9 +305,6 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
             if service_type not in self.services:
                 self.services[service_type] = []
             self.services[service_type].append(osm_location_service)
-
-        if 'initialization' in config['carConnectivity']:
-            self.initialize(config['carConnectivity']['initialization'])
 
         LOG.info('CarConnectivity (Version %s) loaded%s', self.get_version(), features_string)
 

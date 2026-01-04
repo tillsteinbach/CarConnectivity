@@ -27,7 +27,8 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
             Placeholder method for shutting down the connector.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
-    def __init__(self, connector_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, api_log: Optional[logging.Logger]) -> None:
+    def __init__(self, connector_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, api_log: Optional[logging.Logger],
+                 initialization: Optional[Dict] = None) -> None:
         """
         Initializes the connector with the given CarConnectivity instance and configuration.
 
@@ -35,15 +36,19 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
             car_connectivity (CarConnectivity): The instance in which the connector is running.
             config (Dict): A dictionary containing the configuration parameters for this connector only.
         """
-        super().__init__(object_id=connector_id, parent=car_connectivity.connectors)
+        super().__init__(object_id=connector_id, parent=car_connectivity.connectors, initialization=initialization)
         self.car_connectivity: CarConnectivity = car_connectivity
         self.active_config: Dict[str, Any] = {}
         self.log_storage: LogMemoryHandler = LogMemoryHandler()
         self.api_log_storage: LogMemoryHandler = LogMemoryHandler()
-        self.log_level = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'})
-        self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
-        self.last_update: DateAttribute = DateAttribute(name="last_update", parent=self, tags={'carconnectivity'})
-        self.healthy: BooleanAttribute = BooleanAttribute(name="healthy", parent=self, tags={'carconnectivity'})
+        self.log_level: StringAttribute = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'},
+                                                          initialization=self.get_initialization('log_level'))
+        self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'},
+                                       initialization=self.get_initialization('version'))
+        self.last_update: DateAttribute = DateAttribute(name="last_update", parent=self, tags={'carconnectivity'},
+                                                        initialization=self.get_initialization('last_update'))
+        self.healthy: BooleanAttribute = BooleanAttribute(name="healthy", parent=self, tags={'carconnectivity'},
+                                                          initialization=self.get_initialization('healthy'))
 
         # Configure logging
         if 'log_level' in config and config['log_level'] is not None:

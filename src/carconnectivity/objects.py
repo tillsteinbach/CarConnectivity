@@ -84,7 +84,7 @@ class GenericObject(Observable):
     def was_initialized(self) -> bool:
         return self.__initialized
 
-    def get_initialization(self, child: Optional[str]) -> Optional[Dict[str, Any]]:
+    def get_initialization(self, child: Optional[str] = None) -> Optional[Dict[str, Any]]:
         if child is not None:
             if self.__initialization is not None and child in self.__initialization:
                 return self.__initialization[child]

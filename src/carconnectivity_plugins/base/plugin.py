@@ -11,7 +11,7 @@ from carconnectivity.errors import ConfigurationError
 from carconnectivity.util import LogMemoryHandler
 
 if TYPE_CHECKING:
-    from typing import Dict, Any
+    from typing import Optional, Dict, Any
 
     from carconnectivity.carconnectivity import CarConnectivity
 
@@ -26,7 +26,7 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         shutdown() -> None:
             Placeholder method for shutting down the plugin.
     """
-    def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger) -> None:
+    def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, initialization: Optional[Dict] = None) -> None:
         """
         Initializes the connector with the given CarConnectivity instance and configuration.
 
@@ -34,13 +34,16 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
             car_connectivity (CarConnectivity): The instance in which the plugin is running.
             config (Dict): A dictionary containing the configuration parameters for this plugin only.
         """
-        super().__init__(object_id=plugin_id, parent=car_connectivity.plugins)
+        super().__init__(object_id=plugin_id, parent=car_connectivity.plugins, initialization=initialization)
         self.car_connectivity: CarConnectivity = car_connectivity
         self.active_config: Dict[str, Any] = {}
         self.log_storage: LogMemoryHandler = LogMemoryHandler()
-        self.log_level = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'})
-        self.version = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'})
-        self.healthy: BooleanAttribute = BooleanAttribute(name="healthy", parent=self, tags={'carconnectivity'})
+        self.log_level: StringAttribute = StringAttribute(name="log_level", parent=self, tags={'carconnectivity'},
+                                                          initialization=self.get_initialization('log_level'))
+        self.version: StringAttribute = StringAttribute(name="version", parent=self, value=self.get_version(), tags={'carconnectivity'},
+                                                        initialization=self.get_initialization('version'))
+        self.healthy: BooleanAttribute = BooleanAttribute(name="healthy", parent=self, tags={'carconnectivity'},
+                                                          initialization=self.get_initialization('healthy'))
         self.log: logging.Logger = log
 
         # Configure logging

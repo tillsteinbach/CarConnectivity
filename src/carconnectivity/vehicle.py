@@ -114,7 +114,7 @@ class GenericVehicle(GenericObject, IGenericVehicle):  # pylint: disable=too-man
                 raise ValueError('Cannot create vehicle without VIN')
             if garage is None:
                 raise ValueError('Cannot create vehicle without garage')
-            super().__init__(object_id=vin.upper(), parent=garage)
+            super().__init__(object_id=vin.upper(), parent=garage, initialization=initialization)
             self.delay_notifications = True
             if vin is None:
                 raise ValueError('VIN cannot be None')
