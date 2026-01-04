@@ -105,9 +105,35 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             self.initialize(initialization)
 
     def was_initialized(self) -> bool:
+        """
+        Check if the attribute has been initialized.
+        Returns:
+            bool: True if the attribute has been initialized, False otherwise.
+        """
+
         return self.__initialized
 
     def initialize(self, initialization: dict[str, Any] | T) -> None:
+        """
+        Initialize the attribute with the provided data.
+        Args:
+            initialization: Either a dictionary containing initialization data with keys:
+                - 'val': The value to set for the attribute
+                - 'uni': The unit to set (optional, requires unit_type to be defined)
+                - 'upd': The last update timestamp in ISO format string (optional)
+                Or a direct value of type T to be converted and set.
+        Returns:
+            None
+        Raises:
+            None (warnings are logged for invalid data)
+        Notes:
+            - If initialization is a dict without 'val' key, a warning is logged
+            - If 'uni' is provided but no unit_type is defined, a warning is logged
+            - If 'upd' format is invalid, a warning is logged
+            - The 'Z' timezone indicator in timestamps is automatically converted to '+00:00'
+            - Sets the __initialized flag to True after processing
+        """
+
         if isinstance(initialization, dict):
             if 'val' in initialization:
                 self._set_value(self.type_conversion(initialization['val']))
@@ -717,6 +743,7 @@ class BooleanAttribute(GenericAttribute[bool, None]):
     """
     A class used to represent a Boolean Attribute.
     """
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[bool] = None,
                  tags: Optional[Set[str]] = None, initialization: Optional[Dict] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=bool, unit=None, tags=tags, initialization=initialization)
@@ -754,7 +781,7 @@ class FloatAttribute(GenericAttribute[float, U]):
     """
     A class used to represent a float Attribute.
     """
-    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Optional[U] = None,
                  maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
                  tags: Optional[Set[str]] = None, initialization: Optional[Dict] = None) -> None:
@@ -785,7 +812,7 @@ class EnumAttribute(Generic[T], GenericAttribute[T, None]):
     """
     A class used to represent a Enum Attribute.
     """
-    # pylint: disable=too-many-arguments, too-many-positional-arguments
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[Enum] = None, value_type: Type[Enum] = Enum,
                  tags: Optional[Set[str]] = None, initialization: Optional[Dict] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=value_type, unit=None, tags=tags, initialization=initialization)
@@ -798,6 +825,7 @@ class StringAttribute(GenericAttribute[str, None]):
     """
     A class used to represent a String Attribute.
     """
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[str] = None,
                  tags: Optional[Set[str]] = None, initialization: Optional[Dict] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=str, unit=None, tags=tags, initialization=initialization)
@@ -807,6 +835,7 @@ class DateAttribute(GenericAttribute[datetime, None]):
     """
     A class used to represent a Date Attribute.
     """
+    # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[datetime] = None,
                  tags: Optional[Set[str]] = None, initialization: Optional[Dict] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=datetime, unit=None, tags=tags, initialization=initialization)

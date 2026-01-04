@@ -26,6 +26,7 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
         shutdown() -> None:
             Placeholder method for shutting down the plugin.
     """
+    # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, initialization: Optional[Dict] = None) -> None:
         """
         Initializes the connector with the given CarConnectivity instance and configuration.

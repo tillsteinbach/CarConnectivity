@@ -54,7 +54,7 @@ class GenericVehicle(GenericObject, IGenericVehicle):  # pylint: disable=too-man
     license_plate : StringAttribute
         The license plate of the vehicle.
     """
-    # pylint: disable-next=too-many-statements,duplicate-code
+    # pylint: disable-next=too-many-statements,duplicate-code,too-many-arguments,too-many-positional-arguments
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
                  origin: Optional[GenericVehicle] = None, initialization: Optional[Dict] = None) -> None:
         if origin is not None:
@@ -273,6 +273,7 @@ class ElectricVehicle(GenericVehicle):
     """
     Represents an electric vehicle.
     """
+    # pylint: disable-next=too-many-arguments,too-many-positional-arguments
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
                  origin: Optional[GenericVehicle] = None, initialization: Optional[Dict] = None) -> None:
         if origin is not None:
@@ -304,6 +305,7 @@ class CombustionVehicle(GenericVehicle):
     """
     Represents an combustion vehicle.
     """
+    # pylint: disable-next=too-many-arguments,too-many-positional-arguments
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
                  origin: Optional[GenericVehicle] = None, initialization: Optional[Dict] = None) -> None:
         if origin is not None:
@@ -329,6 +331,7 @@ class HybridVehicle(ElectricVehicle, CombustionVehicle):
     """
     Represents a hybrid vehicle.
     """
+    # pylint: disable-next=too-many-arguments,too-many-positional-arguments
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
                  origin: Optional[GenericVehicle] = None, initialization: Optional[Dict] = None) -> None:
         if origin is not None:

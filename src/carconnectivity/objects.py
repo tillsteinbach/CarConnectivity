@@ -82,9 +82,25 @@ class GenericObject(Observable):
                 self.initialize(initialization)
 
     def was_initialized(self) -> bool:
+        """
+        Check if the object has been initialized.
+        Returns:
+            bool: True if the object has been initialized, False otherwise.
+        """
+
         return self.__initialized
 
     def get_initialization(self, child: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        """
+        Retrieve initialization data for the object or a specific child.
+        Args:
+            child (Optional[str], optional): The name of the child object to retrieve initialization data for.
+                If None, returns initialization data for the entire object. Defaults to None.
+        Returns:
+            Optional[Dict[str, Any]]: A dictionary containing initialization data if found, None otherwise.
+                When child is specified, returns only that child's initialization data.
+                When child is None, returns the complete initialization dictionary.
+        """
         if child is not None:
             if self.__initialization is not None and child in self.__initialization:
                 return self.__initialization[child]
@@ -92,6 +108,20 @@ class GenericObject(Observable):
         return self.__initialization
 
     def initialize(self, initialization: Dict[str, Any]) -> None:
+        """
+        Initialize the object with the provided initialization data.
+        This method recursively initializes the object and its children with values from the initialization dictionary.
+        Only children that haven't been initialized yet will be processed.
+        Args:
+            initialization (Dict[str, Any]): A dictionary containing initialization data where keys correspond to
+                                             child IDs and values contain the initialization data for each child.
+        Returns:
+            None
+        Note:
+            - The method stores the initialization data internally for future reference.
+            - Only GenericAttribute and GenericObject children that have not been previously initialized will be updated.
+            - Child objects are matched by their ID against the keys in the initialization dictionary.
+        """
         self.__initialization = initialization
         for child in self.__children:
             if child.id in initialization:
@@ -100,6 +130,9 @@ class GenericObject(Observable):
                     child.initialize(init_value)
                 elif isinstance(child, GenericObject) and not child.was_initialized():
                     child.initialize(init_value)
+                else:
+                    raise ValueError(f'Cannot initialize child {child.id} of type {type(child)}')
+        self.__initialized = True
 
     def __str__(self) -> str:
         return_string: str = ''
