@@ -10,6 +10,7 @@ from carconnectivity.units import Length
 
 
 if TYPE_CHECKING:
+    from typing import Optional, Dict
     from carconnectivity.vehicle import GenericVehicle
 
 
@@ -17,9 +18,13 @@ class Maintenance(GenericObject):
     """
     Represents the maintenance of a vehicle.
     """
-    def __init__(self, vehicle: GenericVehicle) -> None:
-        super().__init__(object_id='maintenance', parent=vehicle)
-        self.inspection_due_at = DateAttribute('inspection_due_at', parent=self, tags={'carconnectivity'})
-        self.inspection_due_after = RangeAttribute('inspection_due_after', parent=self, tags={'carconnectivity'}, unit=Length.KM, precision=0.1)
-        self.oil_service_due_at = DateAttribute('oil_service_due_at', parent=self, tags={'carconnectivity'})
-        self.oil_service_due_after = RangeAttribute('oil_service_due_after', parent=self, tags={'carconnectivity'}, unit=Length.KM, precision=0.1)
+    def __init__(self, vehicle: GenericVehicle, initialization: Optional[Dict] = None) -> None:
+        super().__init__(object_id='maintenance', parent=vehicle, initialization=initialization)
+        self.inspection_due_at = DateAttribute('inspection_due_at', parent=self, tags={'carconnectivity'},
+                                               initialization=self.get_initialization('inspection_due_at'))
+        self.inspection_due_after = RangeAttribute('inspection_due_after', parent=self, tags={'carconnectivity'}, unit=Length.KM, precision=0.1,
+                                                   initialization=self.get_initialization('inspection_due_after'))
+        self.oil_service_due_at = DateAttribute('oil_service_due_at', parent=self, tags={'carconnectivity'},
+                                                initialization=self.get_initialization('oil_service_due_at'))
+        self.oil_service_due_after = RangeAttribute('oil_service_due_after', parent=self, tags={'carconnectivity'}, unit=Length.KM, precision=0.1,
+                                                    initialization=self.get_initialization('oil_service_due_after'))

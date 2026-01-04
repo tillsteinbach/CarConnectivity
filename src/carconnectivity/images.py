@@ -14,8 +14,8 @@ class Images(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
     A class to represent all vehicle images.
     """
-    def __init__(self, vehicle: Optional[GenericVehicle] = None) -> None:
+    def __init__(self, vehicle: Optional[GenericVehicle] = None, initialization: Optional[Dict] = None) -> None:
         if vehicle is None:
             raise ValueError('Cannot create images without vehicle')
-        super().__init__(object_id='images', parent=vehicle)
+        super().__init__(object_id='images', parent=vehicle, initialization=initialization)
         self.images: Dict[str, ImageAttribute] = {}

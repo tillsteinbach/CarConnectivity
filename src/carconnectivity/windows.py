@@ -16,11 +16,12 @@ class Windows(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
     A class to represent all windows in the vehicle.
     """
-    def __init__(self, vehicle: Optional[GenericVehicle] = None) -> None:
+    def __init__(self, vehicle: Optional[GenericVehicle] = None, initialization: Optional[Dict] = None) -> None:
         if vehicle is None:
             raise ValueError('Cannot create windows without vehicle')
-        super().__init__(object_id='windows', parent=vehicle)
-        self.open_state = EnumAttribute("open_state", self, tags={'carconnectivity'})
+        super().__init__(object_id='windows', parent=vehicle, initialization=initialization)
+        self.open_state: EnumAttribute[Windows.OpenState] = EnumAttribute("open_state", self, value_type=Windows.OpenState, tags={'carconnectivity'},
+                                                                          initialization=self.get_initialization('open_state'))
         self.windows: Dict[str, Windows.Window] = {}
 
     # pylint: disable=duplicate-code
@@ -40,7 +41,8 @@ class Windows(GenericObject):  # pylint: disable=too-many-instance-attributes
         """
         A class to represent a window in the vehicle.
         """
-        def __init__(self, window_id: str, windows: Windows) -> None:
-            super().__init__(object_id=window_id, parent=windows)
+        def __init__(self, window_id: str, windows: Windows, initialization: Optional[Dict] = None) -> None:
+            super().__init__(object_id=window_id, parent=windows, initialization=initialization)
             self.window_id: str = window_id
-            self.open_state = EnumAttribute("open_state", self, tags={'carconnectivity'})
+            self.open_state: EnumAttribute[Windows.OpenState] = EnumAttribute("open_state", self, value_type=Windows.OpenState, tags={'carconnectivity'},
+                                                                              initialization=self.get_initialization('open_state'))

@@ -27,7 +27,7 @@ except ImportError:
     pass
 
 if TYPE_CHECKING:
-    from typing import Optional, Union, Literal, Callable, Tuple, Set, List, Any
+    from typing import Optional, Union, Literal, Callable, Tuple, Set, List, Any, Dict
 
 
 class GenericObject(Observable):
@@ -45,7 +45,8 @@ class GenericObject(Observable):
     enabled : bool
         A flag indicating whether the object is enabled or not.
     """
-    def __init__(self, object_id: Optional[str] = None, parent: Optional[GenericObject] = None, origin: Optional[GenericObject] = None) -> None:
+    def __init__(self, object_id: Optional[str] = None, parent: Optional[GenericObject] = None, origin: Optional[GenericObject] = None,
+                 initialization: Optional[Dict[str, Any]] = None) -> None:
         if origin is not None:
             super().__init__(origin=origin)
             self.__id: str = origin.id
@@ -58,6 +59,8 @@ class GenericObject(Observable):
                 self.parent = parent
             self.__enabled: bool = origin.enabled
             self.__enabled_lock: threading.RLock = origin.__enabled_lock  # pylint:disable=protected-access
+            self.__initialized: bool = origin.__initialized  # pylint:disable=protected-access
+            self.__initialization: Optional[Dict[str, Any]] = origin.__initialization  # pylint:disable=protected-access
             if self.enabled:
                 self.notify(flags=Observable.ObserverEvent.UPDATED)
         else:
@@ -70,9 +73,33 @@ class GenericObject(Observable):
             self.__parent: Optional[GenericObject] = parent
             self.__enabled: bool = False
             self.__enabled_lock: threading.RLock = threading.RLock()
+            self.__initialized: bool = False
+            self.__initialization: Optional[Dict[str, Any]] = initialization
             if parent is not None:
                 parent.children.append(self)
             self.__children: List[Union[GenericObject, GenericAttribute]] = []
+            if initialization is not None:
+                self.initialize(initialization)
+
+    def was_initialized(self) -> bool:
+        return self.__initialized
+
+    def get_initialization(self, child: Optional[str]) -> Optional[Dict[str, Any]]:
+        if child is not None:
+            if self.__initialization is not None and child in self.__initialization:
+                return self.__initialization[child]
+            return None
+        return self.__initialization
+
+    def initialize(self, initialization: Dict[str, Any]) -> None:
+        self.__initialization = initialization
+        for child in self.__children:
+            if child.id in initialization:
+                init_value = initialization[child.id]
+                if isinstance(child, GenericAttribute) and not child.was_initialized():
+                    child.initialize(init_value)
+                elif isinstance(child, GenericObject) and not child.was_initialized():
+                    child.initialize(init_value)
 
     def __str__(self) -> str:
         return_string: str = ''

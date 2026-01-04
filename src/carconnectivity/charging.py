@@ -19,7 +19,7 @@ from carconnectivity_services.base.service import BaseService, ServiceType
 from carconnectivity_services.location.location_service import LocationService
 
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Dict
     from carconnectivity.vehicle import ElectricVehicle
 
 LOG: logging.Logger = logging.getLogger("carconnectivity")
@@ -30,9 +30,9 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
     A class to represent the charging of a vehicle.
     """
     # pylint: disable=duplicate-code
-    def __init__(self, vehicle: Optional[ElectricVehicle] = None,  origin: Optional[Charging] = None) -> None:
+    def __init__(self, vehicle: Optional[ElectricVehicle] = None,  origin: Optional[Charging] = None, initialization: Optional[Dict] = None) -> None:
         if origin is not None:
-            super().__init__(parent=vehicle, origin=origin)
+            super().__init__(parent=vehicle, origin=origin, initialization=initialization)
             self.delay_notifications = True
             self.commands: Commands = origin.commands
             self.commands.parent = self
@@ -55,19 +55,23 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
         else:
             if vehicle is None:
                 raise ValueError('Cannot create charging without vehicle')
-            super().__init__(object_id='charging', parent=vehicle)
+            super().__init__(object_id='charging', parent=vehicle, initialization=initialization)
             self.delay_notifications = True
             self.commands: Commands = Commands(parent=self)
             self.connector: ChargingConnector = ChargingConnector(charging=self)
             self.state: EnumAttribute[Charging.ChargingState] = EnumAttribute("state", parent=self, value_type=Charging.ChargingState,
-                                                                              tags={'carconnectivity'})
+                                                                              tags={'carconnectivity'}, initialization=self.get_initialization('state'))
             self.type: EnumAttribute[Charging.ChargingType] = EnumAttribute("type", parent=self, value_type=Charging.ChargingType,
-                                                                            tags={'carconnectivity'})
-            self.rate: SpeedAttribute = SpeedAttribute("rate", parent=self, precision=0.1, tags={'carconnectivity'})
-            self.power: PowerAttribute = PowerAttribute("power", parent=self, precision=0.1, tags={'carconnectivity'})
-            self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self, tags={'carconnectivity'})
-            self.settings: Charging.Settings = Charging.Settings(parent=self)
-            self.charging_station: ChargingStation = ChargingStation(name="charging_station", parent=self)
+                                                                            tags={'carconnectivity'}, initialization=self.get_initialization('type'))
+            self.rate: SpeedAttribute = SpeedAttribute("rate", parent=self, precision=0.1, tags={'carconnectivity'},
+                                                       initialization=self.get_initialization('rate'))
+            self.power: PowerAttribute = PowerAttribute("power", parent=self, precision=0.1, tags={'carconnectivity'},
+                                                        initialization=self.get_initialization('power'))
+            self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", parent=self, tags={'carconnectivity'},
+                                                                       initialization=self.get_initialization('estimated_date_reached'))
+            self.settings: Charging.Settings = Charging.Settings(parent=self, initialization=self.get_initialization('settings'))
+            self.charging_station: ChargingStation = ChargingStation(name="charging_station", parent=self,
+                                                                     initialization=self.get_initialization('charging_station'))
         self.delay_notifications = False
 
     # pylint: enable=duplicate-code
@@ -162,9 +166,9 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
         """
         This class represents the settings for car  charging.
         """
-        def __init__(self, parent: Optional[GenericObject] = None, origin: Optional[Charging.Settings] = None) -> None:
+        def __init__(self, parent: Optional[GenericObject] = None, origin: Optional[Charging.Settings] = None, initialization: Optional[Dict] = None) -> None:
             if origin is not None:
-                super().__init__(parent=parent, origin=origin)
+                super().__init__(parent=parent, origin=origin, initialization=initialization)
                 self.target_level: LevelAttribute = origin.target_level
                 self.target_level.parent = self
                 self.maximum_current: CurrentAttribute = origin.maximum_current
@@ -172,7 +176,10 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
                 self.auto_unlock: BooleanAttribute = origin.auto_unlock
                 self.auto_unlock.parent = self
             else:
-                super().__init__(object_id="settings", parent=parent)
-                self.target_level: LevelAttribute = LevelAttribute("target_level", parent=self, precision=0.1, tags={'carconnectivity'})
-                self.maximum_current: CurrentAttribute = CurrentAttribute("maximum_current", parent=self, precision=0.1, tags={'carconnectivity'})
-                self.auto_unlock: BooleanAttribute = BooleanAttribute("auto_unlock", parent=self, tags={'carconnectivity'})
+                super().__init__(object_id="settings", parent=parent, initialization=initialization)
+                self.target_level: LevelAttribute = LevelAttribute("target_level", parent=self, precision=0.1, tags={'carconnectivity'},
+                                                                   initialization=self.get_initialization('target_level'))
+                self.maximum_current: CurrentAttribute = CurrentAttribute("maximum_current", parent=self, precision=0.1, tags={'carconnectivity'},
+                                                                          initialization=self.get_initialization('maximum_current'))
+                self.auto_unlock: BooleanAttribute = BooleanAttribute("auto_unlock", parent=self, tags={'carconnectivity'},
+                                                                      initialization=self.get_initialization('auto_unlock'))

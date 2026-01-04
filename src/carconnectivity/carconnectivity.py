@@ -301,6 +301,9 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
                 self.services[service_type] = []
             self.services[service_type].append(osm_location_service)
 
+        if 'initialization' in config['carConnectivity']:
+            self.initialize(config['carConnectivity']['initialization'])
+
         LOG.info('CarConnectivity (Version %s) loaded%s', self.get_version(), features_string)
 
     def fetch_all(self) -> None:

@@ -26,8 +26,8 @@ class UpdateCommand(GenericCommand):
     Command (Enum): Enum class representing different commands for triggering updates
 
     """
-    def __init__(self, name: str = 'update', parent: Optional[GenericObject] = None) -> None:
-        super().__init__(name=name, parent=parent)
+    def __init__(self, name: str = 'update', parent: Optional[GenericObject] = None, initialization: Optional[Dict] = None) -> None:
+        super().__init__(name=name, parent=parent, initialization=initialization)
 
     @property
     def value(self) -> Optional[Union[str, Dict]]:
@@ -88,8 +88,8 @@ class ClimatizationStartStopCommand(GenericCommand):
     Command (Enum): Enum class representing different commands for climatization.
 
     """
-    def __init__(self, name: str = 'start-stop', parent: Optional[GenericObject] = None) -> None:
-        super().__init__(name=name, parent=parent)
+    def __init__(self, name: str = 'start-stop', parent: Optional[GenericObject] = None, initialization: Optional[Dict] = None) -> None:
+        super().__init__(name=name, parent=parent, initialization=initialization)
 
     @property
     def value(self) -> Optional[Union[str, Dict]]:
@@ -167,8 +167,8 @@ class ChargingStartStopCommand(GenericCommand):
     Command (Enum): Enum class representing different commands for charging.
 
     """
-    def __init__(self, name: str = 'start-stop', parent: Optional[GenericObject] = None) -> None:
-        super().__init__(name=name, parent=parent)
+    def __init__(self, name: str = 'start-stop', parent: Optional[GenericObject] = None, initialization: Optional[Dict] = None) -> None:
+        super().__init__(name=name, parent=parent, initialization=initialization)
 
     @property
     def value(self) -> Optional[Union[str, Dict]]:
@@ -227,8 +227,9 @@ class HonkAndFlashCommand(GenericCommand):
     """
     HonkAndFlashCommand is a command class for honking and flashing the lights.
     """
-    def __init__(self, name: str = 'honk-flash', parent: Optional[GenericObject] = None, with_duration: bool = False) -> None:
-        super().__init__(name=name, parent=parent)
+    def __init__(self, name: str = 'honk-flash', parent: Optional[GenericObject] = None, with_duration: bool = False,
+                 initialization: Optional[Dict] = None) -> None:
+        super().__init__(name=name, parent=parent, initialization=initialization)
         self.with_duration: bool = with_duration
 
     @property
@@ -295,8 +296,8 @@ class LockUnlockCommand(GenericCommand):
     Command (Enum): Enum class representing different commands for locking.
 
     """
-    def __init__(self, name: str = 'lock-unlock', parent: Optional[GenericObject] = None) -> None:
-        super().__init__(name=name, parent=parent)
+    def __init__(self, name: str = 'lock-unlock', parent: Optional[GenericObject] = None, initialization: Optional[Dict] = None) -> None:
+        super().__init__(name=name, parent=parent, initialization=initialization)
 
     @property
     def value(self) -> Optional[Union[str, Dict]]:
@@ -358,8 +359,8 @@ class WakeSleepCommand(GenericCommand):
     Command (Enum): Enum class representing different commands for wake/sleep.
 
     """
-    def __init__(self, name: str = 'wake-sleep', parent: Optional[GenericObject] = None) -> None:
-        super().__init__(name=name, parent=parent)
+    def __init__(self, name: str = 'wake-sleep', parent: Optional[GenericObject] = None, initialization: Optional[Dict] = None) -> None:
+        super().__init__(name=name, parent=parent, initialization=initialization)
 
     @property
     def value(self) -> Optional[Union[str, Dict]]:
@@ -423,8 +424,8 @@ class WindowHeatingStartStopCommand(GenericCommand):
     Command (Enum): Enum class representing different commands for window heating.
 
     """
-    def __init__(self, name: str = 'start-stop', parent: Optional[GenericObject] = None) -> None:
-        super().__init__(name=name, parent=parent)
+    def __init__(self, name: str = 'start-stop', parent: Optional[GenericObject] = None, initialization: Optional[Dict] = None) -> None:
+        super().__init__(name=name, parent=parent, initialization=initialization)
 
     @property
     def value(self) -> Optional[Union[str, Dict]]:

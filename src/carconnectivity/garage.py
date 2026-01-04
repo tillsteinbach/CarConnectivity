@@ -18,8 +18,8 @@ class Garage(GenericObject):
     """
     A class to represent a garage that can hold multiple vehicles.
     """
-    def __init__(self, parent) -> None:
-        super().__init__(object_id='garage', parent=parent)
+    def __init__(self, parent, initialization: Optional[Dict] = None) -> None:
+        super().__init__(object_id='garage', parent=parent, initialization=initialization)
         self.delay_notifications = True
         self._vehicles: Dict[str, GenericVehicle] = {}
         self.enabled = True

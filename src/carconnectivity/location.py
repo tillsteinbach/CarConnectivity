@@ -7,7 +7,7 @@ from carconnectivity.attributes import StringAttribute, FloatAttribute
 from carconnectivity.units import LatitudeLongitude
 
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Dict
 
 
 class Location(GenericObject):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
@@ -37,28 +37,32 @@ class Location(GenericObject):  # pylint: disable=too-few-public-methods, too-ma
         state_district (Optional[str]): State district name.
         raw (Optional[str]): Raw location data from the source service.
     """
-    def __init__(self, name: str, parent: Optional[GenericObject]) -> None:
-        super().__init__(object_id=name, parent=parent)
+    def __init__(self, name: str, parent: Optional[GenericObject], initialization: Optional[Dict] = None) -> None:
+        super().__init__(object_id=name, parent=parent, initialization=initialization)
 
-        self.source: StringAttribute = StringAttribute("source", parent=self, tags={'carconnectivity'})
-        self.uid: StringAttribute = StringAttribute("uid", parent=self, tags={'carconnectivity'})
+        self.source: StringAttribute = StringAttribute("source", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('source'))
+        self.uid: StringAttribute = StringAttribute("uid", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('uid'))
         self.latitude: FloatAttribute = FloatAttribute("latitude", parent=self, minimum=-90, maximum=90, unit=LatitudeLongitude.DEGREE, precision=0.000001,
-                                                       tags={'carconnectivity'})
+                                                       tags={'carconnectivity'}, initialization=self.get_initialization('latitude'))
         self.longitude: FloatAttribute = FloatAttribute("longitude", parent=self, minimum=-180, maximum=180, unit=LatitudeLongitude.DEGREE, precision=0.000001,
-                                                        tags={'carconnectivity'})
-        self.display_name: StringAttribute = StringAttribute("display_name", parent=self, tags={'carconnectivity'})
-        self.name: StringAttribute = StringAttribute("name", parent=self, tags={'carconnectivity'})
-        self.amenity: StringAttribute = StringAttribute("amenity", parent=self, tags={'carconnectivity'})
-        self.house_number: StringAttribute = StringAttribute("house_number", parent=self, tags={'carconnectivity'})
-        self.road: StringAttribute = StringAttribute("road", parent=self, tags={'carconnectivity'})
-        self.neighbourhood: StringAttribute = StringAttribute("neighbourhood", parent=self, tags={'carconnectivity'})
-        self.city: StringAttribute = StringAttribute("city", parent=self, tags={'carconnectivity'})
-        self.postcode: StringAttribute = StringAttribute("postcode", parent=self, tags={'carconnectivity'})
-        self.county: StringAttribute = StringAttribute("county", parent=self, tags={'carconnectivity'})
-        self.country: StringAttribute = StringAttribute("country", parent=self, tags={'carconnectivity'})
-        self.state: StringAttribute = StringAttribute("state", parent=self, tags={'carconnectivity'})
-        self.state_district: StringAttribute = StringAttribute("state_district", parent=self, tags={'carconnectivity'})
-        self.raw: StringAttribute = StringAttribute("raw", parent=self, tags={'carconnectivity'})
+                                                        tags={'carconnectivity'}, initialization=self.get_initialization('longitude'))
+        self.display_name: StringAttribute = StringAttribute("display_name", parent=self, tags={'carconnectivity'},
+                                                             initialization=self.get_initialization('display_name'))
+        self.name: StringAttribute = StringAttribute("name", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('name'))
+        self.amenity: StringAttribute = StringAttribute("amenity", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('amenity'))
+        self.house_number: StringAttribute = StringAttribute("house_number", parent=self, tags={'carconnectivity'},
+                                                             initialization=self.get_initialization('house_number'))
+        self.road: StringAttribute = StringAttribute("road", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('road'))
+        self.neighbourhood: StringAttribute = StringAttribute("neighbourhood", parent=self, tags={'carconnectivity'},
+                                                              initialization=self.get_initialization('neighbourhood'))
+        self.city: StringAttribute = StringAttribute("city", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('city'))
+        self.postcode: StringAttribute = StringAttribute("postcode", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('postcode'))
+        self.county: StringAttribute = StringAttribute("county", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('county'))
+        self.country: StringAttribute = StringAttribute("country", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('country'))
+        self.state: StringAttribute = StringAttribute("state", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('state'))
+        self.state_district: StringAttribute = StringAttribute("state_district", parent=self, tags={'carconnectivity'},
+                                                               initialization=self.get_initialization('state_district'))
+        self.raw: StringAttribute = StringAttribute("raw", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('raw'))
 
     def clear(self) -> None:
         """

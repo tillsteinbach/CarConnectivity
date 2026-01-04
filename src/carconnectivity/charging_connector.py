@@ -9,7 +9,7 @@ from enum import Enum
 from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import EnumAttribute
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Dict
     from carconnectivity.charging import Charging
 
 
@@ -17,17 +17,21 @@ class ChargingConnector(GenericObject):  # pylint: disable=too-many-instance-att
     """
     A class to represent the charging connector of a vehicle.
     """
-    def __init__(self, charging: Optional[Charging] = None) -> None:
+    def __init__(self, charging: Optional[Charging] = None, initialization: Optional[Dict] = None) -> None:
         if charging is None:
             raise ValueError('Cannot create connector without charging')
-        super().__init__(object_id='connector', parent=charging)
+        super().__init__(object_id='connector', parent=charging, initialization=initialization)
         self.delay_notifications = True
-        self.connection_state: EnumAttribute = EnumAttribute("connection_state", parent=self, value_type=ChargingConnector.ChargingConnectorConnectionState,
-                                                             tags={'carconnectivity'})
-        self.lock_state: EnumAttribute = EnumAttribute("lock_state", parent=self, value_type=ChargingConnector.ChargingConnectorLockState,
-                                                       tags={'carconnectivity'})
-        self.external_power: EnumAttribute = EnumAttribute("external_power", parent=self, value_type=ChargingConnector.ExternalPower,
-                                                           tags={'carconnectivity'})
+        self.connection_state: EnumAttribute[ChargingConnector.ChargingConnectorConnectionState] = \
+            EnumAttribute("connection_state", parent=self, value_type=ChargingConnector.ChargingConnectorConnectionState, tags={'carconnectivity'},
+                          initialization=self.get_initialization('connection_state'))
+        self.lock_state: EnumAttribute[ChargingConnector.ChargingConnectorLockState] = \
+            EnumAttribute("lock_state", parent=self, value_type=ChargingConnector.ChargingConnectorLockState, tags={'carconnectivity'},
+                          initialization=self.get_initialization('lock_state'))
+        self.external_power: EnumAttribute[ChargingConnector.ExternalPower] = EnumAttribute("external_power", parent=self,
+                                                                                            value_type=ChargingConnector.ExternalPower,
+                                                                                            tags={'carconnectivity'},
+                                                                                            initialization=self.get_initialization('external_power'))
         self.delay_notifications = False
 
     class ChargingConnectorConnectionState(Enum,):

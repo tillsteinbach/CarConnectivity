@@ -37,7 +37,7 @@ except ImportError:
 # pylint: enable=duplicate-code
 
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Dict
     from carconnectivity.garage import Garage
 
     from carconnectivity_connectors.base.connector import BaseConnector
@@ -56,9 +56,9 @@ class GenericVehicle(GenericObject, IGenericVehicle):  # pylint: disable=too-man
     """
     # pylint: disable-next=too-many-statements,duplicate-code
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
-                 origin: Optional[GenericVehicle] = None) -> None:
+                 origin: Optional[GenericVehicle] = None, initialization: Optional[Dict] = None) -> None:
         if origin is not None:
-            super().__init__(parent=garage, origin=origin)
+            super().__init__(parent=garage, origin=origin, initialization=initialization)
             self.delay_notifications = True
             self.commands: Commands = origin.commands
             self.commands.parent = self
@@ -119,29 +119,38 @@ class GenericVehicle(GenericObject, IGenericVehicle):  # pylint: disable=too-man
             if vin is None:
                 raise ValueError('VIN cannot be None')
             self.commands: Commands = Commands(parent=self)
-            self.vin = StringAttribute("vin", self, vin.upper(), tags={'carconnectivity'})
-            self.name = StringAttribute("name", self, tags={'carconnectivity'})
-            self.manufacturer = StringAttribute("manufacturer", self, tags={'carconnectivity'})
-            self.model = StringAttribute("model", self, tags={'carconnectivity'})
-            self.model_year = IntegerAttribute("model_year", self, tags={'carconnectivity'})
-            self.type = EnumAttribute("type", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.Type)
-            self.license_plate = StringAttribute("license_plate", self, tags={'carconnectivity'})
+            self.vin: StringAttribute = StringAttribute("vin", self, vin.upper(), tags={'carconnectivity'}, initialization=self.get_initialization('vin'))
+            self.name: StringAttribute = StringAttribute("name", self, tags={'carconnectivity'}, initialization=self.get_initialization('name'))
+            self.manufacturer: StringAttribute = StringAttribute("manufacturer", self, tags={'carconnectivity'},
+                                                                 initialization=self.get_initialization('manufacturer'))
+            self.model: StringAttribute = StringAttribute("model", self, tags={'carconnectivity'}, initialization=self.get_initialization('model'))
+            self.model_year: IntegerAttribute = IntegerAttribute("model_year", self, tags={'carconnectivity'},
+                                                                 initialization=self.get_initialization('model_year'))
+            self.type: EnumAttribute[GenericVehicle.Type] = EnumAttribute("type", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.Type,
+                                                                          initialization=self.get_initialization('type'))
+            self.license_plate: StringAttribute = StringAttribute("license_plate", self, tags={'carconnectivity'},
+                                                                  initialization=self.get_initialization('license_plate'))
             self.odometer: RangeAttribute = RangeAttribute(name="odometer", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
-                                                           tags={'carconnectivity'})
-            self.state = EnumAttribute("state", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.State)
-            self.connection_state = EnumAttribute("connection_state", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.ConnectionState)
-            self.drives: Drives = Drives(vehicle=self)
-            self.doors: Doors = Doors(vehicle=self)
-            self.windows: Windows = Windows(vehicle=self)
-            self.lights: Lights = Lights(vehicle=self)
-            self.software: Software = Software(vehicle=self)
-            self.position: Position = Position(parent=self)
-            self.climatization: Climatization = Climatization(vehicle=self)
-            self.window_heatings: WindowHeatings = WindowHeatings(vehicle=self)
+                                                           tags={'carconnectivity'}, initialization=self.get_initialization('odometer'))
+            self.state: EnumAttribute[GenericVehicle.State] = EnumAttribute("state", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.State,
+                                                                            initialization=self.get_initialization('state'))
+            self.connection_state: EnumAttribute[GenericVehicle.ConnectionState] = EnumAttribute("connection_state", parent=self, tags={'carconnectivity'},
+                                                                                                 value_type=GenericVehicle.ConnectionState,
+                                                                                                 initialization=self.get_initialization('connection_state'))
+            self.drives: Drives = Drives(vehicle=self, initialization=self.get_initialization('drives'))
+            self.doors: Doors = Doors(vehicle=self, initialization=self.get_initialization('doors'))
+            self.windows: Windows = Windows(vehicle=self, initialization=self.get_initialization('windows'))
+            self.lights: Lights = Lights(vehicle=self, initialization=self.get_initialization('lights'))
+            self.software: Software = Software(vehicle=self, initialization=self.get_initialization('software'))
+            self.position: Position = Position(parent=self, initialization=self.get_initialization('position'))
+            self.climatization: Climatization = Climatization(vehicle=self, initialization=self.get_initialization('climatization'))
+            self.window_heatings: WindowHeatings = WindowHeatings(vehicle=self, initialization=self.get_initialization('window_heating'))
             self.outside_temperature: TemperatureAttribute = TemperatureAttribute("outside_temperature", parent=self, minimum=-40, maximum=85, precision=0.1,
-                                                                                  tags={'carconnectivity'})
-            self.specification: GenericVehicle.VehicleSpecification = GenericVehicle.VehicleSpecification(vehicle=self)
-            self.maintenance: Maintenance = Maintenance(vehicle=self)
+                                                                                  tags={'carconnectivity'},
+                                                                                  initialization=self.get_initialization('outside_temperature'))
+            self.specification: GenericVehicle.VehicleSpecification = \
+                GenericVehicle.VehicleSpecification(vehicle=self, initialization=self.get_initialization('specification'))
+            self.maintenance: Maintenance = Maintenance(vehicle=self, initialization=self.get_initialization('maintenance'))
             if SUPPORT_IMAGES:
                 self.images: Images = Images(vehicle=self)
 
@@ -169,21 +178,25 @@ class GenericVehicle(GenericObject, IGenericVehicle):  # pylint: disable=too-man
         """
         A class to represent the specification of a vehicle.
         """
-        def __init__(self, vehicle: Optional[GenericVehicle] = None, origin: Optional[GenericVehicle.VehicleSpecification] = None) -> None:
+        def __init__(self, vehicle: Optional[GenericVehicle] = None, origin: Optional[GenericVehicle.VehicleSpecification] = None,
+                     initialization: Optional[Dict] = None) -> None:
             if origin is not None:
-                super().__init__(origin=origin)
+                super().__init__(origin=origin, initialization=initialization)
                 self.steering_wheel_position: EnumAttribute = origin.steering_wheel_position
                 self.steering_wheel_position.parent = self
             else:
                 if vehicle is None:
                     raise ValueError('Cannot create specification without vehicle')
-                super().__init__(object_id='specification', parent=vehicle)
+                super().__init__(object_id='specification', parent=vehicle, initialization=initialization)
                 self.delay_notifications = True
-                self.steering_wheel_position: EnumAttribute = EnumAttribute("steering_wheel_position", parent=self,
-                                                                            value_type=GenericVehicle.VehicleSpecification.SteeringPosition,
-                                                                            tags={'carconnectivity'})
-                self.gearbox: EnumAttribute = EnumAttribute("gearbox", parent=self, value_type=GenericVehicle.VehicleSpecification.GearboxType,
-                                                            tags={'carconnectivity'})
+                self.steering_wheel_position: EnumAttribute[GenericVehicle.VehicleSpecification.SteeringPosition] = \
+                    EnumAttribute("steering_wheel_position", parent=self,
+                                  value_type=GenericVehicle.VehicleSpecification.SteeringPosition,
+                                  tags={'carconnectivity'},
+                                  initialization=self.get_initialization('steering_wheel_position'))
+                self.gearbox: EnumAttribute[GenericVehicle.VehicleSpecification.GearboxType] = \
+                    EnumAttribute("gearbox", parent=self, value_type=GenericVehicle.VehicleSpecification.GearboxType, tags={'carconnectivity'},
+                                  initialization=self.get_initialization('gearbox'))
                 self.delay_notifications = False
 
         class SteeringPosition(Enum):
@@ -261,17 +274,17 @@ class ElectricVehicle(GenericVehicle):
     Represents an electric vehicle.
     """
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
-                 origin: Optional[GenericVehicle] = None) -> None:
+                 origin: Optional[GenericVehicle] = None, initialization: Optional[Dict] = None) -> None:
         if origin is not None:
-            super().__init__(garage=garage, origin=origin)
+            super().__init__(garage=garage, origin=origin, initialization=initialization)
             if isinstance(origin, ElectricVehicle):
                 self.charging: Charging = origin.charging
                 self.charging.parent = self
             else:
                 self.charging: Charging = Charging(vehicle=self)
         else:
-            super().__init__(vin=vin, garage=garage, managing_connector=managing_connector)
-            self.charging: Charging = Charging(vehicle=self)
+            super().__init__(vin=vin, garage=garage, managing_connector=managing_connector, initialization=initialization)
+            self.charging: Charging = Charging(vehicle=self, initialization=self.get_initialization('charging'))
 
     def get_electric_drive(self) -> Optional[ElectricDrive]:
         """
@@ -292,11 +305,11 @@ class CombustionVehicle(GenericVehicle):
     Represents an combustion vehicle.
     """
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
-                 origin: Optional[GenericVehicle] = None) -> None:
+                 origin: Optional[GenericVehicle] = None, initialization: Optional[Dict] = None) -> None:
         if origin is not None:
-            super().__init__(garage=garage, origin=origin)
+            super().__init__(garage=garage, origin=origin, initialization=initialization)
         else:
-            super().__init__(vin=vin, garage=garage, managing_connector=managing_connector)
+            super().__init__(vin=vin, garage=garage, managing_connector=managing_connector, initialization=initialization)
 
     def get_combustion_drive(self) -> Optional[CombustionDrive]:
         """
@@ -317,8 +330,8 @@ class HybridVehicle(ElectricVehicle, CombustionVehicle):
     Represents a hybrid vehicle.
     """
     def __init__(self, vin: Optional[str] = None, garage: Optional[Garage] = None, managing_connector: Optional[BaseConnector] = None,
-                 origin: Optional[GenericVehicle] = None) -> None:
+                 origin: Optional[GenericVehicle] = None, initialization: Optional[Dict] = None) -> None:
         if origin is not None:
-            super().__init__(garage=garage, origin=origin)
+            super().__init__(garage=garage, origin=origin, initialization=initialization)
         else:
-            super().__init__(vin=vin, garage=garage, managing_connector=managing_connector)
+            super().__init__(vin=vin, garage=garage, managing_connector=managing_connector, initialization=initialization)

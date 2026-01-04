@@ -16,7 +16,7 @@ from carconnectivity_services.base.service import ServiceType
 from carconnectivity_services.location.location_service import LocationService
 
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Dict
 
 LOG: logging.Logger = logging.getLogger("carconnectivity")
 
@@ -25,19 +25,20 @@ class Position(GenericObject):  # pylint: disable=too-many-instance-attributes
     """
     A class to represent a position.
     """
-    def __init__(self, parent: Optional[GenericObject] = None) -> None:
-        super().__init__(object_id='position', parent=parent)
-        self.position_type: EnumAttribute = EnumAttribute("position_type", parent=self, value_type=Position.PositionType,
-                                                          tags={'carconnectivity'})
+    def __init__(self, parent: Optional[GenericObject] = None, initialization: Optional[Dict] = None) -> None:
+        super().__init__(object_id='position', parent=parent, initialization=initialization)
+        self.position_type: EnumAttribute[Position.PositionType] = EnumAttribute("position_type", parent=self, value_type=Position.PositionType,
+                                                                                 tags={'carconnectivity'},
+                                                                                 initialization=self.get_initialization('position_type'))
         self.latitude: FloatAttribute = FloatAttribute("latitude", parent=self, minimum=-90, maximum=90, unit=LatitudeLongitude.DEGREE, precision=0.000001,
-                                                       tags={'carconnectivity'})
+                                                       tags={'carconnectivity'}, initialization=self.get_initialization('latitude'))
         self.longitude: FloatAttribute = FloatAttribute("longitude", parent=self, minimum=-180, maximum=180, unit=LatitudeLongitude.DEGREE, precision=0.000001,
-                                                        tags={'carconnectivity'})
+                                                        tags={'carconnectivity'}, initialization=self.get_initialization('longitude'))
         self.altitude: RangeAttribute = RangeAttribute("altitude", parent=self, minimum=-1000, maximum=10000, unit=Length.M, precision=0.1,
-                                                       tags={'carconnectivity'})
+                                                       tags={'carconnectivity'}, initialization=self.get_initialization('altitude'))
         self.heading: FloatAttribute = FloatAttribute("heading", parent=self, minimum=0, maximum=360, unit=Heading.DEGREE, precision=0.1,
-                                                      tags={'carconnectivity'})
-        self.location: Location = Location(name="position_location", parent=self)
+                                                      tags={'carconnectivity'}, initialization=self.get_initialization('heading'))
+        self.location: Location = Location(name="position_location", parent=self, initialization=self.get_initialization('position_location'))
 
         self.longitude.add_observer(self._on_position_changed, flag=(Observable.ObserverEvent.VALUE_CHANGED
                                                                      | Observable.ObserverEvent.ENABLED

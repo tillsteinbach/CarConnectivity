@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from carconnectivity.objects import GenericObject
 
 if TYPE_CHECKING:
-    from typing import Dict
+    from typing import Optional, Dict
 
     from carconnectivity.carconnectivity import CarConnectivity
 
@@ -18,6 +18,6 @@ class Plugins(GenericObject):
     """
     Represents the collection of plugins.
     """
-    def __init__(self, car_connectivity: CarConnectivity) -> None:
-        super().__init__(object_id='plugins', parent=car_connectivity)
+    def __init__(self, car_connectivity: CarConnectivity, initialization: Optional[Dict] = None) -> None:
+        super().__init__(object_id='plugins', parent=car_connectivity, initialization=initialization)
         self.plugins: Dict[str, BasePlugin] = {}

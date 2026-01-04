@@ -7,7 +7,7 @@ from carconnectivity.attributes import StringAttribute, FloatAttribute, IntegerA
 from carconnectivity.units import LatitudeLongitude, Power
 
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Dict
 
 
 class ChargingStation(GenericObject):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
@@ -31,23 +31,26 @@ class ChargingStation(GenericObject):  # pylint: disable=too-few-public-methods,
         operator_name (StringAttribute): Name of the charging station operator.
         raw (StringAttribute): Raw data from the source system.
     """
-    def __init__(self, name: str, parent: Optional[GenericObject]) -> None:
-        super().__init__(object_id=name, parent=parent)
+    def __init__(self, name: str, parent: Optional[GenericObject], initialization: Optional[Dict] = None) -> None:
+        super().__init__(object_id=name, parent=parent, initialization=initialization)
 
-        self.source: StringAttribute = StringAttribute("source", parent=self, tags={'carconnectivity'})
-        self.uid: StringAttribute = StringAttribute("uid", parent=self, tags={'carconnectivity'})
-        self.name: StringAttribute = StringAttribute("name", parent=self, tags={'carconnectivity'})
+        self.source: StringAttribute = StringAttribute("source", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('source'))
+        self.uid: StringAttribute = StringAttribute("uid", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('uid'))
+        self.name: StringAttribute = StringAttribute("name", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('name'))
         self.latitude: FloatAttribute = FloatAttribute("latitude", parent=self, minimum=-90, maximum=90, unit=LatitudeLongitude.DEGREE, precision=0.000001,
-                                                       tags={'carconnectivity'})
+                                                       tags={'carconnectivity'}, initialization=self.get_initialization('latitude'))
         self.longitude: FloatAttribute = FloatAttribute("longitude", parent=self, minimum=-180, maximum=180, unit=LatitudeLongitude.DEGREE, precision=0.000001,
-                                                        tags={'carconnectivity'})
-        self.address: StringAttribute = StringAttribute("address", parent=self, tags={'carconnectivity'})
+                                                        tags={'carconnectivity'}, initialization=self.get_initialization('longitude'))
+        self.address: StringAttribute = StringAttribute("address", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('address'))
         self.max_power: FloatAttribute = FloatAttribute("max_power", parent=self, minimum=0, unit=Power.KW, precision=0.1,
-                                                        tags={'carconnectivity'})
-        self.num_spots: IntegerAttribute = IntegerAttribute("num_spots", parent=self, minimum=0, tags={'carconnectivity'})
-        self.operator_id: StringAttribute = StringAttribute("operator_id", parent=self, tags={'carconnectivity'})
-        self.operator_name: StringAttribute = StringAttribute("operator_name", parent=self, tags={'carconnectivity'})
-        self.raw: StringAttribute = StringAttribute("raw", parent=self, tags={'carconnectivity'})
+                                                        tags={'carconnectivity'}, initialization=self.get_initialization('max_power'))
+        self.num_spots: IntegerAttribute = IntegerAttribute("num_spots", parent=self, minimum=0, tags={'carconnectivity'},
+                                                            initialization=self.get_initialization('num_spots'))
+        self.operator_id: StringAttribute = StringAttribute("operator_id", parent=self, tags={'carconnectivity'},
+                                                            initialization=self.get_initialization('operator_id'))
+        self.operator_name: StringAttribute = StringAttribute("operator_name", parent=self, tags={'carconnectivity'},
+                                                              initialization=self.get_initialization('operator_name'))
+        self.raw: StringAttribute = StringAttribute("raw", parent=self, tags={'carconnectivity'}, initialization=self.get_initialization('raw'))
 
     def clear(self) -> None:
         """

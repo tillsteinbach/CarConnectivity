@@ -27,10 +27,10 @@ class Drives(GenericObject):
     """
     Represents the drives of a vehicle.
     """
-    def __init__(self, vehicle: GenericVehicle) -> None:
-        super().__init__(object_id='drives', parent=vehicle)
+    def __init__(self, vehicle: GenericVehicle, initialization: Optional[Dict] = None) -> None:
+        super().__init__(object_id='drives', parent=vehicle, initialization=initialization)
         self.total_range: RangeAttribute = RangeAttribute(name="total_range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
-                                                          tags={'carconnectivity'})
+                                                          tags={'carconnectivity'}, initialization=self.get_initialization('total_range'))
         self.drives: Dict[str, GenericDrive] = {}
 
     def add_drive(self, drive: GenericDrive) -> None:
@@ -49,16 +49,19 @@ class GenericDrive(GenericObject):
     """
     A class to represent a generic drive.
     """
-    def __init__(self, drive_id: str, drives: Drives) -> None:
-        super().__init__(object_id=drive_id, parent=drives)
-        self.type: EnumAttribute = EnumAttribute(name="type", parent=self, value=None, tags={'carconnectivity'})
+    def __init__(self, drive_id: str, drives: Drives, initialization: Optional[Dict] = None) -> None:
+        super().__init__(object_id=drive_id, parent=drives, initialization=initialization)
+        self.type: EnumAttribute[GenericDrive.Type] = EnumAttribute(name="type", parent=self, value=None, tags={'carconnectivity'},
+                                                                    value_type=GenericDrive.Type, initialization=self.get_initialization('type'))
         self.range: RangeAttribute = RangeAttribute(name="range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
-                                                    tags={'carconnectivity'})
+                                                    tags={'carconnectivity'}, initialization=self.get_initialization('range'))
         self.range_estimated_full: RangeAttribute = RangeAttribute(name="range_estimated_full", parent=self, value=None, unit=Length.UNKNOWN, minimum=0,
-                                                                   precision=0.1, tags={'carconnectivity'})
+                                                                   precision=0.1, tags={'carconnectivity'},
+                                                                   initialization=self.get_initialization('range_estimated_full'))
         self.range_wltp: RangeAttribute = RangeAttribute(name="range_wltp", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
-                                                         tags={'carconnectivity'})
-        self.level: LevelAttribute = LevelAttribute(name="level", parent=self, value=None, minimum=0, precision=0.1, tags={'carconnectivity'})
+                                                         tags={'carconnectivity'}, initialization=self.get_initialization('range_wltp'))
+        self.level: LevelAttribute = LevelAttribute(name="level", parent=self, value=None, minimum=0, precision=0.1, tags={'carconnectivity'},
+                                                    initialization=self.get_initialization('level'))
         self.enabled = True
 
         self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
@@ -100,12 +103,13 @@ class ElectricDrive(GenericDrive):
     """
     Represents an electric drive.
     """
-    def __init__(self, drive_id: str, drives: Drives) -> None:
-        super().__init__(drive_id=drive_id, drives=drives)
-        self.battery: Battery = Battery(drive=self)
+    def __init__(self, drive_id: str, drives: Drives, initialization: Optional[Dict] = None) -> None:
+        super().__init__(drive_id=drive_id, drives=drives, initialization=initialization)
+        self.battery: Battery = Battery(drive=self, initialization=self.get_initialization('battery'))
         self.consumption: EnergyConsumptionAttribute = EnergyConsumptionAttribute(name="consumption", parent=self, value=None,
                                                                                   unit=EnergyConsumption.UNKNOWN,
-                                                                                  minimum=0, precision=0.01, tags={'carconnectivity'})
+                                                                                  minimum=0, precision=0.01, tags={'carconnectivity'},
+                                                                                  initialization=self.get_initialization('consumption'))
 
         self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
         self.level.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
@@ -135,12 +139,13 @@ class CombustionDrive(GenericDrive):
     """
     Represents an combustion drive.
     """
-    def __init__(self, drive_id: str, drives: Drives) -> None:
-        super().__init__(drive_id=drive_id, drives=drives)
-        self.fuel_tank: FuelTank = FuelTank(drive=self)
+    def __init__(self, drive_id: str, drives: Drives, initialization: Optional[Dict] = None) -> None:
+        super().__init__(drive_id=drive_id, drives=drives, initialization=initialization)
+        self.fuel_tank: FuelTank = FuelTank(drive=self, initialization=self.get_initialization('fuel_tank'))
         self.consumption: FuelConsumptionAttribute = FuelConsumptionAttribute(name="consumption", parent=self, value=None,
                                                                               unit=FuelConsumption.UNKNOWN,
-                                                                              minimum=0, precision=0.1, tags={'carconnectivity'})
+                                                                              minimum=0, precision=0.1, tags={'carconnectivity'},
+                                                                              initialization=self.get_initialization('consumption'))
 
         self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
         self.level.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
@@ -170,19 +175,21 @@ class DieselDrive(CombustionDrive):
     """
     Represents a diesel combustion drive.
     """
-    def __init__(self, drive_id: str, drives: Drives) -> None:
-        super().__init__(drive_id=drive_id, drives=drives)
-        self.adblue_tank: FuelTank = FuelTank(drive=self)
+    def __init__(self, drive_id: str, drives: Drives, initialization: Optional[Dict] = None) -> None:
+        super().__init__(drive_id=drive_id, drives=drives, initialization=initialization)
+        self.adblue_tank: FuelTank = FuelTank(drive=self, initialization=self.get_initialization('adblue_tank'))
         self.adblue_range: RangeAttribute = RangeAttribute(name="adblue_range", parent=self, value=None, unit=Length.UNKNOWN, minimum=0, precision=0.1,
-                                                           tags={'carconnectivity'})
+                                                           tags={'carconnectivity'}, initialization=self.get_initialization('adblue_range'))
         self.adblue_level: LevelAttribute = LevelAttribute(name="adblue_level", parent=self, value=None, minimum=0, precision=0.1,
-                                                           tags={'carconnectivity'})
+                                                           tags={'carconnectivity'}, initialization=self.get_initialization('adblue_level'))
         self.adblue_range_estimated_full: RangeAttribute = RangeAttribute(name="adblue_range_estimated_full", parent=self, value=None,
                                                                           unit=Length.UNKNOWN, minimum=0, precision=0.1,
-                                                                          tags={'carconnectivity'})
-        self.adblue_consumption: FuelConsumptionAttribute = FuelConsumptionAttribute(name="consumption", parent=self, value=None,
+                                                                          tags={'carconnectivity'},
+                                                                          initialization=self.get_initialization('adblue_range_estimated_full'))
+        self.adblue_consumption: FuelConsumptionAttribute = FuelConsumptionAttribute(name="adblue_consumption", parent=self, value=None,
                                                                                      unit=FuelConsumption.UNKNOWN,
-                                                                                     minimum=0, precision=0.01, tags={'carconnectivity'})
+                                                                                     minimum=0, precision=0.01, tags={'carconnectivity'},
+                                                                                     initialization=self.get_initialization('adblue_consumption'))
 
         self.adblue_range.add_observer(self.__on_adblue_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)
         self.adblue_level.add_observer(self.__on_adblue_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT, on_transaction_end=True)

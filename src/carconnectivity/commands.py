@@ -21,8 +21,8 @@ class Commands(GenericObject):
         object_id (str): The object ID of the commands object.
         parent (GenericObject): The parent object of the commands object.
     """
-    def __init__(self, object_id: str = "commands", parent: Optional[GenericObject] = None) -> None:
-        super().__init__(object_id=object_id, parent=parent)
+    def __init__(self, object_id: str = "commands", parent: Optional[GenericObject] = None, initialization: Optional[Dict] = None) -> None:
+        super().__init__(object_id=object_id, parent=parent, initialization=initialization)
         self.commands: Dict[str, GenericCommand] = {}
 
     def add_command(self, command: GenericCommand) -> None:
@@ -56,6 +56,6 @@ class GenericCommand(GenericAttribute[Union[str, Dict], None]):
         name (str): The name of the command.
         parent (GenericObject): The parent object of the command.
     """
-    def __init__(self, name: str, parent: Optional[GenericObject]) -> None:
-        super().__init__(name=name, parent=parent, value=None, unit=None)
+    def __init__(self, name: str, parent: Optional[GenericObject], initialization: Optional[Dict] = None) -> None:
+        super().__init__(name=name, parent=parent, value=None, unit=None, initialization=initialization)
         self._is_changeable: bool = True

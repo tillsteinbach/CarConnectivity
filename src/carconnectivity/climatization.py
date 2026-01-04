@@ -9,7 +9,7 @@ from carconnectivity.attributes import EnumAttribute, TemperatureAttribute, Date
 from carconnectivity.commands import Commands
 
 if TYPE_CHECKING:
-    from typing import Optional
+    from typing import Optional, Dict
 
     from carconnectivity.vehicle import GenericVehicle
 
@@ -18,9 +18,9 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
     """
     A class to represent a climatization.
     """
-    def __init__(self, vehicle: Optional[GenericVehicle] = None, origin: Optional[Climatization] = None) -> None:
+    def __init__(self, vehicle: Optional[GenericVehicle] = None, origin: Optional[Climatization] = None, initialization: Optional[Dict] = None) -> None:
         if origin is not None:
-            super().__init__(origin=origin)
+            super().__init__(origin=origin, initialization=initialization)
             self.commands: Commands = origin.commands
             self.commands.parent = self
             self.state: EnumAttribute = origin.state
@@ -29,19 +29,23 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
             self.estimated_date_reached.parent = self
             self.settings: Climatization.Settings = Climatization.Settings(origin=origin.settings)
         else:
-            super().__init__(object_id='climatization', parent=vehicle)
-            self.commands: Commands = Commands(parent=self)
-            self.state: EnumAttribute = EnumAttribute("state", self, value_type=Climatization.ClimatizationState, tags={'carconnectivity'})
-            self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", self, tags={'carconnectivity'})
-            self.settings: Climatization.Settings = Climatization.Settings(parent=self)
+            super().__init__(object_id='climatization', parent=vehicle, initialization=initialization)
+            self.commands: Commands = Commands("commands", parent=self, initialization=self.get_initialization('commands'))
+            self.state: EnumAttribute[Climatization.ClimatizationState] = EnumAttribute("state", self, value_type=Climatization.ClimatizationState,
+                                                                                        tags={'carconnectivity'},
+                                                                                        initialization=self.get_initialization('state'))
+            self.estimated_date_reached: DateAttribute = DateAttribute("estimated_date_reached", self, tags={'carconnectivity'},
+                                                                       initialization=self.get_initialization('estimated_date_reached'))
+            self.settings: Climatization.Settings = Climatization.Settings(parent=self, initialization=self.get_initialization('settings'))
 
     class Settings(GenericObject):
         """
         This class represents the settings for car  charging.
         """
-        def __init__(self, parent: Optional[GenericObject] = None, origin: Optional[Climatization.Settings] = None) -> None:
+        def __init__(self, parent: Optional[GenericObject] = None, origin: Optional[Climatization.Settings] = None,
+                     initialization: Optional[Dict] = None) -> None:
             if origin is not None:
-                super().__init__(parent=parent, origin=origin)
+                super().__init__(parent=parent, origin=origin, initialization=initialization)
                 self.commands: Commands = origin.commands
                 self.commands.parent = self
                 self.target_temperature: TemperatureAttribute = origin.target_temperature
@@ -57,16 +61,23 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
                 self.heater_source: EnumAttribute = origin.heater_source
                 self.heater_source.parent = self
             else:
-                super().__init__(object_id="settings", parent=parent)
+                super().__init__(object_id="settings", parent=parent, initialization=initialization)
                 self.commands: Commands = Commands(parent=self)
-                self.target_temperature: TemperatureAttribute = TemperatureAttribute("target_temperature", parent=self, precision=0.1, tags={'carconnectivity'})
-                self.window_heating: BooleanAttribute = BooleanAttribute("window_heating", parent=self, tags={'carconnectivity'})
-                self.seat_heating: BooleanAttribute = BooleanAttribute("seat_heating", parent=self, tags={'carconnectivity'})
-                self.climatization_at_unlock: BooleanAttribute = BooleanAttribute("climatization_at_unlock", parent=self, tags={'carconnectivity'})
-                self.climatization_without_external_power: BooleanAttribute = BooleanAttribute("climatization_without_external_power", parent=self,
-                                                                                               tags={'carconnectivity'})
-                self.heater_source: EnumAttribute = EnumAttribute("heater_source", parent=self, value_type=Climatization.Settings.HeaterSource,
-                                                                  tags={'carconnectivity'})
+                self.target_temperature: TemperatureAttribute = TemperatureAttribute("target_temperature", parent=self, precision=0.1, tags={'carconnectivity'},
+                                                                                     initialization=self.get_initialization('target_temperature'))
+                self.window_heating: BooleanAttribute = BooleanAttribute("window_heating", parent=self, tags={'carconnectivity'},
+                                                                         initialization=self.get_initialization('window_heating'))
+                self.seat_heating: BooleanAttribute = BooleanAttribute("seat_heating", parent=self, tags={'carconnectivity'},
+                                                                       initialization=self.get_initialization('seat_heating'))
+                self.climatization_at_unlock: BooleanAttribute = BooleanAttribute("climatization_at_unlock", parent=self, tags={'carconnectivity'},
+                                                                                  initialization=self.get_initialization('climatization_at_unlock'))
+                self.climatization_without_external_power: BooleanAttribute = \
+                    BooleanAttribute("climatization_without_external_power", parent=self, tags={'carconnectivity'},
+                                     initialization=self.get_initialization('climatization_without_external_power'))
+                self.heater_source: EnumAttribute[Climatization.Settings.HeaterSource] = EnumAttribute("heater_source", parent=self,
+                                                                                                       value_type=Climatization.Settings.HeaterSource,
+                                                                                                       tags={'carconnectivity'},
+                                                                                                       initialization=self.get_initialization('heater_source'))
 
         class HeaterSource(Enum,):
             """
