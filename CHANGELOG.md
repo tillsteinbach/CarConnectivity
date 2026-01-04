@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+##[0.11.1] - 2026-01-04
+### Fixed
+- Updated version requirements for all connectors and plugins
+
 ## [0.11] - 2026-01-04
 ### Added
 - Support for initializing attributes on startup form static entries in the configuration
@@ -114,7 +118,8 @@ Warning: This is a breaking change for all connectors and plugins. Only update t
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.1...HEAD
+[0.11.1]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.1
 [0.11]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11
 [0.10]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.10
 [0.9.2]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.9.2

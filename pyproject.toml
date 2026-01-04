@@ -41,17 +41,18 @@ classifiers = [
 
 [project.optional-dependencies]
 connectors = [
-    'carconnectivity-connector-volkswagen',
-    'carconnectivity-connector-skoda',
-    'carconnectivity-connector-seatcupra',
-    'carconnectivity-connector-tronity',
+    'carconnectivity-connector-volkswagen>=0.10',
+    'carconnectivity-connector-skoda>=0.11',
+    'carconnectivity-connector-seatcupra>=0.5',
+    'carconnectivity-connector-tronity>=0.7',
 ]
 plugins = [
-    'carconnectivity-plugin-mqtt',
-    'carconnectivity-plugin-mqtt_homeassistant',
-    'carconnectivity-plugin-abrp',
-    'carconnectivity-plugin-homekit',
-    'carconnectivity-plugin-webui',
+    'carconnectivity-plugin-mqtt>=0.9',
+    'carconnectivity-plugin-mqtt_homeassistant>=0.5',
+    'carconnectivity-plugin-abrp>=0.8',
+    'carconnectivity-plugin-homekit>=0.7',
+    'carconnectivity-plugin-webui>=0.6',
+    'carconnectivity-plugin-database>=0.1',
 ]
 images = [
     'pillow~=12.0.0',
