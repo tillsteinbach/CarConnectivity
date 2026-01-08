@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.11.2] - 2026-01-08
+### Changed
+- Locks now use timeout mechanism to avoid deadlocks in some situations
+
 ## [0.11.1] - 2026-01-04
 ### Fixed
 - Updated version requirements for all connectors and plugins
@@ -118,7 +122,8 @@ Warning: This is a breaking change for all connectors and plugins. Only update t
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.1...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.2...HEAD
+[0.11.2]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.2
 [0.11.1]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.1
 [0.11]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11
 [0.10]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.10
