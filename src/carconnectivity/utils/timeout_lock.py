@@ -65,7 +65,7 @@ class TimeoutLock():
     lock: RLock
 
     # Semi-transparent __init__ method
-    def __init__(self, *args, timeout: float = -1, **kwargs) -> None:
+    def __init__(self, timeout: float = -1) -> None:
         """
         Initialize a TimeoutLock with a specified timeout value.
         Args:
@@ -78,7 +78,7 @@ class TimeoutLock():
         """
 
         self.timeout = timeout
-        self.lock = RLock(*args, **kwargs)
+        self.lock = RLock()
 
     def __enter__(self, *args, **kwargs) -> Literal[True]:
         """
@@ -98,7 +98,7 @@ class TimeoutLock():
             raise TimeoutError(f"Could not acquire lock within specified timeout of {self.timeout}s")
         return rc
 
-    def __exit__(self, *args, **kwargs):
+    def __exit__(self, *args, **kwargs) -> None:
         return self.lock.release()
 
     # Transparent method calls for rest of Lock's public methods:
