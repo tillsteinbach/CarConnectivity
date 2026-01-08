@@ -7,11 +7,11 @@ Observers can register to be notified of specific events, and the Observable cla
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-import threading
-
 import logging
 
 from enum import IntEnum, Flag, auto
+
+from carconnectivity.utils.timeout_lock import TimeoutLock
 
 if TYPE_CHECKING:
     from typing import Optional, Set, Tuple, Callable, Any, List
@@ -27,14 +27,14 @@ class Observable:
         if origin is not None:
             self.__observers: Set[Tuple[Callable[[Any, Observable.ObserverEvent], None],
                                         Observable.ObserverEvent, Observable.ObserverPriority, bool]] = origin.__observers  # pylint: disable=protected-access
-            self.__observers_lock: threading.RLock = origin.__observers_lock  # pylint: disable=protected-access
+            self.__observers_lock: TimeoutLock = origin.__observers_lock  # pylint: disable=protected-access
             self.flags_to_notify_on_transaction_end: Observable.ObserverEvent = origin.flags_to_notify_on_transaction_end
             self.__delay_notifications: bool = origin.__delay_notifications  # pylint: disable=protected-access
             self.__delayed_flags: Observable.ObserverEvent = origin.__delayed_flags  # pylint: disable=protected-access
         else:
             self.__observers: Set[Tuple[Callable[[Any, Observable.ObserverEvent], None],
                                         Observable.ObserverEvent, Observable.ObserverPriority, bool]] = set()
-            self.__observers_lock: threading.RLock = threading.RLock()
+            self.__observers_lock: TimeoutLock = TimeoutLock(timeout=5.0)
             self.flags_to_notify_on_transaction_end: Observable.ObserverEvent = Observable.ObserverEvent.NONE
             self.__delay_notifications: bool = False
             self.__delayed_flags: Observable.ObserverEvent = Observable.ObserverEvent.NONE

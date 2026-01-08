@@ -11,13 +11,12 @@ Classes:
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-import threading
-
 import json
 
 from carconnectivity.attributes import GenericAttribute
 from carconnectivity.observable import Observable
 from carconnectivity.json_util import ExtendedWithNullEncoder
+from carconnectivity.utils.timeout_lock import TimeoutLock
 
 SUPPORT_IMAGES = False  # pylint: disable=invalid-name
 try:
@@ -58,7 +57,7 @@ class GenericObject(Observable):  # pylint: disable=too-many-instance-attributes
             if parent is not None:
                 self.parent = parent
             self.__enabled: bool = origin.enabled
-            self.__enabled_lock: threading.RLock = origin.__enabled_lock  # pylint:disable=protected-access
+            self.__enabled_lock: TimeoutLock = origin.__enabled_lock  # pylint:disable=protected-access
             self.__initialized: bool = origin.__initialized  # pylint:disable=protected-access
             self.__initialization: Optional[Dict[str, Any]] = origin.__initialization  # pylint:disable=protected-access
             if self.enabled:
@@ -72,7 +71,7 @@ class GenericObject(Observable):  # pylint: disable=too-many-instance-attributes
             self.__id: str = object_id
             self.__parent: Optional[GenericObject] = parent
             self.__enabled: bool = False
-            self.__enabled_lock: threading.RLock = threading.RLock()
+            self.__enabled_lock: TimeoutLock = TimeoutLock(timeout=5.0)
             self.__initialized: bool = False
             self.__initialization: Optional[Dict[str, Any]] = initialization
             if parent is not None:

@@ -2,8 +2,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar, Generic, Optional
 
-import threading
-
 import logging
 import json
 
@@ -16,6 +14,7 @@ from pytimeparse import parse
 from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power, Current, Energy, EnergyConsumption, FuelConsumption, Volume
 from carconnectivity.observable import Observable
 from carconnectivity.json_util import ExtendedWithNullEncoder
+from carconnectivity.utils.timeout_lock import TimeoutLock
 
 # pylint: disable=duplicate-code
 SUPPORT_IMAGES = False  # pylint: disable=invalid-name
@@ -95,9 +94,9 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         self.last_updated: Optional[datetime] = None
         self.last_updated_local: Optional[datetime] = None
 
-        self.value_lock: threading.RLock = threading.RLock()
-        self.tags_lock: threading.RLock = threading.RLock()
-        self.hooks_lock: threading.RLock = threading.RLock()
+        self.value_lock: TimeoutLock = TimeoutLock(timeout=5.0)
+        self.tags_lock: TimeoutLock = TimeoutLock(timeout=5.0)
+        self.hooks_lock: TimeoutLock = TimeoutLock(timeout=5.0)
 
         if value is not None:
             self._set_value(value)
