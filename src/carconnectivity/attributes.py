@@ -80,6 +80,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         self.__parent: GenericObject = parent
         self.__parent.children.append(self)
         self.__value: Optional[T] = None
+        self.__old_value: Optional[T] = None
         self.__value_type: Optional[Type[T]] = value_type if value_type is not None else type(value) if value is not None else None
         self.__unit: Optional[U] = unit
         self.__unit_type: Optional[Type[U]] = type(unit) if unit is not None else None
@@ -342,6 +343,16 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         return self.__value
 
     @property
+    def old_value(self) -> Optional[T]:
+        """
+        Retrieve the last old value of the attribute. Usefull on value changed events
+
+        Returns:
+            Optional[Any]: The last old value of the attribute, or None if not set.
+        """
+        return self.__old_value
+
+    @property
     def value_type(self) -> Optional[Type[T]]:
         """
         Retrieve the value type of the attribute.
@@ -425,6 +436,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             # Value was changed
             if self.__value != value:
                 flags |= Observable.ObserverEvent.VALUE_CHANGED
+                self.__old_value = self.__value
                 self.__value = value
                 self.last_changed_local = now
                 self.last_changed = measured or now
