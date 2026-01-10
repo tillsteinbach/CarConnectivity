@@ -63,7 +63,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
 
     # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: Optional[GenericObject], value: Optional[T] = None, value_type: Optional[Type[T]] = None, unit: Optional[U] = None,
-                 tags: Optional[Set[str]] = None, initialization: Optional[dict[str, Any] | T] = None) -> None:
+                 tags: Optional[Set[str]] = None, initialization: Optional[dict[str, Any] | T] = None, source: Optional[Any] = None) -> None:
         """
         Initialize an attribute for a car connectivity object.
 
@@ -81,6 +81,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         self.__parent: GenericObject = parent
         self.__parent.children.append(self)
         self.__value: Optional[T] = None
+        self.__value_source: Optional[Any] = source
         self.__old_value: Optional[T] = None
         self.__value_type: Optional[Type[T]] = value_type if value_type is not None else type(value) if value is not None else None
         self.__unit: Optional[U] = unit
@@ -114,7 +115,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
 
         return self.__initialized
 
-    def initialize(self, initialization: dict[str, Any] | T) -> None:
+    def initialize(self, initialization: dict[str, Any] | T, source: Optional[Any] = None) -> None:
         """
         Initialize the attribute with the provided data.
         Args:
@@ -137,7 +138,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
 
         if isinstance(initialization, dict):
             if 'val' in initialization:
-                self._set_value(self.type_conversion(initialization['val']))
+                self._set_value(self.type_conversion(initialization['val']), source=source)
             else:
                 LOG.warning('No value found in initialization for attribute %s', self.__name)
             if 'uni' in initialization:
@@ -162,7 +163,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
                     LOG.warning('Invalid date format in initialization for attribute %s: %s', self.__name, initialization['upd'])
             self.__initialized = True
         else:
-            self._set_value(self.type_conversion(initialization))
+            self._set_value(self.type_conversion(initialization), source=source)
             self.__initialized = True
 
     def has_tag(self, tag: str) -> bool:
@@ -368,6 +369,16 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         return self.__value_type
 
     @property
+    def value_source(self) -> Optional[Any]:
+        """
+        Retrieve the source of the current value of the attribute.
+
+        Returns:
+            Optional[Any]: The source of the current value of the attribute, or None if not set.
+        """
+        return self.__value_source
+
+    @property
     def unit(self) -> Optional[U]:
         """
         Get the si-unit of the attribute.
@@ -399,7 +410,56 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         """
         self.__unit = unit
 
-    def _set_value(self, value: Optional[T], measured: Optional[datetime] = None, unit: Optional[U] = None) -> None:
+    def _was_source(self, source: Any) -> bool:
+        """
+        Check if the current value was set by the given source.
+
+        Args:
+            source (Any): The source to check.
+        Returns:
+            bool: True if the current value was set by the given source, False otherwise.
+        """
+        return self.__value_source == source
+
+    def _disable_if_source(self, source: Any) -> None:
+        """
+        Disable the attribute if the current value was set by the given source.
+
+        Args:
+            source (Any): The source to check.
+        Returns:
+            None
+        """
+        if self._was_source(source):
+            self.enabled = False
+
+    def _clear_if_source(self, source: Any) -> None:
+        """
+        Clear the attribute value if the current value was set by the given source.
+
+        Args:
+            source (Any): The source to check.
+        Returns:
+            None
+        """
+        if self._was_source(source):
+            self._set_value(None, source=None)
+
+    def _set_if_source(self, value: Optional[T], measured: Optional[datetime] = None, unit: Optional[U] = None, source: Optional[Any] = None) -> None:
+        """
+        Set the attribute value if the current value was set by the given source.
+
+        Args:
+            value (Optional[T]): The value to set.
+            source (Any): The source to check.
+            unit (Optional[U], optional): The unit of the value. Defaults to None.
+        Returns:
+            None
+        """
+        if self._was_source(source):
+            self._set_value(value, measured=measured, unit=unit, source=source)
+
+    def _set_value(self, value: Optional[T], measured: Optional[datetime] = None, unit: Optional[U] = None, source: Optional[Any] = None) -> None:
         """
         Set the value of the attribute.
 
@@ -412,6 +472,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             value (Optional[Any]): The value to set.
             measured (Optional[datetime], optional): The time the value was measured. Defaults to None.
             unit (Optional[U], optional): The unit of the value. Defaults to None.
+            source (Optional[Any], optional): The source of the value. Defaults to None.
 
         Returns:
             None
@@ -422,6 +483,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
 
             if value is not None:
                 value = self.type_conversion(value)
+                self.__value_source = source
 
             # Value from the past
             if self.last_updated is not None and measured is not None and self.last_updated > measured:
@@ -560,7 +622,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
                 # then execute all late hooks
                 new_value = self._execute_on_set_hook(new_value, early_hook=False)
                 # finally set the value
-                self._set_value(new_value)
+                self._set_value(new_value, source="User")
             else:
                 raise TypeError('You cannot set this attribute. Attribute is not mutable.')
     # pylint: enable=duplicate-code
