@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 import importlib
 import pkgutil
 
+import locale
+
 import re
 import json
 import logging
@@ -113,6 +115,7 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
         self.__cache_file: Optional[str] = cache_file
 
         self.config: Dict[Any, Any] = config
+        self.active_config: Dict[str, Any] = {}
         self.connectors: Connectors = Connectors(car_connectivity=self)
         self.plugins: Plugins = Plugins(car_connectivity=self)
         self.garage: Garage = Garage(self)
@@ -127,20 +130,23 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
             raise ConfigurationError("Invalid configuration: 'carConnectivity' is missing")
         # Configure logging
         if 'log_level' in config['carConnectivity'] and config['carConnectivity']['log_level'] is not None:
-            config['carConnectivity']['log_level'] = config['carConnectivity']['log_level'].upper()
-            if config['carConnectivity']['log_level'] in logging._nameToLevel:
-                LOG.setLevel(config['carConnectivity']['log_level'])
+            self.active_config['log_level'] = config['carConnectivity']['log_level'].upper()
+            if self.active_config['log_level'] in logging._nameToLevel:
+                LOG.setLevel(self.active_config['log_level'])
             else:
-                raise ConfigurationError(f'Invalid log level: "{config["carConnectivity"]["log_level"]}" not in {list(logging._nameToLevel.keys())}')
+                raise ConfigurationError(f'Invalid log level: "{self.active_config["log_level"]}" not in {list(logging._nameToLevel.keys())}')
         if 'log_format' in config['carConnectivity'] and config['carConnectivity']['log_format'] is not None:
             log_format: str = config['carConnectivity']['log_format']
         else:
             log_format: str = '%(asctime)s:%(name)s:%(levelname)s:%(module)s:%(message)s'
+        self.active_config['log_format'] = log_format
         formatter = logging.Formatter(log_format)
         if 'log_date_format' in config['carConnectivity'] and config['carConnectivity']['log_date_format'] is not None:
             formatter.datefmt = config['carConnectivity']['log_date_format']
+            self.active_config['log_date_format'] = config['carConnectivity']['log_date_format']
         else:
             formatter.datefmt = '%Y-%m-%dT%H:%M:%S%z'
+            self.active_config['log_date_format'] = '%Y-%m-%dT%H:%M:%S%z'
         for handler in logging.getLogger().handlers:
             handler.setFormatter(formatter)
         LOG.addHandler(self.log_storage)
@@ -160,6 +166,17 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
 
         #  Disable logging for plugins and connectors
         self.log_storage.addFilter(NoPluginsConnectorsAPIDebug())
+
+        if 'locale' in config and config['carConnectivity'] is not None:
+            self.active_config['locale'] = config['locale']
+            try:
+                locale.setlocale(locale.LC_ALL, self.active_config['locale'])
+                if self.active_config['time_format'] is None or self.active_config['time_format'] == '':
+                    self.active_config['time_format'] = locale.nl_langinfo(locale.D_T_FMT)
+            except locale.Error as err:
+                raise ConfigurationError(f'Invalid locale specified in config ("locale" must be a valid locale): {str(err)}', ) from err
+        else:
+            self.active_config['locale'] = locale.getlocale()[0]
 
         if 'initialization' in config['carConnectivity']:
             self.initialize(config['carConnectivity']['initialization'])
