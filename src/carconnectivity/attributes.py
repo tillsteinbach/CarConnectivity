@@ -11,6 +11,7 @@ from datetime import datetime, timezone, timedelta
 
 from pytimeparse import parse
 
+from carconnectivity.errors import ConfigurationError
 from carconnectivity.units import GenericUnit, Length, Level, Temperature, Speed, Power, Current, Energy, EnergyConsumption, FuelConsumption, Volume
 from carconnectivity.observable import Observable
 from carconnectivity.json_util import ExtendedWithNullEncoder
@@ -141,7 +142,11 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
                 LOG.warning('No value found in initialization for attribute %s', self.__name)
             if 'uni' in initialization:
                 if self.__unit_type is not None:
-                    self.__unit = self.__unit_type(initialization['uni'])
+                    try:
+                        self.__unit = self.__unit_type(initialization['uni'])
+                    except ValueError:
+                        raise ConfigurationError(f'Invalid unit \'{initialization["uni"]}\' for attribute \'{self.__name}\'. In pre initialization'
+                                                 f'Must be one of {[x.value for x in self.__unit_type]}') from None
                 else:
                     LOG.warning('No unit type defined for attribute %s, cannot set unit from initialization', self.__name)
             if 'upd' in initialization:
@@ -709,7 +714,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         del recursive
         return [self]
 
-    def as_dict(self, filter_function: Optional[Callable[[Any], None]] = None) -> Optional[Any]:
+    def as_dict(self, filter_function: Optional[Callable[[Any], None]] = None, in_locale: Optional[str] = None) -> Optional[Any]:
         """
         Convert the attribute value to a dictionary representation if it passes the filter function.
 
@@ -720,16 +725,17 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
         Returns:
             Optional[Any]: The attribute value if it passes the filter function, otherwise None.
         """
-        if filter_function is None or not filter_function(self.value):
-            return_dict: Dict[str, Any] = {"val": self.value}
+        value, unit = self.in_locale(in_locale)
+        if filter_function is None or not filter_function(value):
+            return_dict: Dict[str, Any] = {"val": value}
             if self.last_updated is not None:
                 return_dict["upd"] = self.last_updated.isoformat()
-            if self.unit is not None:
-                return_dict["uni"] = self.unit.value
+            if unit is not None:
+                return_dict["uni"] = unit
             return return_dict
         return None
 
-    def as_json(self, pretty=False) -> Optional[str]:
+    def as_json(self, pretty=False, in_locale: Optional[str] = None) -> Optional[str]:
         """
         Convert the attribute value to a JSON string.
 
@@ -747,7 +753,7 @@ class GenericAttribute(Observable, Generic[T, U]):  # pylint: disable=too-many-i
             indent: int = 4
         else:
             indent = 0
-        return json.dumps(self.value, cls=ExtendedWithNullEncoder, skipkeys=True, indent=indent)
+        return json.dumps(self.in_locale(in_locale)[0], cls=ExtendedWithNullEncoder, skipkeys=True, indent=indent)
 
 
 class BooleanAttribute(GenericAttribute[bool, None]):

@@ -357,7 +357,7 @@ class GenericObject(Observable):  # pylint: disable=too-many-instance-attributes
         # If we reach this point, we did not find the object
         return False
 
-    def as_dict(self, filter_function: Optional[Callable[[Any], None]] = None) -> dict[Any, Any]:
+    def as_dict(self, filter_function: Optional[Callable[[Any], None]] = None, in_locale: Optional[str] = None) -> dict[Any, Any]:
         """
         Convert the object and its enabled children to a dictionary.
 
@@ -370,19 +370,19 @@ class GenericObject(Observable):  # pylint: disable=too-many-instance-attributes
         as_dict = {}
         for child in self.children:
             if child.enabled:
-                child_dict = child.as_dict(filter_function)
+                child_dict = child.as_dict(filter_function, in_locale)
                 if child_dict is not None:
                     as_dict[child.id] = child_dict
         return as_dict
 
-    def as_json(self, pretty=False) -> str:
+    def as_json(self, pretty: bool = False, in_locale: Optional[str] = None) -> str:
         """
         Convert the object to a JSON string representation.
-
         This method serializes the object to a JSON string using the `as_dict` method
         with a custom filter function to handle specific types of elements, such as images.
         The JSON string is formatted with an indentation of 4 spaces for readability.
-
+        Args:
+            pretty (bool): If True, the JSON string will be formatted with indentation for readability. Defaults to False.
         Returns:
             str: The JSON string representation of the object.
         """
@@ -394,4 +394,7 @@ class GenericObject(Observable):  # pylint: disable=too-many-instance-attributes
             indent: int = 4
         else:
             indent = 0
-        return json.dumps(self.as_dict(filter_function=filter_dict), cls=ExtendedWithNullEncoder, skipkeys=True, indent=indent)
+        return json.dumps(self.as_dict(filter_function=filter_dict, in_locale=in_locale),
+                          cls=ExtendedWithNullEncoder,
+                          skipkeys=True,
+                          indent=indent)
