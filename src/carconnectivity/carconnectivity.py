@@ -131,6 +131,7 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
         # Configure logging
         if 'log_level' in config['carConnectivity'] and config['carConnectivity']['log_level'] is not None:
             self.active_config['log_level'] = config['carConnectivity']['log_level'].upper()
+            config['carConnectivity']['log_level'] = config['carConnectivity']['log_level'].upper()
             if self.active_config['log_level'] in logging._nameToLevel:
                 LOG.setLevel(self.active_config['log_level'])
             else:
