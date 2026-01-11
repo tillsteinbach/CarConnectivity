@@ -28,7 +28,7 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
     def __init__(self, connector_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, api_log: Optional[logging.Logger],
-                 initialization: Optional[Dict] = None) -> None:
+                 initialization: Optional[Dict] = None, *args, **kwargs) -> None:
         """
         Initializes the connector with the given CarConnectivity instance and configuration.
 
