@@ -864,10 +864,10 @@ class FloatAttribute(GenericAttribute[float, U]):
     def __init__(self, name: str, parent: GenericObject, value: Optional[float] = None, unit: Optional[U] = None,
                  maximum: Optional[float] = None, minimum: Optional[float] = None, precision: Optional[float] = None,
                  tags: Optional[Set[str]] = None, initialization: Optional[Dict] = None) -> None:
-        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags, initialization=initialization)
         self.precision: Optional[float] = precision
         self.maximum: Optional[float] = maximum
         self.minimum: Optional[float] = minimum
+        super().__init__(name=name, parent=parent, value=value, value_type=float, unit=unit, tags=tags, initialization=initialization)
 
     @GenericAttribute.value.setter
     def value(self, new_value: float) -> None:
