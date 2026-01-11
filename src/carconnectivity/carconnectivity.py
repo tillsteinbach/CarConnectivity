@@ -175,7 +175,7 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
                 if self.active_config['time_format'] is None or self.active_config['time_format'] == '':
                     self.active_config['time_format'] = locale.nl_langinfo(locale.D_T_FMT)
             except locale.Error as err:
-                raise ConfigurationError(f'Invalid locale specified in config ("locale" must be a valid locale): {str(err)}', ) from err
+                LOG.warning('Invalid locale specified in config ("locale" must be a valid locale): %s', err)
         else:
             self.active_config['locale'] = locale.getlocale()[0]
 
