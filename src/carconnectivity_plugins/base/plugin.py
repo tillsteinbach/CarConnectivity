@@ -27,8 +27,8 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
             Placeholder method for shutting down the plugin.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
-    def __init__(self, plugin_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, initialization: Optional[Dict] = None,
-                 *args, **kwargs) -> None:
+    def __init__(self, *args, plugin_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, initialization: Optional[Dict] = None,
+                 **kwargs) -> None:
         """
         Initializes the connector with the given CarConnectivity instance and configuration.
 
@@ -36,7 +36,7 @@ class BasePlugin(GenericObject):  # pylint: disable=too-few-public-methods
             car_connectivity (CarConnectivity): The instance in which the plugin is running.
             config (Dict): A dictionary containing the configuration parameters for this plugin only.
         """
-        super().__init__(object_id=plugin_id, parent=car_connectivity.plugins, initialization=initialization)
+        super().__init__(*args, object_id=plugin_id, parent=car_connectivity.plugins, initialization=initialization, **kwargs)
         self.car_connectivity: CarConnectivity = car_connectivity
         self.active_config: Dict[str, Any] = {}
         self.log_storage: LogMemoryHandler = LogMemoryHandler()

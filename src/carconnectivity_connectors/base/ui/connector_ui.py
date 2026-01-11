@@ -18,9 +18,11 @@ class BaseConnectorUI:
     """
     A base class for connector UI components.
     """
-    def __init__(self, connector: BaseConnector, blueprint: flask.Blueprint):
+    def __init__(self, *args, connector: BaseConnector, blueprint: flask.Blueprint, app: flask.Flask, **kwargs):
+        del args, kwargs  # Unused
         self.blueprint: flask.Blueprint = blueprint
         self.connector: BaseConnector = connector
+        self.app: flask.Flask = app
 
         @self.blueprint.route('/log', methods=['GET'])
         @flask_login.login_required

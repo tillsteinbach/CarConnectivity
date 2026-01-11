@@ -27,8 +27,8 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
             Placeholder method for shutting down the connector.
     """
     # pylint: disable=too-many-arguments, too-many-positional-arguments
-    def __init__(self, connector_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, api_log: Optional[logging.Logger],
-                 initialization: Optional[Dict] = None, *args, **kwargs) -> None:
+    def __init__(self, *args, connector_id: str, car_connectivity: CarConnectivity, config: Dict, log: logging.Logger, api_log: Optional[logging.Logger],
+                 initialization: Optional[Dict] = None, **kwargs) -> None:
         """
         Initializes the connector with the given CarConnectivity instance and configuration.
 
@@ -36,7 +36,7 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
             car_connectivity (CarConnectivity): The instance in which the connector is running.
             config (Dict): A dictionary containing the configuration parameters for this connector only.
         """
-        super().__init__(object_id=connector_id, parent=car_connectivity.connectors, initialization=initialization)
+        super().__init__(*args, object_id=connector_id, parent=car_connectivity.connectors, initialization=initialization, **kwargs)
         self.car_connectivity: CarConnectivity = car_connectivity
         self.active_config: Dict[str, Any] = {}
         self.log_storage: LogMemoryHandler = LogMemoryHandler()

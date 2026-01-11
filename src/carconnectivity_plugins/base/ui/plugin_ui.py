@@ -22,9 +22,11 @@ class BasePluginUI:
     the basic structure and methods that must be implemented by subclasses to provide
     specific navigation items and titles for the user interface.
     """
-    def __init__(self, plugin: BasePlugin, blueprint: flask.Blueprint):
+    def __init__(self, *args, plugin: BasePlugin, blueprint: flask.Blueprint, app: flask.Flask, **kwargs):
+        del args, kwargs  # Unused
         self.blueprint: flask.Blueprint = blueprint
         self.plugin: BasePlugin = plugin
+        self.app: flask.Flask = app
 
         @self.blueprint.route('/log', methods=['GET'])
         @flask_login.login_required
