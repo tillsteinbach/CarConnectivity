@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.11.4] - 2026-01-11
+### Added
+- Adds support for more flexible parameters for plugins and connectors and their UIs to allow better backwards compatibility in the future
+- Support for storing measurement source in attributes to allow connectors to better deal with multi source attributes
+- Support for generating dicts and json using locales and conversion of units
+
+### Changed
+- Don't fail on invalid locale in config, just log a warning and use system locale instead
+
 ## [0.11.3] - 2026-01-10
 ### Added
 - Adds global locale option that can be inherited by plugins and connectors
@@ -126,7 +135,8 @@ Warning: This is a breaking change for all connectors and plugins. Only update t
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.3...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.4...HEAD
+[0.11.4]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.4
 [0.11.3]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.3
 [0.11.2]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.2
 [0.11.1]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.1
