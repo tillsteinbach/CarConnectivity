@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.11.5] - 2026-01-11
+### Fixed
+- Fixes a bug where when initialized with static entries, precision was not yet initialized when notificaln callbacks were called
+
 ## [0.11.4] - 2026-01-11
 ### Added
 - Adds support for more flexible parameters for plugins and connectors and their UIs to allow better backwards compatibility in the future
@@ -135,7 +139,8 @@ Warning: This is a breaking change for all connectors and plugins. Only update t
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.4...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.5...HEAD
+[0.11.5]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.5
 [0.11.4]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.4
 [0.11.3]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.3
 [0.11.2]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.2
