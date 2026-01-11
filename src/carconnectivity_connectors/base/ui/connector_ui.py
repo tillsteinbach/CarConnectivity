@@ -18,7 +18,7 @@ class BaseConnectorUI:
     """
     A base class for connector UI components.
     """
-    def __init__(self, *args, connector: BaseConnector, blueprint: flask.Blueprint, app: flask.Flask, **kwargs):
+    def __init__(self, connector: BaseConnector, blueprint: flask.Blueprint, app: flask.Flask, *args, **kwargs):
         del args, kwargs  # Unused
         self.blueprint: flask.Blueprint = blueprint
         self.connector: BaseConnector = connector
