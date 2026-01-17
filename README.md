@@ -34,7 +34,7 @@ If you know of a connector not listed here let me know and I will add it to the 
 If you are a python developer and willing to implement a connector for a brand not listed here, let me know and I try to support you as good as possible
 
 ## Supported Plugins
-CarConenctivity uses a plugin architecture to enable connectivity to other services and protocols. Currently known plugins are:
+CarConnectivity uses a plugin architecture to enable connectivity to other services and protocols. Currently known plugins are:
 
 | Service or Protocol              | Connector                                                                                                               | Maintainer                                         |
 |----------------------------------|-------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------|
