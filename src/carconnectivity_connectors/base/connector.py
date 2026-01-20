@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from typing import Dict, Any, Optional
 
     from carconnectivity.carconnectivity import CarConnectivity
+    from carconnectivity.commands import Commands
 
 
 class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
@@ -49,6 +50,7 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
                                                         initialization=self.get_initialization('last_update'))
         self.healthy: BooleanAttribute = BooleanAttribute(name="healthy", parent=self, tags={'carconnectivity'},
                                                           initialization=self.get_initialization('healthy'))
+        self.commands: Commands = Commands(parent=self)
 
         # Configure logging
         if 'log_level' in config and config['log_level'] is not None:
@@ -72,13 +74,14 @@ class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, t
             self.active_config['api_log_level'] = config['api_log_level'].upper()
         else:  # default api log level
             self.active_config['api_log_level'] = 'ERROR'
-        if self.active_config['api_log_level'] in logging._nameToLevel:
+        if api_log is not None and self.active_config['api_log_level'] in logging._nameToLevel:
             api_log.setLevel(self.active_config['api_log_level'])
         else:
             raise ConfigurationError(f'Invalid log level: "{self.active_config["api_log_level"]}" not in {list(logging._nameToLevel.keys())}')
 
         log.addHandler(self.log_storage)
-        api_log.addHandler(self.api_log_storage)
+        if api_log is not None:
+            api_log.addHandler(self.api_log_storage)
 
         if 'hide_vins' in config and config['hide_vins'] is not None:
             self.active_config['hide_vins'] = config['hide_vins']
