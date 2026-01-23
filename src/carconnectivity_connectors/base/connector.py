@@ -9,12 +9,12 @@ from carconnectivity.objects import GenericObject
 from carconnectivity.attributes import StringAttribute, DateAttribute, BooleanAttribute
 from carconnectivity.errors import ConfigurationError
 from carconnectivity.util import LogMemoryHandler
+from carconnectivity.commands import Commands
 
 if TYPE_CHECKING:
     from typing import Dict, Any, Optional
 
     from carconnectivity.carconnectivity import CarConnectivity
-    from carconnectivity.commands import Commands
 
 
 class BaseConnector(GenericObject):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
