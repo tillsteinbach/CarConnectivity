@@ -78,7 +78,8 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
 
         self.state.add_observer(self._on_state_changed, flag=(Observable.ObserverEvent.VALUE_CHANGED
                                                               | Observable.ObserverEvent.ENABLED
-                                                              | Observable.ObserverEvent.DISABLED))
+                                                              | Observable.ObserverEvent.DISABLED),
+                                priority=Observable.ObserverPriority.INTERNAL_HIGH)
 
     def _on_state_changed(self, element: EnumAttribute[Charging.ChargingState], flags) -> None:
         """

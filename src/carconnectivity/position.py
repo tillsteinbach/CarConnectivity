@@ -42,7 +42,8 @@ class Position(GenericObject):  # pylint: disable=too-many-instance-attributes
 
         self.longitude.add_observer(self._on_position_changed, flag=(Observable.ObserverEvent.VALUE_CHANGED
                                                                      | Observable.ObserverEvent.ENABLED
-                                                                     | Observable.ObserverEvent.DISABLED))
+                                                                     | Observable.ObserverEvent.DISABLED),
+                                    priority=Observable.ObserverPriority.INTERNAL_HIGH)
 
     def _on_position_changed(self, element: FloatAttribute, flags) -> None:
         """
