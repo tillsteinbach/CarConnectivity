@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.11.6] - 2026-01-23
+### Changed
+- Internal callbacks now use higher pririty to ensure they are called before external ones
+- BaseConnector now provides commands to allow for updating the session
+
 ## [0.11.5] - 2026-01-11
 ### Fixed
 - Fixes a bug where when initialized with static entries, precision was not yet initialized when notificaln callbacks were called
