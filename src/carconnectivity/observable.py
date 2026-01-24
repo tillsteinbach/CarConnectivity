@@ -61,7 +61,7 @@ class Observable:
             self.__delayed_flags = Observable.ObserverEvent.NONE
 
     def add_observer(self, observer: Callable[[Any, Observable.ObserverEvent], None], flag: Observable.ObserverEvent,
-                     priority: Optional[Observable.ObserverPriority] = None, on_transaction_end: bool = False) -> None:
+                     priority: Optional[Observable.ObserverPriority] = None, on_transaction_end: bool = False) -> bool:
         """
         Adds an observer to the list of observers.
 
@@ -72,14 +72,15 @@ class Observable:
             on_transaction_end (bool, optional): Whether the observer should be notified at the end of a transaction. Defaults to False.
 
         Returns:
-            None
+            bool: True if the observer was added successfully, False otherwise.
         """
         with self.__observers_lock:
             if priority is None:
                 priority = Observable.ObserverPriority.USER_MID  # pyright: ignore[reportAssignmentType]
             self.__observers.add((observer, flag, priority, on_transaction_end))
+            return True
 
-    def remove_observer(self, observer: Callable[[Any, Observable.ObserverEvent], None], flag: Optional[Observable.ObserverEvent] = None) -> None:
+    def remove_observer(self, observer: Callable[[Any, Observable.ObserverEvent], None], flag: Optional[Observable.ObserverEvent] = None) -> bool:
         """
         Removes an observer from the list of observers.
 
@@ -89,11 +90,13 @@ class Observable:
                 If provided, only the observer with this flag will be removed. Defaults to None.
 
         Returns:
-            None
+            bool: True if at least one observer was removed successfully, False otherwise.
         """
         with self.__observers_lock:
+            original_count = len(self.__observers)
             self.__observers = set(filter(lambda observerEntry: observerEntry[0] == observer
                                           or (flag is not None and observerEntry[1] == flag), self.__observers))  # pyright: ignore [reportAttributeAccessIssue]
+            return len(self.__observers) < original_count
 
     def get_observers(self, flags, on_transaction_end: bool = False) -> List[Callable[[Any, Observable.ObserverEvent], None]]:
         """
