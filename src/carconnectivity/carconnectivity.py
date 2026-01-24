@@ -32,6 +32,7 @@ from carconnectivity.commands import Commands
 from carconnectivity.command_impl import UpdateCommand
 from carconnectivity_services.base.service import BaseService, ServiceType
 from carconnectivity_services.location.osm_location_service import OSMLocationService
+from carconnectivity_services.location.geofence_location_service import GeofenceLocationService
 
 if TYPE_CHECKING:
     from typing import Dict, Any, Optional, Iterator, Union
@@ -318,6 +319,13 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
             LOG.warning('System time differs from NTP server time by %.2f seconds. This may lead to problems with authentication.', time_delta)
 
         # Add own services:
+        geofence_location_service: GeofenceLocationService = GeofenceLocationService(service_id='car_connectivity:GeofenceLocationService',
+                                                                                     car_connectivity=self, log=LOG)
+        for service_type in geofence_location_service.get_types():
+            if service_type not in self.services:
+                self.services[service_type] = []
+            self.services[service_type].append(geofence_location_service)
+
         osm_location_service: OSMLocationService = OSMLocationService(service_id='car_connectivity:OSMLocationService', car_connectivity=self, log=LOG)
         for service_type in osm_location_service.get_types():
             if service_type not in self.services:
@@ -508,7 +516,7 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
 
     def get_service_for(self, service_type: ServiceType) -> Optional[BaseService]:
         """
-        Returns the service for the given service type.
+        Returns the highest priority service for the given service type.
 
         Args:
             service_type (str): The type of the service.
@@ -518,3 +526,14 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
         for service in self.services.get(service_type, []):
             return service
         return None
+
+    def get_services_for(self, service_type: ServiceType) -> list[BaseService]:
+        """
+        Returns the services for the given service type in order of their priority.
+
+        Args:
+            service_type (str): The type of the service.
+        Returns:
+            list[BaseService]: The service instances if found, empty list otherwise.
+        """
+        return self.services.get(service_type, [])

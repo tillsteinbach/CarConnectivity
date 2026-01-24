@@ -28,6 +28,21 @@ class ICarConnectivity:  # pylint: disable=too-few-public-methods
 
         raise NotImplementedError("Method get_service_for() must be implemented by CarConnectivity")
 
+    def get_services_for(self, service_type: ServiceType) -> list[BaseService]:
+        """
+        Retrieve a list of service instances for the specified service type.
+        This method must be implemented by CarConnectivity to provide
+        access to specific service implementations based on the requested service type.
+        Args:
+            service_type (ServiceType): The type of service to retrieve.
+        Returns:
+            list[BaseService]: A list of service instances if available, an empty list otherwise.
+        Raises:
+            NotImplementedError: This method must be implemented by subclasses.
+        """
+
+        raise NotImplementedError("Method get_services_for() must be implemented by CarConnectivity")
+
 
 class IGenericVehicle:  # pylint: disable=too-few-public-methods
     """

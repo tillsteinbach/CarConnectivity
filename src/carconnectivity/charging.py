@@ -99,18 +99,25 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
                 longitude: float = self.parent.position.longitude.value
 
                 if self.parent.parent is not None and isinstance(self.parent.parent.parent, ICarConnectivity):
-                    location_service: Optional[BaseService] = self.parent.parent.parent.get_service_for(ServiceType.LOCATION_CHARGING_STATION)
-                    if location_service is not None and isinstance(location_service, LocationService):
-                        result: Optional[ChargingStation] = location_service.charging_station_from_lat_lon(
-                            latitude=latitude,
-                            longitude=longitude,
-                            radius=100,
-                            charging_station=self.charging_station
-                        )
+                    location_services: list[BaseService] = self.parent.parent.parent.get_services_for(ServiceType.LOCATION_CHARGING_STATION)
+                    if location_services is None or len(location_services) == 0:
+                        LOG.warning('No LocationService available to resolve charging station from position')
+                        self.charging_station.clear()
+                        return
+                    result: Optional[ChargingStation] = None
+                    for location_service in location_services:
+                        if location_service is not None and isinstance(location_service, LocationService):
+                            result: Optional[ChargingStation] = location_service.charging_station_from_lat_lon(
+                                latitude=latitude,
+                                longitude=longitude,
+                                radius=100,
+                                charging_station=self.charging_station
+                            )
                         if result is not None:
                             LOG.debug('Resolved charging station from position (%s, %s)', latitude, longitude)
-                    else:
-                        LOG.warning('No LocationService available to resolve charging station from position')
+                            break
+                    if result is None:
+                        LOG.debug('No charging station found near position (%s, %s)', latitude, longitude)
                         self.charging_station.clear()
                 else:
                     LOG.warning('Charging not in correct context of CarConnectivity, cannot resolve charging station')

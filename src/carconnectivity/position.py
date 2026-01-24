@@ -54,17 +54,24 @@ class Position(GenericObject):  # pylint: disable=too-many-instance-attributes
         if self.latitude.enabled and self.latitude.value is not None and self.longitude.enabled and self.longitude.value is not None:
             if self.parent is not None and self.parent.parent is not None \
                     and isinstance(self.parent.parent.parent, ICarConnectivity):
-                location_service: Optional[BaseService] = self.parent.parent.parent.get_service_for(ServiceType.LOCATION_REVERSE)
-                if location_service is not None and isinstance(location_service, LocationService):
-                    result: Optional[Location] = location_service.location_from_lat_lon(
-                        latitude=self.latitude.value,
-                        longitude=self.longitude.value,
-                        location=self.location
-                    )
+                location_services: list[BaseService] = self.parent.parent.parent.get_services_for(ServiceType.LOCATION_REVERSE)
+                if location_services is None or len(location_services) == 0:
+                    LOG.warning('No LocationService available to resolve location from position')
+                    self.location.clear()
+                    return
+                result: Optional[Location] = None
+                for location_service in location_services:
+                    if location_service is not None and isinstance(location_service, LocationService):
+                        result = location_service.location_from_lat_lon(
+                            latitude=self.latitude.value,
+                            longitude=self.longitude.value,
+                            location=self.location
+                        )
                     if result is not None:
                         LOG.debug('Resolved location from position (%s, %s)', self.latitude.value, self.longitude.value)
-                else:
-                    LOG.warning('No LocationService available to resolve location from position')
+                        break
+                if result is None:
+                    LOG.warning('No location available to resolve from position')
                     self.location.clear()
             else:
                 LOG.warning('Position not in correct context of CarConnectivity, cannot resolve location')
