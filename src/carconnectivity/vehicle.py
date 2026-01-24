@@ -282,7 +282,7 @@ class ElectricVehicle(GenericVehicle):
                 self.charging: Charging = origin.charging
                 self.charging.parent = self
             else:
-                self.charging: Charging = Charging(vehicle=self)
+                self.charging: Charging = Charging(vehicle=self, initialization=self.get_initialization('charging'))
         else:
             super().__init__(vin=vin, garage=garage, managing_connector=managing_connector, initialization=initialization)
             self.charging: Charging = Charging(vehicle=self, initialization=self.get_initialization('charging'))
