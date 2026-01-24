@@ -22,6 +22,30 @@ if TYPE_CHECKING:
 
 
 class GeofenceLocationService(LocationService):  # pylint: disable=too-few-public-methods, too-many-instance-attributes
+    """
+    A location service that uses geofences to provide location and charging station information.
+    This service allows users to define geographic boundaries (geofences) in the configuration,
+    and provides location and charging station data when coordinates fall within these boundaries.
+    When multiple geofences match, the closest one is selected.
+    Configuration:
+        Geofences are configured in the 'carConnectivity.geofences' section of the configuration.
+        Each geofence requires:
+        - name: Identifier for the geofence
+        - latitude: Center latitude coordinate
+        - longitude: Center longitude coordinate
+        - radius: (optional) Radius in meters, defaults to 50.0
+        - location: (optional) Location details to return when within the geofence
+        - charging_station: (optional) Charging station details to return when within the geofence
+    Attributes:
+        geofences (list[Geofence]): List of configured geofence objects
+    Methods:
+        get_types: Returns supported service types (location reverse lookup and charging station lookup)
+        location_from_lat_lon: Returns location information if coordinates fall within a geofence
+        charging_station_from_lat_lon: Returns charging station information if coordinates fall within a geofence
+    Raises:
+        ConfigurationError: If a geofence is missing required fields (name, latitude, or longitude)
+    """
+    # pylint: disable-next=too-many-branches, too-many-statements
     def __init__(self, service_id: str, car_connectivity: CarConnectivity, log: logging.Logger) -> None:
         super().__init__(service_id, car_connectivity, log)
         self.geofences: list[Geofence] = []
@@ -197,8 +221,26 @@ class GeofenceLocationService(LocationService):  # pylint: disable=too-few-publi
             return charging_station
         return None
 
+    def gas_station_from_lat_lon(self, latitude: float, longitude: float, radius: int, location: Optional[Location]) -> Optional[Location]:
+        """
+        Retrieve gas station information from latitude and longitude coordinates.
+        Args:
+            latitude (float): The latitude coordinate of the location.
+            longitude (float): The longitude coordinate of the location.
+            radius (int): The search radius in meters around the given coordinates.
+            location (Optional[Location]): An optional Location object to populate with gas station data.
+        Returns:
+            Optional[Location]: A Location object containing gas station information if found, None otherwise.
+        Raises:
+            NotImplementedError: This method is not supported by the current service implementation.
+        """
+        raise NotImplementedError("Method gas_station_from_lat_lon() not supported by service")
 
+
+# pylint: disable-next=too-few-public-methods
 class Geofence:
+    """Class representing a geofence with associated location and charging station data."""
+    # pylint: disable-next=too-many-arguments,too-many-positional-arguments
     def __init__(self, name: str, latitude: float, longitude: float, radius: float = 50, location: Optional[Location] = None,
                  charging_station: Optional[ChargingStation] = None) -> None:
         self.name: str = name
