@@ -19,7 +19,7 @@ from carconnectivity_services.base.service import BaseService, ServiceType
 from carconnectivity_services.location.location_service import LocationService
 
 if TYPE_CHECKING:
-    from typing import Optional, Dict
+    from typing import Optional, Dict, Any
     from carconnectivity.vehicle import ElectricVehicle
 
 LOG: logging.Logger = logging.getLogger("carconnectivity")
@@ -52,6 +52,10 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
             self.settings.parent = self
             self.charging_station: ChargingStation = origin.charging_station
             self.charging_station.parent = self
+
+            origin.state.remove_observer(origin._on_state_or_position_changed)
+            if origin.parent is not None and isinstance(origin.parent, IGenericVehicle):
+                origin.parent.position.remove_observer(origin._on_state_or_position_changed)
         else:
             if vehicle is None:
                 raise ValueError('Cannot create charging without vehicle')
@@ -74,56 +78,64 @@ class Charging(GenericObject):  # pylint: disable=too-many-instance-attributes
                                                                      initialization=self.get_initialization('charging_station'))
         self.delay_notifications = False
 
-    # pylint: enable=duplicate-code
-
-        self.state.add_observer(self._on_state_changed, flag=(Observable.ObserverEvent.VALUE_CHANGED
-                                                              | Observable.ObserverEvent.ENABLED
-                                                              | Observable.ObserverEvent.DISABLED),
+        self.state.remove_observer(self._on_state_or_position_changed)
+        self.state.add_observer(self._on_state_or_position_changed, flag=(Observable.ObserverEvent.VALUE_CHANGED
+                                                                          | Observable.ObserverEvent.ENABLED
+                                                                          | Observable.ObserverEvent.DISABLED),
                                 priority=Observable.ObserverPriority.INTERNAL_HIGH)
 
-    def _on_state_changed(self, element: EnumAttribute[Charging.ChargingState], flags) -> None:
+        vehicle.position.remove_observer(self._on_state_or_position_changed)
+        vehicle.position.longitude.add_observer(self._on_state_or_position_changed, flag=(Observable.ObserverEvent.VALUE_CHANGED),
+                                                priority=Observable.ObserverPriority.INTERNAL_HIGH)
+
+    def __del__(self):
+        self.state.remove_observer(self._on_state_or_position_changed)
+        if self.parent is not None and isinstance(self.parent, IGenericVehicle):
+            self.parent.position.remove_observer(self._on_state_or_position_changed)
+
+    # pylint: enable=duplicate-code
+
+    def _on_state_or_position_changed(self, element: Any, flags) -> None:
         """
         Callback when position attributes change.
         """
         del flags
-        if element.enabled and element.value in [Charging.ChargingState.CHARGING,
-                                                 Charging.ChargingState.READY_FOR_CHARGING,
-                                                 Charging.ChargingState.CONSERVATION,
-                                                 Charging.ChargingState.DISCHARGING]:
+        del element
+        # pylint: disable-next=too-many-boolean-expressions
+        if self.state.value in [Charging.ChargingState.CHARGING,
+                                Charging.ChargingState.READY_FOR_CHARGING,
+                                Charging.ChargingState.CONSERVATION,
+                                Charging.ChargingState.DISCHARGING] \
+                and self.parent is not None and isinstance(self.parent, IGenericVehicle) and self.parent.position is not None \
+                and self.parent.position.latitude.enabled and self.parent.position.latitude.value is not None \
+                and self.parent.position.longitude.enabled and self.parent.position.longitude.value is not None:
             # Get cars location
-            # pylint: disable-next=too-many-boolean-expressions
-            if self.parent is not None and isinstance(self.parent, IGenericVehicle) and self.parent.position is not None \
-                    and self.parent.position.latitude.enabled and self.parent.position.latitude.value is not None \
-                    and self.parent.position.longitude.enabled and self.parent.position.longitude.value is not None:
-                latitude: float = self.parent.position.latitude.value
-                longitude: float = self.parent.position.longitude.value
+            latitude: float = self.parent.position.latitude.value
+            longitude: float = self.parent.position.longitude.value
 
-                if self.parent.parent is not None and isinstance(self.parent.parent.parent, ICarConnectivity):
-                    location_services: list[BaseService] = self.parent.parent.parent.get_services_for(ServiceType.LOCATION_CHARGING_STATION)
-                    if location_services is None or len(location_services) == 0:
-                        LOG.warning('No LocationService available to resolve charging station from position')
-                        self.charging_station.clear()
-                        return
-                    result: Optional[ChargingStation] = None
-                    for location_service in location_services:
-                        if location_service is not None and isinstance(location_service, LocationService):
-                            result: Optional[ChargingStation] = location_service.charging_station_from_lat_lon(
-                                latitude=latitude,
-                                longitude=longitude,
-                                radius=100,
-                                charging_station=self.charging_station
-                            )
-                        if result is not None:
-                            LOG.debug('Resolved charging station from position (%s, %s)', latitude, longitude)
-                            break
-                    if result is None:
-                        LOG.debug('No charging station found near position (%s, %s)', latitude, longitude)
-                        self.charging_station.clear()
-                else:
-                    LOG.warning('Charging not in correct context of CarConnectivity, cannot resolve charging station')
+            if self.parent.parent is not None and isinstance(self.parent.parent.parent, ICarConnectivity):
+                location_services: list[BaseService] = self.parent.parent.parent.get_services_for(ServiceType.LOCATION_CHARGING_STATION)
+                if location_services is None or len(location_services) == 0:
+                    LOG.warning('No LocationService available to resolve charging station from position')
+                    self.charging_station.clear()
+                    return
+                result: Optional[ChargingStation] = None
+                for location_service in location_services:
+                    if location_service is not None and isinstance(location_service, LocationService):
+                        result: Optional[ChargingStation] = location_service.charging_station_from_lat_lon(
+                            latitude=latitude,
+                            longitude=longitude,
+                            radius=100,
+                            charging_station=self.charging_station
+                        )
+                    if result is not None:
+                        LOG.debug('Resolved charging station from position (%s, %s)', latitude, longitude)
+                        break
+                if result is None:
+                    LOG.debug('No charging station found near position (%s, %s)', latitude, longitude)
                     self.charging_station.clear()
             else:
-                LOG.debug('Cannot resolve charging station, position not available')
+                LOG.warning('Charging not in correct context of CarConnectivity, cannot resolve charging station')
                 self.charging_station.clear()
         else:
             self.charging_station.clear()
