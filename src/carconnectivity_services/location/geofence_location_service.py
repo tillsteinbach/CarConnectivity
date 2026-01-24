@@ -3,6 +3,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+import json
+
 from haversine import haversine, Unit
 
 from carconnectivity_services.base.service import ServiceType
@@ -89,7 +91,7 @@ class GeofenceLocationService(LocationService):  # pylint: disable=too-few-publi
                             location.display_name._set_value(location_data['display_name'])  # pylint: disable=protected-access
                         else:
                             location.display_name._set_value(display_string)  # pylint: disable=protected-access
-                        location.raw._set_value(location_data)  # pylint: disable=protected-access
+                        location.raw._set_value(json.dumps(location_data))  # pylint: disable=protected-access
                     charging_station: Optional[ChargingStation] = None
                     if 'charging_station' in geofence:
                         cs_data = geofence['charging_station']
