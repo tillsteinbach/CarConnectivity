@@ -61,8 +61,8 @@ class OSMLocationService(LocationService):  # pylint: disable=too-few-public-met
         self.osm_session.headers.update(REQUEST_HEADERS)
         self._last_request: datetime = datetime.now(timezone.utc) - timedelta(seconds=1)
 
-    def get_types(self) -> list[ServiceType]:
-        return [ServiceType.LOCATION_REVERSE, ServiceType.LOCATION_GAS_STATION, ServiceType.LOCATION_CHARGING_STATION]
+    def get_types(self) -> list[tuple[ServiceType, int]]:
+        return [(ServiceType.LOCATION_REVERSE, 50), (ServiceType.LOCATION_GAS_STATION, 100), (ServiceType.LOCATION_CHARGING_STATION, 200)]
 
     def location_from_lat_lon(self, latitude: float, longitude: float, location: Optional[Location]) -> Optional[Location]:
         query: dict[str, float | int | str] = {

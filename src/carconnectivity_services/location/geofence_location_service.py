@@ -160,8 +160,8 @@ class GeofenceLocationService(LocationService):  # pylint: disable=too-few-publi
                     raise ConfigurationError("Geofence must have at least 'name', 'latitude', and 'longitude' fields")
         log.info(f"GeofenceLocationService initialized with {len(self.geofences)} geofences")
 
-    def get_types(self) -> list[ServiceType]:
-        return [ServiceType.LOCATION_REVERSE, ServiceType.LOCATION_CHARGING_STATION]
+    def get_types(self) -> list[tuple[ServiceType, int]]:
+        return [(ServiceType.LOCATION_REVERSE, 10), (ServiceType.LOCATION_CHARGING_STATION, 10)]
 
     def location_from_lat_lon(self, latitude: float, longitude: float, location: Optional[Location]) -> Optional[Location]:
         found_location: Optional[Location] = None

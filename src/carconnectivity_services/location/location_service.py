@@ -33,12 +33,12 @@ class LocationService(BaseService):  # pylint: disable=too-few-public-methods, t
     def __init__(self, service_id: str, car_connectivity: CarConnectivity, log: logging.Logger) -> None:  # pylint: disable=useless-parent-delegation
         super().__init__(service_id, car_connectivity, log)
 
-    def get_types(self) -> list[ServiceType]:
+    def get_types(self) -> list[tuple[ServiceType, int]]:
         """
-        Returns the type of the connector.
+        Returns the type of the connector with priority.
 
         Returns:
-            str: The type of the connector.
+            list[tuple[ServiceType, int]]: The types of the connector with their priorities.
         """
         raise NotImplementedError("Method get_types() must be implemented by plugin")
 

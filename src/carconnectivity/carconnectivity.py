@@ -125,7 +125,7 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
         self.version: StringAttribute = StringAttribute(name="version", parent=self, value=__version__, tags={'carconnectivity'})
         self.commands: Commands = Commands(parent=self)
 
-        self.services: Dict[ServiceType, list[BaseService]] = {}
+        self.services: Dict[ServiceType, tuple[int, list[BaseService]]] = {}
 
         if 'carConnectivity' not in config:
             raise ConfigurationError("Invalid configuration: 'carConnectivity' is missing")
@@ -326,16 +326,12 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
         # Add own services:
         geofence_location_service: GeofenceLocationService = GeofenceLocationService(service_id='car_connectivity:GeofenceLocationService',
                                                                                      car_connectivity=self, log=LOG)
-        for service_type in geofence_location_service.get_types():
-            if service_type not in self.services:
-                self.services[service_type] = []
-            self.services[service_type].append(geofence_location_service)
+        for service_type, priority in geofence_location_service.get_types():
+            self.add_service_for(service_type, geofence_location_service, priority)
 
         osm_location_service: OSMLocationService = OSMLocationService(service_id='car_connectivity:OSMLocationService', car_connectivity=self, log=LOG)
-        for service_type in osm_location_service.get_types():
-            if service_type not in self.services:
-                self.services[service_type] = []
-            self.services[service_type].append(osm_location_service)
+        for service_type, priority in osm_location_service.get_types():
+            self.add_service_for(service_type, osm_location_service, priority)
 
         LOG.info('CarConnectivity (Version %s) loaded%s', self.get_version(), features_string)
 
@@ -519,6 +515,20 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
         features['ASCII Images'] = (SUPPORT_ASCII_IMAGES, SUPPORT_ASCII_IMAGES_STR)
         return features
 
+    def add_service_for(self, service_type: ServiceType, service: BaseService, priority: int = 100) -> None:
+        """
+        Adds a service for the given service type with the specified priority.
+
+        Args:
+            service_type (str): The type of the service.
+            service (BaseService): The service instance to add.
+            priority (int): The priority of the service. Lower values indicate higher priority.
+        """
+        if service_type not in self.services:
+            self.services[service_type] = []
+        self.services[service_type].append((priority, service))
+        self.services[service_type].sort(key=lambda x: x[0])  # Sort by priority
+
     def get_service_for(self, service_type: ServiceType) -> Optional[BaseService]:
         """
         Returns the highest priority service for the given service type.
@@ -529,7 +539,7 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
             Optional[BaseService]: The service instance if found, None otherwise.
         """
         for service in self.services.get(service_type, []):
-            return service
+            return service[1]
         return None
 
     def get_services_for(self, service_type: ServiceType) -> list[BaseService]:
@@ -541,4 +551,4 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
         Returns:
             list[BaseService]: The service instances if found, empty list otherwise.
         """
-        return self.services.get(service_type, [])
+        return [service for _, service in self.services.get(service_type, [])]

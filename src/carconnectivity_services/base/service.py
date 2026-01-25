@@ -30,12 +30,12 @@ class BaseService():  # pylint: disable=too-few-public-methods, too-many-instanc
         self.car_connectivity: CarConnectivity = car_connectivity
         self.log: logging.Logger = log
 
-    def get_types(self) -> list[ServiceType]:
+    def get_types(self) -> list[tuple[ServiceType, int]]:
         """
-        Returns the type of the connector.
+        Returns the type of the connector with priority.
 
         Returns:
-            list[ServiceTypes]: The types of the connector.
+            list[tuple[ServiceType, int]]: The types of the connector with their priorities.
         """
         raise NotImplementedError("Method get_types() must be implemented by plugin")
 
