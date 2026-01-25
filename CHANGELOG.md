@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 - No unreleased changes so far
 
+## [0.11.8] - 2026-01-25
+### Added
+- Support for priorities when registering services to allow connectors to specify which service should be used first when multiple services for the same type are registered
+
+### Changed
+- Delete cache/tokenstore file when corruption is detected
+
 ## [0.11.7] - 2026-01-24
 ### Added
 - Support for geofences for locations and charging_stations
@@ -151,7 +158,8 @@ Warning: This is a breaking change for all connectors and plugins. Only update t
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.7...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.8...HEAD
+[0.11.8]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.8
 [0.11.7]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.7
 [0.11.6]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.6
 [0.11.5]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.5
