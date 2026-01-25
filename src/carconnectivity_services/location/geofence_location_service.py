@@ -64,9 +64,11 @@ class GeofenceLocationService(LocationService):  # pylint: disable=too-few-publi
                         display_string: str = ''
                         if 'name' in location_data:
                             location = Location(name=location_data['name'], parent=None)
+                            location.name._set_value(location_data['name'])  # pylint: disable=protected-access
                             display_string = location_data['name']
                         else:
                             location = Location(name=name, parent=None)
+                            location.name._set_value(name)  # pylint: disable=protected-access
                             display_string = name
                         if 'source' in location_data:
                             location.source._set_value(location_data['source'])  # pylint: disable=protected-access
@@ -121,8 +123,10 @@ class GeofenceLocationService(LocationService):  # pylint: disable=too-few-publi
                         cs_data = geofence['charging_station']
                         if 'name' in cs_data:
                             charging_station = ChargingStation(name=cs_data['name'], parent=None)
+                            charging_station.name._set_value(cs_data['name'])  # pylint: disable=protected-access
                         else:
                             charging_station = ChargingStation(name=name, parent=None)
+                            charging_station.name._set_value(name)  # pylint: disable=protected-access
                         if 'source' in cs_data:
                             charging_station.source._set_value(cs_data['source'])  # pylint: disable=protected-access
                         else:
