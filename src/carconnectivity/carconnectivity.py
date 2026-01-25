@@ -207,6 +207,11 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
             except json.JSONDecodeError as err:
                 LOG.info('Could not use tokenstore from file %s (%s)', tokenstore_file, err.msg)
                 self.__tokenstore = {}
+            except UnicodeDecodeError:
+                LOG.error('Tokenstore file %s seems corrupted will delete it and try to create a new one. '
+                          'If this problem persists please check if a problem with your disk exists.', self.__tokenstore_file)
+                os.remove(self.__tokenstore_file)
+                self.__tokenstore = {}
             except FileNotFoundError as err:
                 LOG.info('Could not use tokenstore from file %s (%s)', tokenstore_file, err)
                 self.__tokenstore = {}
