@@ -233,6 +233,11 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
                           'If this problem persists please check if a problem with your disk exists.', self.__cache_file)
                 os.remove(self.__cache_file)
                 self.__cache = {}
+            except UnicodeDecodeError:
+                LOG.error('Cachefile %s seems corrupted will delete it and try to create a new one. '
+                          'If this problem persists please check if a problem with your disk exists.', self.__cache_file)
+                os.remove(self.__cache_file)
+                self.__cache = {}
             except FileNotFoundError:
                 self.__cache = {}
             except InvalidToken:
