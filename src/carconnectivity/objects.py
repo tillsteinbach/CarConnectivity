@@ -56,7 +56,6 @@ class GenericObject(Observable):  # pylint: disable=too-many-instance-attributes
             origin.parent = None
             if parent is not None:
                 self.parent = parent
-                parent.children.append(self)
             self.__enabled: bool = origin.enabled
             self.__enabled_lock: TimeoutLock = origin.__enabled_lock  # pylint:disable=protected-access
             self.__initialized: bool = origin.__initialized  # pylint:disable=protected-access
