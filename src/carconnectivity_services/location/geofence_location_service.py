@@ -158,6 +158,7 @@ class GeofenceLocationService(LocationService):  # pylint: disable=too-few-publi
                                                    charging_station=charging_station))
                 else:
                     raise ConfigurationError("Geofence must have at least 'name', 'latitude', and 'longitude' fields")
+        log.info(f"GeofenceLocationService initialized with {len(self.geofences)} geofences")
 
     def get_types(self) -> list[ServiceType]:
         return [ServiceType.LOCATION_REVERSE, ServiceType.LOCATION_CHARGING_STATION]
