@@ -243,7 +243,8 @@ class CarConnectivity(GenericObject, ICarConnectivity):  # pylint: disable=too-m
                           'If this problem persists please check if a problem with your disk exists.', self.__cache_file)
                 os.remove(self.__cache_file)
                 self.__cache = {}
-            except FileNotFoundError:
+            except FileNotFoundError as err:
+                LOG.info('Could not use cache from file %s (%s)', self.__cache_file, err)
                 self.__cache = {}
             except InvalidToken:
                 LOG.error('Cachefile %s cannot be decrypted will delete it and try to create a new one.', self.__cache_file)
