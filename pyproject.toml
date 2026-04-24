@@ -20,7 +20,7 @@ dependencies = [
     "pytimeparse~=1.1.8",
     "ntplib~=0.4.0",
     "haversine~=2.9.0",
-    "requests~=2.32.5",
+    "requests~=2.33.0",
 ]
 readme = "README.md"
 license = "MIT"
@@ -55,7 +55,7 @@ plugins = [
     'carconnectivity-plugin-database>=0.3',
 ]
 images = [
-    'pillow~=12.1.0',
+    'pillow~=12.2.0',
     'ascii_magic~=2.7.2'
 
 ]
