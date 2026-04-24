@@ -169,7 +169,8 @@ Warning: This is a breaking change for all connectors and plugins. Only update t
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.8...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.9...HEAD
+[0.11.9]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.8...v0.11.9
 [0.11.8]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.8
 [0.11.7]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.7
 [0.11.6]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.6
