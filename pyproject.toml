@@ -20,7 +20,7 @@ dependencies = [
     "pytimeparse~=1.1.8",
     "ntplib~=0.4.0",
     "haversine~=2.9.0",
-    "requests~=2.33.1",
+    "requests>=2.33.1,<2.33.0",
 ]
 readme = "README.md"
 license = "MIT"
