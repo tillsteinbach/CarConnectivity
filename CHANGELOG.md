@@ -3,7 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
-- No unreleased changes so far
+### Added
+- Add `oil_level` attribute to `CombustionDrive` to expose engine oil level (percentage)
 
 ## [0.11.9] - 2026-04-24
 ### Added
