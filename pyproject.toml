@@ -55,7 +55,7 @@ plugins = [
     'carconnectivity-plugin-database>=0.3',
 ]
 images = [
-    'pillow~=12.2.0',
+    'pillow>=12.2,<12.4',
     'ascii_magic~=2.7.5'
 
 ]
