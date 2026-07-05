@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 ### Added
+- Add `oil_level` attribute to `CombustionDrive` to expose engine oil level (percentage)
 - Add `parking_brake` attribute to vehicles (engaged / released)
 
 ## [0.11.9] - 2026-04-24

@@ -158,6 +158,8 @@ class CombustionDrive(GenericDrive):
                                                                               unit=FuelConsumption.UNKNOWN,
                                                                               minimum=0, precision=0.1, tags={'carconnectivity'},
                                                                               initialization=self.get_initialization('consumption'))
+        self.oil_level: LevelAttribute = LevelAttribute(name="oil_level", parent=self, value=None, minimum=0, precision=0.1,
+                                                        tags={'carconnectivity'}, initialization=self.get_initialization('oil_level'))
 
         self.range.add_observer(self.__on_range_or_level_change, Observable.ObserverEvent.UPDATED_NEW_MEASUREMENT,
                                 priority=Observable.ObserverPriority.INTERNAL_HIGH, on_transaction_end=True)
