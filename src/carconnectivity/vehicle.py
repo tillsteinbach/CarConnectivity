@@ -11,7 +11,7 @@ from enum import Enum
 
 from carconnectivity.interfaces import IGenericVehicle
 from carconnectivity.objects import GenericObject
-from carconnectivity.attributes import StringAttribute, EnumAttribute, RangeAttribute, TemperatureAttribute, IntegerAttribute
+from carconnectivity.attributes import StringAttribute, EnumAttribute, RangeAttribute, TemperatureAttribute, IntegerAttribute, BooleanAttribute
 from carconnectivity.doors import Doors
 from carconnectivity.windows import Windows
 from carconnectivity.lights import Lights
@@ -80,6 +80,8 @@ class GenericVehicle(GenericObject, IGenericVehicle):  # pylint: disable=too-man
             self.odometer.parent = self
             self.state: EnumAttribute[GenericVehicle.State] = origin.state
             self.state.parent = self
+            self.parking_brake: BooleanAttribute = origin.parking_brake
+            self.parking_brake.parent = self
             self.connection_state: EnumAttribute[GenericVehicle.ConnectionState] = origin.connection_state
             self.connection_state.parent = self
             self.drives: Drives = origin.drives
@@ -134,6 +136,8 @@ class GenericVehicle(GenericObject, IGenericVehicle):  # pylint: disable=too-man
                                                            tags={'carconnectivity'}, initialization=self.get_initialization('odometer'))
             self.state: EnumAttribute[GenericVehicle.State] = EnumAttribute("state", parent=self, tags={'carconnectivity'}, value_type=GenericVehicle.State,
                                                                             initialization=self.get_initialization('state'))
+            self.parking_brake: BooleanAttribute = BooleanAttribute("parking_brake", parent=self, tags={'carconnectivity'},
+                                                                    initialization=self.get_initialization('parking_brake'))
             self.connection_state: EnumAttribute[GenericVehicle.ConnectionState] = EnumAttribute("connection_state", parent=self, tags={'carconnectivity'},
                                                                                                  value_type=GenericVehicle.ConnectionState,
                                                                                                  initialization=self.get_initialization('connection_state'))
