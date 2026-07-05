@@ -893,8 +893,10 @@ class EnumAttribute(Generic[T], GenericAttribute[T, None]):
     """
     # pylint: disable-next=too-many-arguments, too-many-positional-arguments
     def __init__(self, name: str, parent: GenericObject, value: Optional[Enum] = None, value_type: Type[Enum] = Enum,
+                 allowed_values: Optional[List[Enum]] = None,
                  tags: Optional[Set[str]] = None, initialization: Optional[Dict] = None) -> None:
         super().__init__(name=name, parent=parent, value=value, value_type=value_type, unit=None, tags=tags, initialization=initialization)
+        self.allowed_values: Optional[List[Enum]] = allowed_values or list(value_type) if value_type is not None else None
 
     def __str__(self) -> str:
         return f"{self.value.value if self.value else None}"
