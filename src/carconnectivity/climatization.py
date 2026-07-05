@@ -38,7 +38,7 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
                                                                        initialization=self.get_initialization('estimated_date_reached'))
             self.settings: Climatization.Settings = Climatization.Settings(parent=self, initialization=self.get_initialization('settings'))
 
-    class Settings(GenericObject):
+    class Settings(GenericObject):  # pylint: disable=too-many-instance-attributes
         """
         This class represents the settings for car  charging.
         """
