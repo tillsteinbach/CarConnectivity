@@ -48,6 +48,8 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
                 super().__init__(parent=parent, origin=origin, initialization=initialization)
                 self.commands: Commands = origin.commands
                 self.commands.parent = self
+                self.mode: EnumAttribute = origin.mode
+                self.mode.parent = self
                 self.target_temperature: TemperatureAttribute = origin.target_temperature
                 self.target_temperature.parent = self
                 self.window_heating: BooleanAttribute = origin.window_heating
@@ -63,6 +65,10 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
             else:
                 super().__init__(object_id="settings", parent=parent, initialization=initialization)
                 self.commands: Commands = Commands(parent=self)
+                self.mode: EnumAttribute[Climatization.Settings.ClimatizationMode] = EnumAttribute("mode", parent=self,
+                                                                                                   value_type=Climatization.Settings.ClimatizationMode,
+                                                                                                   tags={'carconnectivity'},
+                                                                                                   initialization=self.get_initialization('mode'))
                 self.target_temperature: TemperatureAttribute = TemperatureAttribute("target_temperature", parent=self, precision=0.1, tags={'carconnectivity'},
                                                                                      initialization=self.get_initialization('target_temperature'))
                 self.window_heating: BooleanAttribute = BooleanAttribute("window_heating", parent=self, tags={'carconnectivity'},
@@ -89,6 +95,21 @@ class Climatization(GenericObject):  # pylint: disable=too-many-instance-attribu
             """
             ELECTRIC = 'electric'
             UNKNOWN = 'unknown heater source'
+
+        class ClimatizationMode(Enum,):
+            """
+            Enum representing different modes of climatization.
+
+            Attributes:
+                AUTOMATIC (str): Climatization is in automatic mode.
+                HEATING (str): Climatization is in heating mode.
+                COOLING (str): Climatization is in cooling mode.
+                UNKNOWN (str): Climatization mode is unknown.
+            """
+            AUTOMATIC = 'automatic'
+            HEATING = 'heating'
+            COOLING = 'cooling'
+            UNKNOWN = 'unknown climatization mode'
 
     class ClimatizationState(Enum,):
         """
