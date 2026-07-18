@@ -9,9 +9,9 @@ import argparse
 import logging
 import tempfile
 import json
+import re
 import threading
 
-from json_minify import json_minify
 
 from carconnectivity import carconnectivity, errors, util
 from carconnectivity._version import __version__ as __carconnectivity_version__
@@ -23,6 +23,13 @@ LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
 DEFAULT_LOG_LEVEL = "ERROR"
 
 LOG: logging.Logger = logging.getLogger("carconnectivity")
+
+
+def strip_json_comments(text: str) -> str:
+    """Remove C-style comments (// and /* */) from a JSON string."""
+    text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
+    text = re.sub(r'//.*?$', '', text, flags=re.MULTILINE)
+    return text
 
 
 class CLI():  # pylint: disable=too-few-public-methods
@@ -91,7 +98,7 @@ class CLI():  # pylint: disable=too-few-public-methods
             try:
                 with open(file=args.config, mode='r', encoding='utf-8') as config_file:
                     try:
-                        config_dict = json.loads(json_minify(config_file.read(), strip_space=False))
+                        config_dict = json.loads(strip_json_comments(config_file.read()))
                         car_connectivity = carconnectivity.CarConnectivity(config=config_dict, tokenstore_file=args.tokenfile, cache_file=args.cachefile)
                         car_connectivity.startup()
 
