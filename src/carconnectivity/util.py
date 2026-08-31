@@ -80,7 +80,7 @@ def config_remove_credentials(config: Dict[str, Any]) -> Dict[str, Any]:
                 for i, item in enumerate(config[key]):
                     if isinstance(item, dict):
                         config[key][i] = __recursive_remove_credentials(item)
-            if 'pin' in key.lower() or 'secret' in key.lower() or 'password' in key.lower() or 'token' in key.lower():
+            if 'pin' in key.lower() or 'secret' in key.lower() or 'password' in key.lower() or 'token' in key.lower() or 'api_key' in key.lower():
                 config[key] = '***'
         return config
     config_copy: dict[str, Any] = config.copy()
