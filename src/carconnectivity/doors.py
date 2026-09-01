@@ -60,8 +60,8 @@ class Doors(GenericObject):  # pylint: disable=too-many-instance-attributes
             super().__init__(object_id=door_id, parent=doors, initialization=initialization)
             self.door_id: str = door_id
             self.open_state: EnumAttribute[Doors.OpenState] = EnumAttribute("open_state", self, tags={'carconnectivity'},
-                                                                            value=Doors.OpenState,
+                                                                            value_type=Doors.OpenState,
                                                                             initialization=self.get_initialization('open_state'))
             self.lock_state: EnumAttribute[Doors.LockState] = EnumAttribute("lock_state", self, tags={'carconnectivity'},
-                                                                            value=Doors.LockState,
+                                                                            value_type=Doors.LockState,
                                                                             initialization=self.get_initialization('lock_state'))
