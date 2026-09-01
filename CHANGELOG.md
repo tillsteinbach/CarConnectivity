@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [0.11.11] - 2026-09-01
+### Fixed
+- Hides api_key in config when printing it to the log
+- fixes a bug in the initialization of doors that caused the open_state and lock_state attributes to be initialized with a wrong initial value
+
 ## [0.11.10] - 2026-07-05
 ### Added
 - Add `oil_level` attribute to `CombustionDrive` to expose engine oil level (percentage)
@@ -176,7 +181,8 @@ Warning: This is a breaking change for all connectors and plugins. Only update t
 ## [0.1] - 2025-01-25
 Initial release, let's go and give this to the public to try out...
 
-[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.10...HEAD
+[unreleased]: https://github.com/tillsteinbach/CarConnectivity/compare/v0.11.11...HEAD
+[0.11.11]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.11
 [0.11.10]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.10
 [0.11.9]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.9
 [0.11.8]: https://github.com/tillsteinbach/CarConnectivity/releases/tag/v0.11.8
