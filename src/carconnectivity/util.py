@@ -125,8 +125,8 @@ class DuplicateFilter(logging.Filter):
 
         # were messages from this module already logged?
         if record.module in self._last_log:
-            time_since_last_log = (now - self._last_log[record.module][record.levelno][1]).total_seconds()
             if record.levelno in self._last_log[record.module]:
+                time_since_last_log = (now - self._last_log[record.module][record.levelno][1]).total_seconds()
                 # were the same message and arguments logged?
                 if self._last_log[record.module][record.levelno][0] == (record.msg, record.args):
                     # was the message logged within the specified time frame?

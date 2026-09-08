@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+### Fixed
+- `DuplicateFilter` no longer raises `KeyError` when a module logs at a level it has not used before. The level was read from `_last_log[module]` before checking that it was present, so the exception escaped through `logging.Handler.handle` into the caller.
 
 ## [0.11.11] - 2026-09-01
 ### Fixed
