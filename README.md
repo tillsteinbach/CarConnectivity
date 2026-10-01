@@ -43,6 +43,7 @@ CarConnectivity uses a plugin architecture to enable connectivity to other servi
 | Home Assistant MQTT                      | [CarConnectivity-plugin-mqtt_homeassistant](https://github.com/tillsteinbach/CarConnectivity-plugin-mqtt_homeassistant) | [tillsteinbach](https://github.com/tillsteinbach)  |
 | A Better Routeplanner (ABRP)             | [CarConnectivity-plugin-abrp](https://github.com/tillsteinbach/CarConnectivity-plugin-abrp)                             | [tillsteinbach](https://github.com/tillsteinbach)  |
 | Apple Homekit                            | [CarConnectivity-plugin-homekit](https://github.com/tillsteinbach/CarConnectivity-plugin-homekit)                       | [tillsteinbach](https://github.com/tillsteinbach)  |
+| REST API                                 | [CarConnectivity-plugin-restapi](https://github.com/tillsteinbach/CarConnectivity-plugin-restapi)                       | [tillsteinbach](https://github.com/tillsteinbach)  |
 | Campermode (overnight car climatisation) | [CarConnectivity-plugin-campermode](https://github.com/cryptomilk/CarConnectivity-plugin-campermode)                    | [cryptomilk](https://github.com/cryptomilk)        |
 
 If you know of a plugin not listed here let me know and I will add it to the list.
